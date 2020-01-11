@@ -19,7 +19,9 @@
     "node": "13.6.0"
   },
   "scripts": {
-    "start": "node src/server/index.js",
+    "start": "concurrently 'npm run react' 'np run sever'",
+    "react": "node src/server/index.js",
+    "server": "nodemon src/server/index.js",
     "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -39,5 +41,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^5.0.2",
+    "nodemon": "^2.0.2"
   }
 }

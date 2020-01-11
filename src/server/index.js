@@ -1,17 +1,17 @@
-const express = require("express");
-const app = express();
-const server = require("http").createServer(app); //! PROD
-const io = require("socket.io")(server);
+// const express = require("express");
+// const app = express();
+// const server = require("http").createServer(app); //! PROD
+// const io = require("socket.io")(server);
 
-// let app = require("express")();
-// let http = require("http").createServer(app); //! DEV
-// let io = require("socket.io")(http);
+let app = require("express")();
+let http = require("http").createServer(app); //! DEV
+let io = require("socket.io")(http);
 
 // EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname + "/../../build"));
+// app.use(express.static(__dirname + "/../../build")); //! PROD
 
 let serverSideUsers = []; //! Make this immutable when done.
 let chatrooms = []; //! Make this immutable when done.
@@ -26,23 +26,20 @@ io.on("connection", socket => {
       ? serverSideUsers.map(item => {
           if (item.username === user.username) {
             console.log(`Username "${user.username}" is currently in use.`);
-            return io.emit("userExists", user);
-          } else {
-            serverSideUsers = [
-              ...serverSideUsers,
-              {
-                username: user.username,
-                clientId: socket.id,
-                currentChatroom: ""
-              }
-            ];
-            console.log(serverSideUsers, "current ss object");
-            console.log(`User ${JSON.stringify(user.username)} has logged in`);
-            return io.emit("userSet", user);
+            return socket.emit("userExists", user);
           }
         })
-      : console.log(`First User "${user.username}" has logged in.`);
-    io.emit("userSet", user);
+      : (serverSideUsers = [
+          ...serverSideUsers,
+          {
+            username: user.username,
+            clientId: socket.id,
+            currentChatroom: ""
+          }
+        ]);
+    console.log(serverSideUsers, "current ss object");
+    console.log(`First User "${user.username}" has logged in.`);
+    socket.emit("userSet", user);
   });
   // put this in if
 
@@ -85,7 +82,7 @@ io.on("connection", socket => {
 
     console.log(`User "${data.username}" has logged out.`);
 
-    io.emit("userLogoutSuccess", data);
+    socket.emit("userLogoutSuccess", data);
   });
 
   // io.of('/').in('general').clients((error, clients) => {
@@ -93,11 +90,11 @@ io.on("connection", socket => {
   //   console.log(clients);
 
   //! to private message someone
-  io.on("connection", function(socket) {
-    socket.on("say to someone", function(id, msg) {
-      socket.broadcast.to(id).emit("my message", msg);
-    });
-  });
+  // io.on("connection", function(socket) {
+  //   socket.on("say to someone", function(id, msg) {
+  //     socket.broadcast.to(id).emit("my message", msg);
+  //   });
+  // });
 
   // Do conditional check to see if user is unique.
 
@@ -108,7 +105,7 @@ io.on("connection", socket => {
   socket.on("requestNewChatroom", function(chatroom) {
     console.log("new chatroom requested!");
     if (chatrooms.includes(chatroom.chatroomName)) {
-      io.emit("chatroomExists", chatroom);
+      socket.emit("chatroomExists", chatroom);
       return console.log("chatroom name exists!");
     } else {
       console.log(`Chatroom ${JSON.stringify(chatroom.chatroomName)} created!`);
@@ -140,6 +137,8 @@ io.on("connection", socket => {
 
   socket.on("joinChatroom", data => {
     //! Full Logic
+    console.log(serverSideUsers);
+
     serverSideUsers.map(item => {
       let newChatroomUsers = [];
       let previousChatroomUsers = [];
@@ -181,7 +180,7 @@ io.on("connection", socket => {
 
           io.to(data.chatroom).emit("currentChatroomUsers", newChatroomUsers); // Send cients in new chatroom a list of chatroom users...
 
-          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+          return socket.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
         } else {
           // handle joining initial chatroom
 
@@ -199,7 +198,7 @@ io.on("connection", socket => {
             newChatroomUsers
           );
 
-          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+          return socket.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
         }
       }
     });
@@ -227,13 +226,13 @@ io.on("connection", socket => {
   // });
 });
 
-server.listen(PORT, err => {
-  if (err) throw err;
-  console.log(`Listening on ${PORT}`);
-});
-
-// http.listen(3001, function(err) {
-//   //! DEV
+// server.listen(PORT, err => {
 //   if (err) throw err;
-//   console.log("listening on *:3001");
+//   console.log(`Listening on ${PORT}`);
 // });
+
+http.listen(3001, function(err) {
+  //! DEV
+  if (err) throw err;
+  console.log("listening on *:3001");
+});
