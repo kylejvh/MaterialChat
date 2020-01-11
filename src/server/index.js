@@ -8,7 +8,7 @@ const express = require("express");
 const socketIO = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
-const INDEX = "/index.html";
+const INDEX = "./public/index.html";
 
 const server = express()
   .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
@@ -230,7 +230,7 @@ io.on("connection", socket => {
   // });
 });
 
-http.listen(3001, function(err) {
-  if (err) throw err;
-  console.log("listening on *:3001");
-});
+// http.listen(3001, function(err) {
+//   if (err) throw err;
+//   console.log("listening on *:3001");
+// });
