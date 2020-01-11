@@ -1,11 +1,23 @@
-let app = require("express")();
-let http = require("http").createServer(app);
-let io = require("socket.io")(http);
+// let app = require("express")();
+// let http = require("http").createServer(app);
+// let io = require("socket.io")(http);
+
+// EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
+
+const express = require("express");
+const socketIO = require("socket.io");
+
+const PORT = process.env.PORT || 3000;
+const INDEX = "/index.html";
+
+const server = express()
+  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const io = socketIO(server);
 
 let serverSideUsers = []; //! Make this immutable when done.
 let chatrooms = []; //! Make this immutable when done.
-
-// EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
 
 io.on("connection", socket => {
   console.log(socket.id, "all connections");
