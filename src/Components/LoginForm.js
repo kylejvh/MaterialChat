@@ -15,6 +15,8 @@ import MuiDialogContent from "@material-ui/core/DialogContent";
 import MuiDialogActions from "@material-ui/core/DialogActions";
 import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -114,51 +116,60 @@ const LoginForm = () => {
 
   return (
     <div>
-      <Backdrop className={classes.backdrop} open={true}>
-        <Dialog
-          open={true}
-          onClose={displayLoginDialog}
-          aria-labelledby="form-dialog-title"
-          onSubmit={handleUsernameSubmit}
-        >
+      <Backdrop className={classes.backdrop} open>
+        <Dialog open component="form" aria-labelledby="form-dialog-title">
           <DialogTitle id="form-dialog-title">Login</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To begin messaging, please enter a username that is not currently
-              in use.
-            </DialogContentText>
+          <form onSubmit={handleUsernameSubmit}>
+            <DialogContent>
+              <DialogContentText>
+                To begin messaging, please enter a username that is not
+                currently in use.
+              </DialogContentText>
 
-            <TextField
-              autoFocus
-              fullWidth
-              margin="dense"
-              label="Username"
-              variant="filled"
-              error={displayLoginError}
-              placeholder="Enter username..."
-              helperText={displayLoginError ? "Username taken." : ""}
-              value={value}
-              onChange={e => {
-                setValue(e.target.value);
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button variant="outlined" type="submit" color="primary">
-              Confirm
-            </Button>
-          </DialogActions>
+              <TextField
+                autoFocus
+                fullWidth
+                margin="dense"
+                label="Username"
+                variant="filled"
+                error={displayLoginError}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountCircle />
+                    </InputAdornment>
+                  )
+                }}
+                placeholder="Enter username..."
+                helperText={displayLoginError ? "Username taken." : ""}
+                value={value}
+                onChange={e => {
+                  setValue(e.target.value);
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                variant="outlined"
+                type="submit"
+                color="primary"
+                label="Submit"
+              >
+                Confirm
+              </Button>
+            </DialogActions>
+          </form>
         </Dialog>
 
-        <Snackbar
+        {/* <Snackbar
           open={chatAppState.loginDialog.displayLoginError}
           autoHideDuration={6000}
           onClose={handleClose}
         >
           {/* <Alert onClose={handleClose} color="error">
           This username is taken!
-        </Alert> */}
-        </Snackbar>
+        </Alert> 
+        </Snackbar> */}
 
         {/* <Paper>
           <Typography variant="h2">Hello! Welcome to Chatsby!</Typography>

@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
-const server = require("http").createServer(app);
+const server = require("http").createServer(app); //! PROD
 const io = require("socket.io")(server);
+
+// let app = require("express")();
+// let http = require("http").createServer(app); //! DEV
+// let io = require("socket.io")(http);
 
 // EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
 
@@ -16,44 +20,44 @@ io.on("connection", socket => {
   console.log(socket.id, "all connections");
 
   socket.on("requestUsername", user => {
-    console.log(`New user: ${JSON.stringify(user)} is trying to connect`);
+    console.log(`New user: "${user.username}" is trying to connect.`);
 
-    serverSideUsers.map(item => {
-      if (item.username === user.username) {
-        console.log("name taken!");
-        io.emit("userExists", user);
-      } else {
-        serverSideUsers = [
-          ...serverSideUsers,
-          {
-            username: user.username,
-            clientId: socket.id,
-            currentChatroom: ""
+    serverSideUsers.length > 0
+      ? serverSideUsers.map(item => {
+          if (item.username === user.username) {
+            console.log(`Username "${user.username}" is currently in use.`);
+            return io.emit("userExists", user);
+          } else {
+            serverSideUsers = [
+              ...serverSideUsers,
+              {
+                username: user.username,
+                clientId: socket.id,
+                currentChatroom: ""
+              }
+            ];
+            console.log(serverSideUsers, "current ss object");
+            console.log(`User ${JSON.stringify(user.username)} has logged in`);
+            return io.emit("userSet", user);
           }
-        ];
-        // serverSideUsers.username = user.username;
-        // serverSideUsers.clientId = socket.id;
-        console.log(serverSideUsers, "current ss object");
-        console.log(`User ${JSON.stringify(user.username)} has logged in`);
-        io.emit("userSet", user);
-      }
-    });
-
-    // put this in if
-
-    // if (serverSideUsers.hasOwnProperty(user.username)) {
-    //   user.isActive = false;
-    //   io.emit("userExists", user);
-    //   return console.log("name taken!");
-    // } else {
-    //   user.isActive = true; // probably need to store isactive on backend too.
-    //   console.log(`User ${JSON.stringify(user.username)} has logged in`);
-    //   usernames.push(user.username.toUpperCase());
-    //   io.emit("userSet", user);
-    // }
-
-    // make an object that contains all client ids and usernames
+        })
+      : console.log(`First User "${user.username}" has logged in.`);
+    io.emit("userSet", user);
   });
+  // put this in if
+
+  // if (serverSideUsers.hasOwnProperty(user.username)) {
+  //   user.isActive = false;
+  //   io.emit("userExists", user);
+  //   return console.log("name taken!");
+  // } else {
+  //   user.isActive = true; // probably need to store isactive on backend too.
+  //   console.log(`User ${JSON.stringify(user.username)} has logged in`);
+  //   usernames.push(user.username.toUpperCase());
+  //   io.emit("userSet", user);
+  // }
+
+  // make an object that contains all client ids and usernames
 
   socket.on("userLogout", data => {
     // You need to handle  removing the socket from the rooms it's in,
@@ -79,7 +83,7 @@ io.on("connection", socket => {
       item => item.username !== data.username
     );
 
-    console.log("does ss users show deleted?", serverSideUsers);
+    console.log(`User "${data.username}" has logged out.`);
 
     io.emit("userLogoutSuccess", data);
   });
@@ -227,3 +231,9 @@ server.listen(PORT, err => {
   if (err) throw err;
   console.log(`Listening on ${PORT}`);
 });
+
+// http.listen(3001, function(err) {
+//   //! DEV
+//   if (err) throw err;
+//   console.log("listening on *:3001");
+// });
