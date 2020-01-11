@@ -1,13 +1,13 @@
-const app = require("express")();
+const express = require("express");
+const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 
 // EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
 
 const PORT = process.env.PORT || 3000;
-const INDEX = "../../public/index.html";
 
-app.use((req, res) => res.sendFile(INDEX, { root: __dirname }));
+app.use(express.static(__dirname + "/../../build"));
 
 let serverSideUsers = []; //! Make this immutable when done.
 let chatrooms = []; //! Make this immutable when done.
