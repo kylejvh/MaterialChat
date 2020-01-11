@@ -13,8 +13,12 @@ import List from "@material-ui/core/List";
 import Chip from "@material-ui/core/Chip";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-
-// import AddIcon from "@material-ui/icons/Add";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 const useStyles = makeStyles({
   root: {
@@ -32,14 +36,20 @@ const useStyles = makeStyles({
   },
   chatBar: {
     display: "flex",
-    width: "70%",
+    width: "60%",
     position: "fixed",
     bottom: "3rem"
   },
   chatBarInput: {
     width: "100%"
   },
-  chatSendButton: {}
+  chatSendButton: {},
+  userListPanel: {
+    maxWidth: 240,
+    position: "fixed",
+    top: "5rem",
+    right: "1rem"
+  }
 });
 
 const ChatWindow = props => {
@@ -53,7 +63,10 @@ const ChatWindow = props => {
     handleStopTyping
   } = useContext(CTX);
 
-  const { activeTopic, chatMessage, setChatMessage, userId } = props;
+  const { chatrooms, usersInChatroom } = chatAppState;
+  const { username, currentChatroom } = chatAppState.currentUser;
+
+  const { chatMessage, setChatMessage } = props;
 
   // const messageInput = document.getElementById("chatfield");
   // const typing = document.getElementById("typing");
@@ -89,7 +102,7 @@ const ChatWindow = props => {
     //   clearTimeout(newTimer);
     // }
 
-    handleTyping({ userTyping: userId, isTyping: true });
+    handleTyping({ userTyping: username, isTyping: true });
 
     // reference func passed in from content to emit typing
 
@@ -98,17 +111,15 @@ const ChatWindow = props => {
     //! wouldn't you call typingTimeout()?
   };
 
-  return (
+  return currentChatroom ? (
     <Container className={classes.root}>
-      {userId && !activeTopic && (
-        <Typography variant="h5" component="h5">
-          Welcome, {userId}! Please select a channel.
-        </Typography>
-      )}
-      {activeTopic}
+      {/* {currentChatroom === "" && (
+        
+      )} */}
+      {console.log(username, "state changed")}
       <List>
-        {activeTopic &&
-          chatAppState.topics[activeTopic].map((chat, i) => (
+        {currentChatroom &&
+          chatrooms[currentChatroom].map((chat, i) => (
             <div className={classes.chatWindow} key={i}>
               <Chip
                 // icon={<FaceIcon />}
@@ -126,6 +137,27 @@ const ChatWindow = props => {
         </i>
       )}
 
+      <ExpansionPanel className={classes.userListPanel}>
+        <ExpansionPanelSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="currentuserpanel-content"
+          id="currentuserpanel-header"
+        >
+          <Typography className={classes.heading}>
+            Users in {currentChatroom}:
+          </Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <List dense>
+            {usersInChatroom.map(user => (
+              <ListItem key={user}>
+                <ListItemText primary={user} />
+              </ListItem>
+            ))}
+          </List>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+
       <div className={classes.chatBar}>
         <TextField
           autoFocus
@@ -136,7 +168,7 @@ const ChatWindow = props => {
           onChange={e => {
             setChatMessage(e.target.value);
             e.target.value === ""
-              ? handleStopTyping({ userTyping: userId, isTyping: false })
+              ? handleStopTyping({ userTyping: username, isTyping: false })
               : newTypingHandler();
             // handleTyping({ isTyping: userId }); //! Delete if working.
             // working now...
@@ -149,11 +181,11 @@ const ChatWindow = props => {
           onClick={() => {
             if (chatMessage) {
               sendChatAction({
-                from: userId,
+                from: username,
                 msg: chatMessage,
-                topic: activeTopic
+                chatroom: currentChatroom
               });
-              handleStopTyping({ userTyping: userId, isTyping: false });
+              handleStopTyping({ userTyping: username, isTyping: false });
             }
             setChatMessage("");
           }}
@@ -162,6 +194,10 @@ const ChatWindow = props => {
         </Button>
       </div>
     </Container>
+  ) : (
+    <Typography variant="h5" component="h5">
+      Hello, {username}. Join a chatroom to Chat!
+    </Typography>
   );
 };
 

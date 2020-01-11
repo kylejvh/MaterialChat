@@ -5,33 +5,34 @@ let io = require("socket.io")(http);
 let serverSideUsers = []; //! Make this immutable when done.
 let chatrooms = []; //! Make this immutable when done.
 
-// EXAMPLE OBJ              serverSideUsers: { username: '', clientId: '', currentChatroom: ''  }
+// EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
 
 io.on("connection", socket => {
   console.log(socket.id, "all connections");
 
   socket.on("requestUsername", user => {
     console.log(`New user: ${JSON.stringify(user)} is trying to connect`);
-    if (Object.values(serverSideUsers).includes(user.username)) {
-      // map instead now???
-      user.isActive = false;
-      io.emit("userExists", user);
-      console.log("name taken!");
-    } else {
-      serverSideUsers = [
-        ...serverSideUsers,
-        {
-          username: user.username,
-          clientId: socket.id,
-          currentChatroom: ""
-        }
-      ];
-      // serverSideUsers.username = user.username;
-      // serverSideUsers.clientId = socket.id;
-      console.log(serverSideUsers, "current ss object");
-      console.log(`User ${JSON.stringify(user.username)} has logged in`);
-      io.emit("userSet", serverSideUsers);
-    }
+
+    serverSideUsers.map(item => {
+      if (item.username === user.username) {
+        console.log("name taken!");
+        io.emit("userExists", user);
+      } else {
+        serverSideUsers = [
+          ...serverSideUsers,
+          {
+            username: user.username,
+            clientId: socket.id,
+            currentChatroom: ""
+          }
+        ];
+        // serverSideUsers.username = user.username;
+        // serverSideUsers.clientId = socket.id;
+        console.log(serverSideUsers, "current ss object");
+        console.log(`User ${JSON.stringify(user.username)} has logged in`);
+        io.emit("userSet", user);
+      }
+    });
 
     // put this in if
 
@@ -49,13 +50,33 @@ io.on("connection", socket => {
     // make an object that contains all client ids and usernames
   });
 
-  socket.on("userLogout", function(user) {
-    if (Object.values(serverSideUsers).includes(user.username)) {
-      //! Remove user and clientId from serverside obj.
+  socket.on("userLogout", data => {
+    // You need to handle  removing the socket from the rooms it's in,
+    // then updating the serversideuser obj,
+    // then broadcasting new usercount,
+    // then updating the user's frontend.
+
+    if (data.currentChatroom !== "") {
+      let previousChatroomUsers = [];
+      socket.leave(data.currentChatroom); //! check for error if chatroom is empty....
+
+      previousChatroomUsers = serverSideUsers
+        .filter(item => item.currentChatroom === data.currentChatroom)
+        .map(item => item.username);
+
+      io.to(data.currentChatroom).emit(
+        "currentChatroomUsers",
+        previousChatroomUsers
+      );
     }
 
-    io.emit("userLogoutSuccess", user);
-    socket.disconnect();
+    serverSideUsers = serverSideUsers.filter(
+      item => item.username !== data.username
+    );
+
+    console.log("does ss users show deleted?", serverSideUsers);
+
+    io.emit("userLogoutSuccess", data);
   });
 
   // io.of('/').in('general').clients((error, clients) => {
@@ -108,40 +129,73 @@ io.on("connection", socket => {
     console.log(err);
   });
 
-  //! handling rooms
-  // on username create, copy clientID to server object along with name.
-  // when the user joins a chatroom, change obj to reflect that?
-  //
-
   socket.on("joinChatroom", data => {
-    console.log(data.chatroom, "just logging data");
-    console.log(data, "whats this");
-
+    //! Full Logic
     serverSideUsers.map(item => {
+      let newChatroomUsers = [];
+      let previousChatroomUsers = [];
+      // Handle a chatroom change
       if (item.username === data.username) {
-        item.currentChatroom = data.chatroom;
+        if (item.currentChatroom !== "") {
+          // If user is switching chatrooms...
+          const previousChatroom = item.currentChatroom; // Store previous chatroom
+
+          socket.leave(previousChatroom); // Leave previous chatroom on server
+
+          item.currentChatroom = data.chatroom; // Update serverside list - Set user's chatroom to the requested chatroom
+
+          previousChatroomUsers = serverSideUsers
+            .filter(item => item.currentChatroom === previousChatroom) // Get list of usernames currently in previous chatroom.
+            .map(item => item.username);
+
+          console.log("previous chatroom users:", previousChatroomUsers);
+
+          io.to(previousChatroom).emit(
+            "currentChatroomUsers",
+            previousChatroomUsers
+          ); // Send ONLY clients in PREVIOUS CHATROOM a list of chatroom users...
+
+          /*
+
+
+      Spacer Block
+
+          */
+
+          socket.join(data.chatroom); // Join new chatroom on server
+
+          newChatroomUsers = serverSideUsers
+            .filter(item => item.currentChatroom === data.chatroom) // Get list of usernames currently in REQUESTED chatroom.
+            .map(item => item.username);
+
+          console.log("current chatroom users:", newChatroomUsers);
+
+          io.to(data.chatroom).emit("currentChatroomUsers", newChatroomUsers); // Send cients in new chatroom a list of chatroom users...
+
+          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+        } else {
+          // handle joining initial chatroom
+
+          item.currentChatroom = data.chatroom; // Update serverside list - Set user's chatroom to the requested chatroom
+
+          socket.join(data.chatroom); // Join new chatroom on server
+
+          newChatroomUsers = serverSideUsers
+            .filter(item => item.currentChatroom === data.chatroom) // Get list of usernames currently in REQUESTED chatroom.
+            .map(item => item.username);
+
+          io.to(data.chatroom).emit(
+            // Send clients in new chatroom a list of chatroom users...
+            "currentChatroomUsers",
+            newChatroomUsers
+          );
+
+          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+        }
       }
     });
-
-    console.log("!!! BUT DID THIS WORK", serverSideUsers);
-    io.emit("joinChatroomSuccess", serverSideUsers);
-    // next:
-    //! ADD CHECKS TO PREVENT DUPLICATE POSTS OF JOINING CHATROOMS!!! -
-
-    // io.in(data.chatroom).clients((err, clients) => { //? FIND OUT WHAT THIS CODE DOES!
-    //   console.log(clients, "testing: show clients in general");
-
-    // serverSideUsers.map(item => {
-    //   let currentChatroomUserList = [];
-    //   if (item.currentChatroom === data.chatroom) {
-    //     currentChatroomUserList.push(item.username);
-
-    //     io.emit("usersInChatroom", currentChatroomUserList);
-    //   }
-    // });
-
-    // clients will be array of socket ids , currently available in given room
   });
+
   // socket
   //   .of("/")
   //   .in("general")

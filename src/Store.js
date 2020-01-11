@@ -11,22 +11,23 @@ export const CTX = React.createContext();
 
 const initState = {
   usersInChatroom: [],
-  users: [],
+  currentUser: {
+    username: "", //! SET FOR DEVELOPMENT
+    currentChatroom: ""
+  },
   chatrooms: {
     general: []
   },
   loginDialog: {
     //! This is causing problems. Hacky solution! trigger ui transition. State is getting messy.
-    displayLoginDialog: true,
+    displayLoginDialog: true, //! set false for development
     displayLoginError: false
   },
   typing: {
     userTyping: "",
     isTyping: false
-  } //trigger ui transition, find a way to clean up both.
+  }
 };
-
-console.log(initState);
 
 const reducer = (state, action) => {
   const { from, msg, chatroom } = action.payload;
@@ -34,15 +35,10 @@ const reducer = (state, action) => {
     case "USER_LOGIN_SUCCESS":
       return {
         ...state,
-        users: [
-          ...state.users,
-          {
-            username: action.payload.username,
-            clientId: action.payload.clientId,
-            currentChatroom: ""
-            //isActive: action.payload.isActive
-          }
-        ],
+        currentUser: {
+          username: action.payload.username,
+          currentChatroom: ""
+        },
         loginDialog: { displayLoginDialog: false }
       };
 
@@ -55,7 +51,10 @@ const reducer = (state, action) => {
     case "USER_LOGOUT":
       return {
         ...state,
-        // handle user tracking?
+        currentUser: {
+          username: "",
+          currentChatroom: ""
+        },
         loginDialog: { displayLoginDialog: true }
       };
 
@@ -71,20 +70,16 @@ const reducer = (state, action) => {
     case "JOIN_CHATROOM_SUCCESS":
       return {
         ...state,
-        users: [
-          ...state.users,
-          {
-            ...state.users.username,
-            ...state.users.clientId,
-            currentChatroom: [action.payload.currentChatroom]
-          }
-        ]
+        currentUser: {
+          ...state.currentUser,
+          currentChatroom: action.payload.chatroom
+        }
       };
 
-    case "RECEIVE_USERS_IN_CHATROOM":
+    case "RECEIVE_CURRENT_CHATROOM_USERS":
       return {
         ...state,
-        usersInChatroom: [...state.usersInChatroom, action.payload]
+        usersInChatroom: action.payload
       };
 
     case "USER_TYPING":
@@ -120,12 +115,9 @@ const reducer = (state, action) => {
   }
 };
 
-// const sendUsername = value => {
-//   socket.emit("user login", value);
-// };
-
 const sendChatAction = value => {
   socket.emit("chat message", value);
+  console.log("correct message?", value);
 };
 
 const requestUsername = value => {
@@ -173,7 +165,7 @@ const Store = props => {
   if (!socket) {
     socket = io(":3001");
 
-    socket.on("userSet", function(user) {
+    socket.on("userSet", user => {
       dispatch({
         type: "USER_LOGIN_SUCCESS",
         payload: user
@@ -193,13 +185,11 @@ const Store = props => {
       dispatch({ type: "CREATE_CHATROOM", payload: chatroom });
     });
 
-    socket.on("usersInChatroom", function(users) {
-      console.log(users, "clients going into state");
-      dispatch({ type: "RECEIVE_USERS_IN_CHATROOM", payload: users });
+    socket.on("currentChatroomUsers", function(users) {
+      dispatch({ type: "RECEIVE_CURRENT_CHATROOM_USERS", payload: users });
     });
 
     socket.on("joinChatroomSuccess", data => {
-      console.log(data, "THIS IS ON JOIN CHATROOM");
       dispatch({ type: "JOIN_CHATROOM_SUCCESS", payload: data });
     });
 

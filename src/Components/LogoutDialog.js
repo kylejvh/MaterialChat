@@ -21,14 +21,13 @@ const useStyles = makeStyles(theme => ({
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
 
-const LogoutDialog = props => {
-  const { handleLogout } = props;
+const LogoutDialog = () => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const { requestUsername, chatAppState } = useContext(CTX);
+  const { chatAppState, handleLogout } = useContext(CTX);
 
-  const { userId, setUserId } = props;
+  const { username, currentChatroom } = chatAppState.currentUser;
 
   const [open, setOpen] = React.useState(false);
 
@@ -65,7 +64,11 @@ const LogoutDialog = props => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleLogout} color="primary" autoFocus>
+          <Button
+            onClick={() => handleLogout({ username, currentChatroom })}
+            color="primary"
+            autoFocus
+          >
             Logout
           </Button>
         </DialogActions>

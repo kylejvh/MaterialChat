@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { CTX } from "../Store";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
@@ -6,10 +6,27 @@ import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Snackbar from "@material-ui/core/Snackbar";
+import Backdrop from "@material-ui/core/Backdrop";
+import { Typography } from "@material-ui/core";
+
+import Dialog from "@material-ui/core/Dialog";
+import MuiDialogTitle from "@material-ui/core/DialogTitle";
+import MuiDialogContent from "@material-ui/core/DialogContent";
+import MuiDialogActions from "@material-ui/core/DialogActions";
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
+
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    display: "flex"
+    width: "80%",
+    height: "80%",
+    display: "flex",
+    flexDirection: "column"
   }
 }));
 
@@ -17,15 +34,15 @@ const useStyles = makeStyles(theme => ({
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
 
-const LoginForm = props => {
+const LoginForm = () => {
   const classes = useStyles();
   const theme = useTheme();
 
   const { requestUsername, chatAppState } = useContext(CTX);
+  const { displayLoginError, displayLoginDialog } = chatAppState.loginDialog;
 
-  const { userId, setUserId } = props;
-
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -41,14 +58,11 @@ const LoginForm = props => {
 
   const handleUsernameSubmit = e => {
     e.preventDefault();
-    if (userId === "") {
-      return alert("enter a name");
+    if (value !== "") {
+      requestUsername({
+        username: value
+      });
     }
-    //! set errorstate on form and use materialui handling for error
-
-    requestUsername({
-      username: userId
-    });
 
     // how to do form validation??? ??
 
@@ -85,35 +99,104 @@ const LoginForm = props => {
     // sendUsername({ user: userId });
   };
 
-  return (
-    <Paper>
-      <form
-        className={classes.root}
-        onSubmit={handleUsernameSubmit}
-        noValidate
-        autoComplete="off"
-      >
-        <TextField
-          label="Username"
-          variant="filled"
-          placeholder="Enter username..."
-          value={userId}
-          onChange={e => setUserId(e.target.value)}
-        />
-        <Button variant="outlined" type="submit">
-          Confirm
-        </Button>
-      </form>
+  //   const DialogContent = withStyles(theme => ({
+  //     root: {
+  //       padding: theme.spacing(2),
+  //     },
+  //   }))(MuiDialogContent);
 
-      <Snackbar
-        open={chatAppState.loginDialog.displayLoginError}
-        autoHideDuration={6000} /*onClose={handleClose} */
-      >
-        {/* <Alert onClose={handleClose} color="error">
+  //   const DialogActions = withStyles(theme => ({
+  //     root: {
+  //       margin: 0,
+  //       padding: theme.spacing(1),
+  //     },
+  //   }))(MuiDialogActions);
+
+  return (
+    <div>
+      <Backdrop className={classes.backdrop} open={true}>
+        <Dialog
+          open={true}
+          onClose={displayLoginDialog}
+          aria-labelledby="form-dialog-title"
+          onSubmit={handleUsernameSubmit}
+        >
+          <DialogTitle id="form-dialog-title">Login</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              To begin messaging, please enter a username that is not currently
+              in use.
+            </DialogContentText>
+
+            <TextField
+              autoFocus
+              fullWidth
+              margin="dense"
+              label="Username"
+              variant="filled"
+              error={displayLoginError}
+              placeholder="Enter username..."
+              helperText={displayLoginError ? "Username taken." : ""}
+              value={value}
+              onChange={e => {
+                setValue(e.target.value);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button variant="outlined" type="submit" color="primary">
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={chatAppState.loginDialog.displayLoginError}
+          autoHideDuration={6000}
+          onClose={handleClose}
+        >
+          {/* <Alert onClose={handleClose} color="error">
           This username is taken!
         </Alert> */}
-      </Snackbar>
-    </Paper>
+        </Snackbar>
+
+        {/* <Paper>
+          <Typography variant="h2">Hello! Welcome to Chatsby!</Typography>
+          <Typography variant="h5">
+            Enter a username to begin chatting.
+          </Typography>
+          <form
+            className={classes.root}
+            onSubmit={handleUsernameSubmit}
+            noValidate
+            autoComplete="off"
+          >
+               <TextField
+              autoFocus
+              fullWidth
+              margin="dense"
+              label="Username"
+              variant="filled"
+              error={displayLoginError}
+              placeholder="Enter username..."
+              helperText={displayLoginError ? "Username taken." : ""}
+              value={value}
+              onChange={e => {
+                setValue(e.target.value);
+              }} />
+          </form>
+          <Snackbar
+            open={chatAppState.loginDialog.displayLoginError}
+            autoHideDuration={6000}
+            onClose={handleClose}
+          >
+            <Alert onClose={handleClose} color="error">
+          This username is taken!
+        </Alert> 
+          </Snackbar>
+        </Paper> */}
+      </Backdrop>
+    </div>
   );
 };
 
