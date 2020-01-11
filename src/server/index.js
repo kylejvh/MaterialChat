@@ -1,7 +1,12 @@
 const express = require("express");
 const app = express();
-const server = require("http").createServer(app); //! PROD
+const server = require("http").Server(app); //! PROD
 const io = require("socket.io")(server);
+
+// const express = require("express");
+// const app = express();
+// const server = require("http").createServer(app);
+// const io = require("socket.io")(server);
 
 // let app = require("express")();
 // let http = require("http").createServer(app); //! DEV
@@ -232,8 +237,8 @@ server.listen(PORT, err => {
   console.log(`Listening on ${PORT}`);
 });
 
-// http.listen(3001, function(err) {
-//   //! DEV
+// http.listen(3001, function(err) {  //! DEV
+
 //   if (err) throw err;
 //   console.log("listening on *:3001");
 // });
