@@ -1,20 +1,13 @@
-// let app = require("express")();
-// let http = require("http").createServer(app);
-// let io = require("socket.io")(http);
+const app = require("express")();
+const server = require("http").createServer(app);
+const io = require("socket.io")(server);
 
 // EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
-
-const express = require("express");
-const socketIO = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
 const INDEX = "../../public/index.html";
 
-const server = express()
-  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
-
-const io = socketIO(server);
+app.use((req, res) => res.sendFile(INDEX, { root: __dirname }));
 
 let serverSideUsers = []; //! Make this immutable when done.
 let chatrooms = []; //! Make this immutable when done.
@@ -230,7 +223,7 @@ io.on("connection", socket => {
   // });
 });
 
-// http.listen(3001, function(err) {
-//   if (err) throw err;
-//   console.log("listening on *:3001");
-// });
+server.listen(PORT, err => {
+  if (err) throw err;
+  console.log(`Listening on ${PORT}`);
+});
