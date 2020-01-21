@@ -1,64 +1,85 @@
 import React from "react";
 import io from "socket.io-client";
 
-// context provider that holds all chats in state
-// what is context? learn about this.
-
-// Look into a better way to handle state,
-// rather than using this higher order component
-
 export const CTX = React.createContext();
 
 const initState = {
   usersInChatroom: [],
   currentUser: {
-    username: "", //! SET FOR DEVELOPMENT
+    username: "", //! ADJUST FOR DEVELOPMENT
     currentChatroom: ""
   },
   chatrooms: {
-    general: []
-  },
-  loginDialog: {
-    //! This is causing problems. Hacky solution! trigger ui transition. State is getting messy.
-    displayLoginDialog: true, //! set false for development
-    displayLoginError: false
+    General: []
   },
   typing: {
     userTyping: "",
     isTyping: false
+  },
+  loginDialog: {
+    isOpen: true,
+    error: false,
+    success: false
+  },
+  addChatroomDialog: {
+    isOpen: false,
+    error: false,
+    success: false
   }
 };
 
 const reducer = (state, action) => {
-  const { from, msg, chatroom } = action.payload;
   switch (action.type) {
-    case "USER_LOGIN_SUCCESS":
+    case "LOGIN_SUCCEEDED":
       return {
         ...state,
-        currentUser: {
-          username: action.payload.username,
-          currentChatroom: ""
+        loginDialog: {
+          isOpen: false,
+          success: true,
+          error: false
         },
-        loginDialog: { displayLoginDialog: false }
+        currentUser: {
+          ...state.currentUser,
+          username: action.payload.username
+        }
       };
 
-    case "USER_LOGIN_FAIL":
+    case "LOGIN_FAILED":
       return {
         ...state,
-        displayLoginError: true
+        loginDialog: {
+          ...state.loginDialog,
+          error: true,
+          success: false
+        }
       };
 
-    case "USER_LOGOUT":
+    // Clears error state when user types again after error.
+    case "LOGIN_ERROR_CLEARED":
+      return {
+        ...state,
+        loginDialog: {
+          ...state.loginDialog,
+          error: false
+        }
+      };
+
+    case "USER_LOGGED_OUT":
       return {
         ...state,
         currentUser: {
           username: "",
           currentChatroom: ""
         },
-        loginDialog: { displayLoginDialog: true }
+        loginDialog: {
+          ...state.loginDialog,
+          isOpen: true,
+          success: false
+        }
       };
 
-    case "CREATE_CHATROOM":
+    // This reflects the action emitted to everyone online, e.g. showing new chatroom in list for everyone.
+    case "NEW_CHATROOM_CREATED":
       return {
         ...state,
         chatrooms: {
@@ -67,7 +88,65 @@ const reducer = (state, action) => {
         }
       };
 
-    case "JOIN_CHATROOM_SUCCESS":
+    // This reflects the action emitted to just the user who created the chatroom, e.g. closing dialog.
+    case "ADD_CHATROOM_SUCCEEDED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          isOpen: false,
+          success: true
+        }
+      };
+
+    case "ADD_CHATROOM_FAILED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          error: true
+        }
+      };
+
+    // Clears error state when user types again after error.
+    case "ADD_CHATROOM_ERROR_CLEARED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          error: false
+        }
+      };
+
+    // Snackbar notification state
+    case "ADD_CHATROOM_SUCCESS_EXPIRED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          success: false
+        }
+      };
+
+    case "ADD_CHATROOM_DIALOG_OPENED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          isOpen: true
+        }
+      };
+
+    case "ADD_CHATROOM_DIALOG_CLOSED":
+      return {
+        ...state,
+        addChatroomDialog: {
+          ...state.addChatroomDialog,
+          isOpen: false
+        }
+      };
+
+    case "JOIN_CHATROOM_SUCCEEDED":
       return {
         ...state,
         currentUser: {
@@ -76,13 +155,13 @@ const reducer = (state, action) => {
         }
       };
 
-    case "RECEIVE_CURRENT_CHATROOM_USERS":
+    case "RECEIVED_CURRENT_CHATROOM_USERS":
       return {
         ...state,
         usersInChatroom: action.payload
       };
 
-    case "USER_TYPING":
+    case "USER_STARTED_TYPING":
       return {
         ...state,
         typing: {
@@ -91,7 +170,7 @@ const reducer = (state, action) => {
         }
       };
 
-    case "USER_STOP_TYPING":
+    case "USER_STOPPED_TYPING":
       return {
         ...state,
         typing: {
@@ -101,12 +180,15 @@ const reducer = (state, action) => {
         }
       };
 
-    case "RECEIVE_MESSAGE":
+    case "RECEIVED_MESSAGE":
       return {
         ...state,
         chatrooms: {
           ...state.chatrooms,
-          [chatroom]: [...state.chatrooms[chatroom], { from, msg }]
+          [action.payload.chatroom]: [
+            ...state.chatrooms[action.payload.chatroom],
+            { from: action.payload.from, msg: action.payload.msg }
+          ]
         }
       };
 
@@ -115,9 +197,9 @@ const reducer = (state, action) => {
   }
 };
 
+// Functions to emit requests to the server.
 const sendChatAction = value => {
   socket.emit("chat message", value);
-  console.log("correct message?", value);
 };
 
 const requestUsername = value => {
@@ -144,91 +226,68 @@ const handleLogout = value => {
   socket.emit("userLogout", value);
 };
 
-// socket.on("notifyTyping", data  =>  {
-// typing.innerText  =  data.user  +  "  "  +  data.message;
-// console.log(data.user  +  data.message);
-// });
-// //stop typing
-// messageInput.addEventListener("keyup", () =>  {
-// socket.emit("stopTyping", "");
-// });
-// socket.on("notifyStopTyping", () =>  {
-// typing.innerText  =  "";
-
-// });
-
 let socket;
 
 const Store = props => {
-  const [chatAppState, dispatch] = React.useReducer(reducer, initState);
+  const [state, dispatch] = React.useReducer(reducer, initState);
 
+  //Socket.io Event Listeners - These were placed here to have a universal store - a place to listen for responses from the server, and send dispatches according the the response.
   if (!socket) {
     socket = io(":3001");
 
     socket.on("userSet", user => {
       dispatch({
-        type: "USER_LOGIN_SUCCESS",
+        type: "LOGIN_SUCCEEDED",
         payload: user
       });
     });
 
-    socket.on("userExists", function(user) {
-      console.log("user already exists bro", user);
-      dispatch({ type: "USER_LOGIN_FAIL", payload: user });
+    socket.on("userExists", () => {
+      dispatch({ type: "LOGIN_FAILED" });
     });
 
-    socket.on("chat message", function(msg) {
-      dispatch({ type: "RECEIVE_MESSAGE", payload: msg });
+    socket.on("chatroomExists", () => {
+      dispatch({ type: "ADD_CHATROOM_FAILED" });
     });
 
-    socket.on("createChatroom", function(chatroom) {
-      dispatch({ type: "CREATE_CHATROOM", payload: chatroom });
+    socket.on("chat message", msg => {
+      dispatch({ type: "RECEIVED_MESSAGE", payload: msg });
     });
 
-    socket.on("currentChatroomUsers", function(users) {
-      dispatch({ type: "RECEIVE_CURRENT_CHATROOM_USERS", payload: users });
+    socket.on("chatroomListUpdate", chatroom => {
+      dispatch({ type: "NEW_CHATROOM_CREATED", payload: chatroom });
+    });
+
+    socket.on("newChatroomCreated", () => {
+      dispatch({ type: "ADD_CHATROOM_SUCCEEDED" });
+    });
+
+    socket.on("currentChatroomUsers", users => {
+      dispatch({ type: "RECEIVED_CURRENT_CHATROOM_USERS", payload: users });
     });
 
     socket.on("joinChatroomSuccess", data => {
-      dispatch({ type: "JOIN_CHATROOM_SUCCESS", payload: data });
+      dispatch({ type: "JOIN_CHATROOM_SUCCEEDED", payload: data });
     });
 
-    socket.on("notifyTyping", function(typingData) {
-      dispatch({ type: "USER_TYPING", payload: typingData });
-      console.log(typingData, "THIS IS TYPING DATA on START");
-      // add payload...
-      //! Clean this up. pass along just user, or message "${user} is typing"??
+    socket.on("notifyTyping", typingData => {
+      dispatch({ type: "USER_STARTED_TYPING", payload: typingData });
     });
 
-    socket.on("notifyStopTyping", function(typingData) {
-      dispatch({ type: "USER_STOP_TYPING", payload: typingData });
-      console.log(typingData, "THIS IS TYPING DATA on STOP");
+    socket.on("notifyStopTyping", typingData => {
+      dispatch({ type: "USER_STOPPED_TYPING", payload: typingData });
     });
 
     socket.on("userLogoutSuccess", user => {
-      dispatch({ type: "USER_LOGOUT", payload: user });
+      dispatch({ type: "USER_LOGGED_OUT", payload: user });
     });
   }
-
-  //! Goal: on userSet, correctly pass state back to dashboard and allow user into app. On userexists, deny user access.
-
-  // Extract to userSelect component when it's working as intended.
-  // const UserSelect = (userName, callback) => {
-  //   const [userId, setUserId] = useLocalStorage("id", "");
-  //   //! Not sure where below code belongs yet.
-  //   useEffect(() => {
-  //     if (userId !== "") {
-  //       socket.emit("join", userId, room);
-  //     }
-  //     return {}
-  //   });
-
-  // we want to have functionality to set the user, assign that user an id?, and then pass it to dashboard.
 
   return (
     <CTX.Provider
       value={{
-        chatAppState,
+        state,
+        dispatch,
         sendChatAction,
         requestUsername,
         requestNewChatroom,

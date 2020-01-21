@@ -1,6 +1,5 @@
-//! consider changing the name of this component
 import React, { useState, useContext } from "react";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import { CTX } from "../Store";
 
 import TextField from "@material-ui/core/TextField";
@@ -13,42 +12,30 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import AddIcon from "@material-ui/icons/Add";
 import Snackbar from "@material-ui/core/Snackbar";
-import Slide from "@material-ui/core/Slide";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   AddChatroomButton: {
-    // "&:hover": ${props =>
-    //   props.hover ? ""
-    //   width: "5rem"
-    //   // size="small",
-    //   // addprops: small, extended, addtext: chatroom
+    margin: "2em 2em",
+
+    "@media (max-width: 600px)": {
+      margin: "1em .25em"
+    }
   }
-}));
+});
 
 const AddChatroomDialog = () => {
-  const { requestNewChatroom } = useContext(CTX);
-  const [newChatroom, setNewChatroom] = useState(""); //! Do I need this? can I just pass off e.target.value?
-
-  const [open, setOpen] = useState({
-    snackbar: false,
-    chatroomDialog: false
-  });
-
+  const { requestNewChatroom, state, dispatch } = useContext(CTX);
+  const { isOpen, error, success } = state.addChatroomDialog;
+  const [newChatroom, setNewChatroom] = useState("");
   const classes = useStyles();
 
   const submitChatroomRequest = e => {
     e.preventDefault();
     if (newChatroom === "") {
-      return alert("enter a chatroom name");
+      return;
     }
     requestNewChatroom({
-      //! can I just pass off e.target.value?
       chatroomName: newChatroom
-    });
-    //! handle alerting here
-
-    setOpen({
-      snackbar: true
     });
     setNewChatroom("");
   };
@@ -57,58 +44,65 @@ const AddChatroomDialog = () => {
     <>
       <Fab
         className={classes.AddChatroomButton}
+        variant="extended"
         color="primary"
-        label="hello"
-        onClick={() => setOpen({ chatroomDialog: true })}
+        size="small"
+        onClick={() => dispatch({ type: "ADD_CHATROOM_DIALOG_OPENED" })}
         aria-label="add"
       >
         <AddIcon />
+        Chatroom
       </Fab>
+
       <Dialog
-        open={open.chatroomDialog}
-        onClose={() => setOpen({ chatroomDialog: false })}
+        open={isOpen}
+        onClose={() => dispatch({ type: "ADD_CHATROOM_DIALOG_CLOSED" })}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Create Chatroom</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Enter the name of the chatroom you wish to create. Chatroom names
-            must be unique.
-          </DialogContentText>
-
-          <TextField
-            autoComplete="off"
-            id="name"
-            label="Chatroom Name"
-            variant="outlined"
-            value={newChatroom}
-            autoFocus
-            margin="dense"
-            fullWidth
-            onChange={e => setNewChatroom(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setOpen({ chatroomDialog: false })}
-            color="primary"
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={submitChatroomRequest}
-            color="primary"
-            variant="outlined"
-            type="submit"
-          >
-            Confirm
-          </Button>
-        </DialogActions>
+        <form onSubmit={submitChatroomRequest}>
+          <DialogContent>
+            <DialogContentText>
+              Enter the name of the chatroom you wish to create. Chatroom names
+              must be unique.
+            </DialogContentText>
+            <TextField
+              autoComplete="off"
+              id="name"
+              label="Chatroom Name"
+              variant="outlined"
+              value={newChatroom}
+              autoFocus
+              error={error}
+              helperText={error ? "Chatroom name is taken." : ""}
+              margin="dense"
+              fullWidth
+              onChange={e => {
+                if (error) {
+                  dispatch({ type: "ADD_CHATROOM_ERROR_CLEARED" });
+                }
+                setNewChatroom(e.target.value);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => dispatch({ type: "ADD_CHATROOM_DIALOG_CLOSED" })}
+              color="primary"
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button color="primary" variant="outlined" type="submit">
+              Confirm
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
       <Snackbar
-        open={open.snackbar}
-        onClose={() => setOpen({ snackbar: false })}
+        open={success}
+        autoHideDuration={6000}
+        onClose={() => dispatch({ type: "ADD_CHATROOM_SUCCESS_EXPIRED" })}
         message="Chatroom Created!"
       />
     </>

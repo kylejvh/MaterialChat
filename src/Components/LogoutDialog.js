@@ -1,33 +1,16 @@
 import React, { useContext } from "react";
 import { CTX } from "../Store";
 
-import { makeStyles, useTheme } from "@material-ui/core/styles";
-
 import Button from "@material-ui/core/Button";
-import Snackbar from "@material-ui/core/Snackbar";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: "flex"
-  }
-}));
-
-// function Alert(props) {
-//   return <MuiAlert elevation={6} variant="filled" {...props} />;
-// }
-
 const LogoutDialog = () => {
-  const classes = useStyles();
-  const theme = useTheme();
-
-  const { chatAppState, handleLogout } = useContext(CTX);
-
-  const { username, currentChatroom } = chatAppState.currentUser;
+  const { state, handleLogout } = useContext(CTX);
+  const { username, currentChatroom } = state.currentUser;
 
   const [open, setOpen] = React.useState(false);
 
@@ -45,7 +28,7 @@ const LogoutDialog = () => {
 
   return (
     <>
-      <Button variant="outlined" onClick={handleClickOpen}>
+      <Button variant="outlined" color="inherit" onClick={handleClickOpen}>
         Logout
       </Button>
       <Dialog

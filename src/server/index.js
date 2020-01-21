@@ -3,66 +3,92 @@ const app = express();
 const server = require("http").Server(app); //! PROD
 const io = require("socket.io")(server);
 
-// const express = require("express");
-// const app = express();
-// const server = require("http").createServer(app);
-// const io = require("socket.io")(server);
-
 // let app = require("express")();
 // let http = require("http").createServer(app); //! DEV
 // let io = require("socket.io")(http);
 
-// EXAMPLE OBJ              serverSideUsers: [{ username: '', clientId: '', currentChatroom: ''  }]
-
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname + "/../../build"));
+app.use(express.static(__dirname + "/../../build")); //! Production build
 
-let serverSideUsers = []; //! Make this immutable when done.
-let chatrooms = []; //! Make this immutable when done.
+let serverSideUsers = [];
+let chatrooms = ["General"];
 
 io.on("connection", socket => {
   console.log(socket.id, "all connections");
 
+  //! How should I handle disconnects?
+
+  // If I remove the user's record from server,
+  // someone else can log in and assume their identity...
+
+  // socket.on("disconnect", reason => {
+  //   // On disconnect, remove user's record
+  //   console.log(serverSideUsers.find(item => item.clientId === socket.id));
+  //   console.log(reason);
+  //   // if (reason === )
+
+  //   // if (reason === 'io server disconnect') {
+  //   //   // the disconnection was initiated by the server, you need to reconnect manually
+  //   //   socket.connect();
+  //   // }
+
+  //   // else the socket will automatically try to reconnect
+
+  //   console.log(socket.id, "this socket disconnected");
+  // });
+
+  // socket.on("disconnect", reason => {
+  //   // if (reason === 'io server disconnect') {
+  //   //   // the disconnection was initiated by the server, you need to reconnect manually
+  //   //   socket.connect();
+  //   // }
+
+  //   // else the socket will automatically try to reconnect
+  //   if (reason === "io client disconnect") {
+  //     console.log(socket.id, "this socket disconnected");
+  //   }
+  //   if (reason === "io server disconnect") {
+  //     // the disconnection was initiated by the server, you need to reconnect manually
+  //     console.log(socket.id, "server disconnect...");
+  //   }
+  // });
+
   socket.on("requestUsername", user => {
     console.log(`New user: "${user.username}" is trying to connect.`);
 
-    serverSideUsers.length > 0
-      ? serverSideUsers.map(item => {
-          if (item.username === user.username) {
-            console.log(`Username "${user.username}" is currently in use.`);
-            return io.emit("userExists", user);
-          } else {
-            serverSideUsers = [
-              ...serverSideUsers,
-              {
-                username: user.username,
-                clientId: socket.id,
-                currentChatroom: ""
-              }
-            ];
-            console.log(serverSideUsers, "current ss object");
-            console.log(`User ${JSON.stringify(user.username)} has logged in`);
-            return io.emit("userSet", user);
-          }
-        })
-      : console.log(`First User "${user.username}" has logged in.`);
-    io.emit("userSet", user);
+    if (serverSideUsers.length === 0) {
+      serverSideUsers = [
+        ...serverSideUsers,
+        {
+          username: user.username,
+          clientId: socket.id,
+          currentChatroom: ""
+        }
+      ];
+      console.log(`First User "${user.username}" has logged in.`);
+      socket.emit("userSet", user);
+    } else if (serverSideUsers.length > 0) {
+      if (
+        serverSideUsers.find(
+          item => item.username.toLowerCase() === user.username.toLowerCase()
+        )
+      ) {
+        console.log("Username is taken.");
+        return socket.emit("userExists");
+      }
+      serverSideUsers = [
+        ...serverSideUsers,
+        {
+          username: user.username,
+          clientId: socket.id,
+          currentChatroom: ""
+        }
+      ];
+      console.log(`User "${user.username}" is not taken, logged in.`);
+      return socket.emit("userSet", user);
+    }
   });
-  // put this in if
-
-  // if (serverSideUsers.hasOwnProperty(user.username)) {
-  //   user.isActive = false;
-  //   io.emit("userExists", user);
-  //   return console.log("name taken!");
-  // } else {
-  //   user.isActive = true; // probably need to store isactive on backend too.
-  //   console.log(`User ${JSON.stringify(user.username)} has logged in`);
-  //   usernames.push(user.username.toUpperCase());
-  //   io.emit("userSet", user);
-  // }
-
-  // make an object that contains all client ids and usernames
 
   socket.on("userLogout", data => {
     // You need to handle  removing the socket from the rooms it's in,
@@ -72,37 +98,39 @@ io.on("connection", socket => {
 
     if (data.currentChatroom !== "") {
       let previousChatroomUsers = [];
-      socket.leave(data.currentChatroom); //! check for error if chatroom is empty....
+      socket.leave(data.currentChatroom);
+
+      serverSideUsers = serverSideUsers.filter(
+        // Remove record of user from server...
+        item => item.username !== data.username
+      );
+      console.log("you shouldnt be recorded anymore", serverSideUsers);
 
       previousChatroomUsers = serverSideUsers
         .filter(item => item.currentChatroom === data.currentChatroom)
         .map(item => item.username);
-
+      console.log("people in chatroom you left", previousChatroomUsers);
       io.to(data.currentChatroom).emit(
         "currentChatroomUsers",
         previousChatroomUsers
       );
+      socket.emit("userLogoutSuccess", data);
+    } else {
+      console.log("should only trigger if not in room...");
+      serverSideUsers = serverSideUsers.filter(
+        item => item.username !== data.username
+      );
+      socket.emit("userLogoutSuccess", data);
     }
-
-    serverSideUsers = serverSideUsers.filter(
-      item => item.username !== data.username
-    );
-
     console.log(`User "${data.username}" has logged out.`);
-
-    io.emit("userLogoutSuccess", data);
   });
 
-  // io.of('/').in('general').clients((error, clients) => {
-  //   if (error) throw error;
-  //   console.log(clients);
-
-  //! to private message someone
-  io.on("connection", function(socket) {
-    socket.on("say to someone", function(id, msg) {
-      socket.broadcast.to(id).emit("my message", msg);
-    });
-  });
+  //? to private message someone, for future development...
+  // io.on("connection", function(socket) {
+  //   socket.on("say to someone", function(id, msg) {
+  //     socket.broadcast.to(id).emit("my message", msg);
+  //   });
+  // });
 
   // Do conditional check to see if user is unique.
 
@@ -110,25 +138,33 @@ io.on("connection", socket => {
   // this would be some type of list comparison.
   // and would require io.emit
 
-  socket.on("requestNewChatroom", function(chatroom) {
+  socket.on("requestNewChatroom", data => {
     console.log("new chatroom requested!");
-    if (chatrooms.includes(chatroom.chatroomName)) {
-      io.emit("chatroomExists", chatroom);
-      return console.log("chatroom name exists!");
+    if (
+      chatrooms.find(
+        item => item.toLowerCase() === data.chatroomName.toLowerCase()
+      )
+    ) {
+      console.log("Chatroom already exists.");
+      return socket.emit("chatroomExists");
     } else {
-      console.log(`Chatroom ${JSON.stringify(chatroom.chatroomName)} created!`);
-      chatrooms.push(chatroom.chatroomName.toUpperCase());
+      console.log(`Chatroom ${JSON.stringify(data.chatroomName)} created!`);
+      chatrooms = [...chatrooms, data.chatroomName];
 
-      io.emit("createChatroom", chatroom);
+      // This updates all connected clients with the new chatroom.
+      io.emit("chatroomListUpdate", data);
+
+      // This will update the State of user who created the chatroom.
+      return socket.emit("newChatroomCreated");
     }
   });
 
-  socket.on("chat message", function(msg) {
+  socket.on("chat message", msg => {
     console.log("message: " + JSON.stringify(msg));
     io.emit("chat message", msg);
   });
 
-  socket.on("typing", function(typingData) {
+  socket.on("typing", typingData => {
     socket.broadcast.emit("notifyTyping", typingData);
   });
 
@@ -145,15 +181,17 @@ io.on("connection", socket => {
 
   socket.on("joinChatroom", data => {
     //! Full Logic
+    console.log(serverSideUsers);
+
     serverSideUsers.map(item => {
       let newChatroomUsers = [];
       let previousChatroomUsers = [];
       // Handle a chatroom change
-      if (item.username === data.username) {
+      if (item.username.toLowerCase() === data.username.toLowerCase()) {
         if (item.currentChatroom !== "") {
           // If user is switching chatrooms...
           const previousChatroom = item.currentChatroom; // Store previous chatroom
-
+          console.log("youre leaving a room");
           socket.leave(previousChatroom); // Leave previous chatroom on server
 
           item.currentChatroom = data.chatroom; // Update serverside list - Set user's chatroom to the requested chatroom
@@ -186,10 +224,10 @@ io.on("connection", socket => {
 
           io.to(data.chatroom).emit("currentChatroomUsers", newChatroomUsers); // Send cients in new chatroom a list of chatroom users...
 
-          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+          socket.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
         } else {
           // handle joining initial chatroom
-
+          console.log(`First chatroom, joining ${data.chatroom}`);
           item.currentChatroom = data.chatroom; // Update serverside list - Set user's chatroom to the requested chatroom
 
           socket.join(data.chatroom); // Join new chatroom on server
@@ -204,41 +242,21 @@ io.on("connection", socket => {
             newChatroomUsers
           );
 
-          io.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
+          socket.emit("joinChatroomSuccess", data); // Tell client's frontend to update to move to new chatroom
         }
       }
     });
   });
-
-  // socket
-  //   .of("/")
-  //   .in("general")
-  //   .clients((err, clients) => {
-  //     console.log(clients, "test2"); // an array of socket ids
-  //
-  //     // io.to(room?).emit('Someone joined');
-  //   });
-
-  //! show users in current room
-
-  // socket.on("connection", client => {
-  //   socket
-  //     .of("/")
-  //     .in("general")
-  //     .clients((err, clients) => {
-  //       console.log(clients); // an array of socket ids
-  //       io.emit("usersInChatroom", clients);
-  //     });
-  // });
 });
 
+//! Production
 server.listen(PORT, err => {
   if (err) throw err;
   console.log(`Listening on ${PORT}`);
 });
 
-// http.listen(3001, function(err) {  //! DEV
-
+// //! DEV
+// http.listen(3001, function(err) {
 //   if (err) throw err;
 //   console.log("listening on *:3001");
 // });

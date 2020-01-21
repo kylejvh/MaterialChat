@@ -1,48 +1,40 @@
-//! follow the tut, then read Material UI docs and learn
-//! how to use it, and how you want it to look, and refactor!
-
-// set specific person to use a randomized color, or make a color picker for each person?
-
 import React, { useState, useContext } from "react";
 import { CTX } from "./Store";
+
+import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { useMediaQuery } from "react-responsive";
+
+import ChatWindow from "./Components/ChatWindow";
+import LoginDialog from "./Components/LoginDialog";
+import AddChatroomDialog from "./Components/AddChatroomDialog";
+import LogoutDialog from "./Components/LogoutDialog";
 
 import Typography from "@material-ui/core/Typography";
-
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-
+import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemText from "@material-ui/core/ListItemText";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch from "@material-ui/core/Switch";
-// import AddIcon from "@material-ui/icons/Add";
-
-// persistent drawer
-import clsx from "clsx";
-
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-
-//! Start of refactor imports
-import ChatWindow from "./Components/ChatWindow";
-import LoginForm from "./Components/LoginForm";
-import AddChatroomDialog from "./Components/AddChatroomDialog";
-import LogoutDialog from "./Components/LogoutDialog";
+import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
+import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
 
 const drawerWidth = 240;
+const mobileDrawerWidth = 120;
 
 const useStyles = makeStyles(theme => ({
   root: {
     display: "flex"
   },
+
   appBar: {
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
@@ -55,7 +47,16 @@ const useStyles = makeStyles(theme => ({
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen
-    })
+    }),
+
+    "@media (max-width: 600px)": {
+      width: `calc(100% - ${mobileDrawerWidth}px)`,
+      marginLeft: mobileDrawerWidth,
+      transition: theme.transitions.create(["margin", "width"], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen
+      })
+    }
   },
   appBarButtons: {
     justifyContent: "flex-end"
@@ -68,10 +69,18 @@ const useStyles = makeStyles(theme => ({
   },
   drawer: {
     width: drawerWidth,
-    flexShrink: 0
+    flexShrink: 0,
+
+    "@media (max-width: 600px)": {
+      width: mobileDrawerWidth
+    }
   },
   drawerPaper: {
-    width: drawerWidth
+    width: drawerWidth,
+
+    "@media (max-width: 600px)": {
+      width: mobileDrawerWidth
+    }
   },
   drawerHeader: {
     display: "flex",
@@ -87,7 +96,11 @@ const useStyles = makeStyles(theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
     }),
-    marginLeft: -drawerWidth
+    marginLeft: -drawerWidth,
+
+    "@media (max-width: 600px)": {
+      marginLeft: -mobileDrawerWidth
+    }
   },
   contentShift: {
     transition: theme.transitions.create("margin", {
@@ -95,26 +108,28 @@ const useStyles = makeStyles(theme => ({
       duration: theme.transitions.duration.enteringScreen
     }),
     marginLeft: 0
-  }, //! Start my styles
+  },
   navTitle: {
     flexGrow: 1
-  } //! styles for onlinecard
+  },
+  addChatroomButton: {
+    display: "flex",
+    alignItems: "flex-end",
+    flex: "1"
+  }
 }));
 
 const Dashboard = props => {
   const classes = useStyles();
   const theme = useTheme();
+  const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
 
   // CTX store
-  const {
-    chatAppState,
-    handleTyping,
-    requestJoinChatroom //! Make a toggles object??
-  } = useContext(CTX);
+  const { state, requestJoinChatroom } = useContext(CTX);
 
-  const { username, currentChatroom } = chatAppState.currentUser;
+  const { username, currentChatroom } = state.currentUser;
 
-  const chatrooms = Object.keys(chatAppState.chatrooms);
+  const chatrooms = Object.keys(state.chatrooms);
 
   const [chatMessage, setChatMessage] = useState("");
 
@@ -138,11 +153,11 @@ const Dashboard = props => {
     setOpen(false);
   };
 
-  //! Convert to uselocalstorage once regular hook works...
-  // const [userId, setUserId] = useLocalStorage("id", "")
-  //       //! set errorstate on form and use materialui handling for error
-
-  return !chatAppState.loginDialog.displayLoginDialog ? ( //! !!! HACKY TEMP SOLUTION !!!!!!
+  return state.loginDialog.isOpen ? (
+    <>
+      <LoginDialog />
+    </>
+  ) : (
     <div className={classes.root}>
       <CssBaseline />
       <AppBar
@@ -163,22 +178,28 @@ const Dashboard = props => {
           </IconButton>
 
           <Typography className={classes.navTitle} variant="h6" noWrap>
-            {currentChatroom
+            {isMobile
+              ? currentChatroom
+                ? currentChatroom
+                : "Welcome!"
+              : currentChatroom
               ? `Current Chatroom: ${currentChatroom}`
               : "Welcome!"}
           </Typography>
 
           <div className={classes.appBarButtons}>
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={props.currentTheme}
-                  onChange={props.toggleTheme}
-                />
+            <IconButton
+              aria-label="delete"
+              onClick={props.changeTheme}
+              color="inherit"
+              children={
+                props.isDarkTheme ? (
+                  <Brightness4OutlinedIcon />
+                ) : (
+                  <BrightnessLowOutlinedIcon />
+                )
               }
-              label="Theme"
-            />
+            ></IconButton>
             <LogoutDialog></LogoutDialog>
           </div>
         </Toolbar>
@@ -201,21 +222,27 @@ const Dashboard = props => {
             )}
           </IconButton>
         </div>
-        <Divider />
-        <List>
-          {chatrooms.map(chatroom => (
-            <ListItem
-              onClick={() => handleChatroomChange(chatroom)}
-              key={chatroom}
-              button
-            >
-              <ListItemText primary={chatroom} />
-            </ListItem>
+
+        <List
+          subheader={
+            <ListSubheader component="div" id="nested-list-subheader">
+              Available Chatrooms:
+            </ListSubheader>
+          }
+        >
+          <Divider />
+          {chatrooms.map((chatroom, i) => (
+            <div key={i}>
+              <ListItem onClick={() => handleChatroomChange(chatroom)} button>
+                <ListItemText primary={chatroom} />
+              </ListItem>
+              <Divider />
+            </div>
           ))}
         </List>
-
-        <Divider />
-        <AddChatroomDialog></AddChatroomDialog>
+        <div className={classes.addChatroomButton}>
+          <AddChatroomDialog />
+        </div>
       </Drawer>
       <main
         className={clsx(classes.content, {
@@ -223,15 +250,12 @@ const Dashboard = props => {
         })}
       >
         <div className={classes.drawerHeader} />
-
         <ChatWindow
           chatMessage={chatMessage}
           setChatMessage={setChatMessage}
         ></ChatWindow>
       </main>
     </div>
-  ) : (
-    <LoginForm></LoginForm>
   );
 };
 

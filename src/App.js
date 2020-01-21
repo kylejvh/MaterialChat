@@ -6,45 +6,38 @@ import Store from "./Store";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { createMuiTheme } from "@material-ui/core/styles";
 
-// Your goal should be to eventually replace the socket.io implementation and use a backend like Nodejs to do something interesting with this project...
-
 const lightTheme = createMuiTheme({
   palette: {
-    type: "light"
+    type: "light",
+    primary: {
+      main: "#b43bba"
+    }
   }
-  // {
-  //   palette: {
-  //     primary: {
-  //       main: '#00e676',
-  //     },
-  //     secondary: {
-  //       main: '#b9f6ca',
-  //     },
-  //   },
-  // }
 });
 
 const darkTheme = createMuiTheme({
   palette: {
+    primary: {
+      main: "#27bf7f"
+    },
+    secondary: {
+      main: "#249da5"
+    },
     type: "dark"
   }
 });
 
 const App = () => {
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
 
   const toggleTheme = () => {
-    if (isDarkTheme) {
-      setIsDarkTheme(false);
-    } else {
-      setIsDarkTheme(true);
-    }
+    setIsDarkTheme(!isDarkTheme);
   };
 
   return (
     <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
       <Store>
-        <Dashboard currentTheme={isDarkTheme} toggleTheme={toggleTheme} />
+        <Dashboard isDarkTheme={isDarkTheme} changeTheme={toggleTheme} />
       </Store>
     </ThemeProvider>
   );
