@@ -1,10 +1,10 @@
-# React Chat App
+# MaterialChat
 
-## 
+## **<a href="https://kjvh-materialchat.herokuapp.com/" target="_blank">Demo</a>**
 
-> A real-time, multi-user chat application built using React, Material-UI and Socket.io + Node.js
+> A real-time, multi-user chat application built using React, Material-UI and Socket.io + Node.js 
 
-
+![Recordit GIF](http://g.recordit.co/ziudxn6SPn.gif)
 
 ---
 
