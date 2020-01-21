@@ -10,7 +10,7 @@
 
 ## Features
  
-- Real-time messaging: many users can chat together via instant messaging.
+- Real-time messaging: many users can chat together simultaneously via instant messaging.
 
 - Unique usernames: Pick your username and it's unique to you for the duration of your session.
 
