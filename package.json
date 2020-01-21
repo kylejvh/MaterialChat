@@ -21,7 +21,7 @@
     "node": "13.6.0"
   },
   "scripts": {
-    "start": "concurrently 'npm run react' 'np run sever'",
+    "start": "node src/server/index.js",
     "react": "node src/server/index.js",
     "server": "nodemon src/server/index.js",
     "dev": "react-scripts start",
@@ -45,7 +45,6 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^5.0.2",
     "nodemon": "^2.0.2"
   }
 }
