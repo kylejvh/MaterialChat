@@ -14,7 +14,7 @@
 
 - Unique usernames: Pick your username and it's unique to you for the duration of your session.
 
-- Chatrooms: Create and join your own chatrooms
+- Chatrooms: Create, join, and leave chatrooms as you wish. The server will keep a list of the users in each chatroom and update chatroom users in realtime.
 
 ---
 
