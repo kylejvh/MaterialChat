@@ -5,9 +5,9 @@ const io = require("socket.io")(server);
 
 const PORT = process.env.PORT || 3000;
 
-// app.use(express.static(__dirname + "/../../build")); //! Production build
+app.use(express.static(__dirname + "/../../build")); //! Production build
 
-// app.get("/", (req, res, next) => res.sendFile(__dirname + "./index.html")); //! Production build
+app.get("/", (req, res, next) => res.sendFile(__dirname + "./index.html")); //! Production build
 
 let serverSideUsers = [];
 let chatrooms = ["General"];
