@@ -19,7 +19,8 @@
     "node": "13.6.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node src/server/index.js",
+    "dev": "react-scripts start",
     "react": "node src/server/index.js",
     "server": "nodemon src/server/index.js",
     "build": "react-scripts build",

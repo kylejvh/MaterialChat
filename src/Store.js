@@ -235,6 +235,8 @@ const Store = props => {
   if (!socket) {
     socket = io(); //! Prodution = Empty, DEV = 3000/3001
 
+    //! write feature for handling reconnections here.
+
     socket.on("userSet", user => {
       dispatch({
         type: "LOGIN_SUCCEEDED",
