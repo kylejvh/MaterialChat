@@ -1,15 +1,13 @@
 const express = require("express");
 const app = express();
-const server = require("http").Server(app); //! PROD
+const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-
-// let app = require("express")();
-// let http = require("http").createServer(app); //! DEV
-// let io = require("socket.io")(http);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname + "/../../build")); //! Production build
+// app.use(express.static(__dirname + "/../../build")); //! Production build
+
+// app.get("/", (req, res, next) => res.sendFile(__dirname + "./index.html")); //! Production build
 
 let serverSideUsers = [];
 let chatrooms = ["General"];
@@ -249,14 +247,7 @@ io.on("connection", socket => {
   });
 });
 
-//! Production
 server.listen(PORT, err => {
   if (err) throw err;
   console.log(`Listening on ${PORT}`);
 });
-
-// //! DEV
-// http.listen(3001, function(err) {
-//   if (err) throw err;
-//   console.log("listening on *:3001");
-// });

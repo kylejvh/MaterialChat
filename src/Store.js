@@ -233,7 +233,7 @@ const Store = props => {
 
   //Socket.io Event Listeners - These were placed here to have a universal store - a place to listen for responses from the server, and send dispatches according the the response.
   if (!socket) {
-    socket = io(":3001");
+    socket = io();
 
     socket.on("userSet", user => {
       dispatch({

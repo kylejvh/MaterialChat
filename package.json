@@ -10,21 +10,18 @@
     "@testing-library/user-event": "^7.2.1",
     "express": "^4.17.1",
     "react": "^16.12.0",
-    "react-chatview": "^0.2.5",
     "react-dom": "^16.12.0",
     "react-responsive": "^8.0.1",
     "react-scripts": "3.3.0",
-    "react-use-localstorage": "^3.4.1",
     "socket.io": "^2.3.0"
   },
   "engines": {
     "node": "13.6.0"
   },
   "scripts": {
-    "start": "node src/server/index.js",
+    "start": "react-scripts start",
     "react": "node src/server/index.js",
     "server": "nodemon src/server/index.js",
-    "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
