@@ -23,9 +23,9 @@ if (process.env.NODE_ENV === "production") {
   // Set static folder
   app.use(express.static("client/build"));
 
-  // app.get("*", (req, res) => {
-  //   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
-  // });
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
 }
 
 // var whitelist = [
@@ -72,7 +72,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 //TODO: You may need to change this for a chat application...
-// Limit a connection to 100 requests per hour
+// Limit a connection to 1000 requests per hour
 const limiter = rateLimit({
   max: 1000,
   windowMs: 60 * 60 * 1000,
@@ -107,7 +107,6 @@ app.use((req, res, next) => {
 });
 
 //* 2. MOUNTING ROUTERS
-// app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
