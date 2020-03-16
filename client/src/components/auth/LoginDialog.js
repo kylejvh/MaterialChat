@@ -72,7 +72,6 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
         id="login-form"
         onSubmit={e => {
           onSubmit(e);
-          console.log(isAuthenticated, "auth status");
         }}
       >
         <DialogContent>

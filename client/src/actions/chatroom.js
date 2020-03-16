@@ -9,6 +9,9 @@ import {
 } from "./types";
 import { notify } from "./notify";
 
+const localhost = "http://localhost:3100";
+let url;
+
 export const subscribeChatrooms = () => {
   return {
     event: "SOCKET_ADDED_CHATROOM",
@@ -26,8 +29,13 @@ const emitChatroom = chatroom => {
 
 // Get all chatrooms
 export const getChatrooms = () => async dispatch => {
+  url =
+    process.env.NODE_ENV === "production"
+      ? "/api/v1/chatrooms"
+      : `${localhost}/api/v1/chatrooms`;
+
   try {
-    const res = await axios.get("http://localhost:3100/api/v1/chatrooms", {
+    const res = await axios.get(url, {
       withCredentials: true
     });
 
@@ -45,10 +53,15 @@ export const getChatrooms = () => async dispatch => {
 
 // TODO: Implement sending/adding addition details to chatrooms EX: images or descriptions
 export const createChatroom = chatroom => async dispatch => {
+  url =
+    process.env.NODE_ENV === "production"
+      ? "/api/v1/chatrooms"
+      : `${localhost}/api/v1/chatrooms`;
+
   try {
     const res = await axios({
       method: "POST",
-      url: "http://localhost:3100/api/v1/chatrooms",
+      url,
       withCredentials: true,
       data: {
         name: chatroom
@@ -75,14 +88,15 @@ export const createChatroom = chatroom => async dispatch => {
 
 // Fetches Chatroom info and messages
 export const joinChatroom = chatroom => async dispatch => {
-  console.log(chatroom, "passed chatroom info");
+  url =
+    process.env.NODE_ENV === "production"
+      ? `/api/v1/chatrooms/${chatroom.id}`
+      : `${localhost}/api/v1/chatrooms/${chatroom.id}`;
+
   try {
-    const res = await axios.get(
-      `http://localhost:3100/api/v1/chatrooms/${chatroom.id}`,
-      {
-        withCredentials: true
-      }
-    );
+    const res = await axios.get(url, {
+      withCredentials: true
+    });
 
     dispatch({
       type: USER_JOINED_CHATROOM,

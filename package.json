@@ -1,33 +1,4 @@
 {
-<<<<<<< Updated upstream
-  "name": "reactsocketioapp",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@material-ui/core": "^4.8.2",
-    "@material-ui/icons": "^4.5.1",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.4.0",
-    "@testing-library/user-event": "^7.2.1",
-    "express": "^4.17.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-scripts": "3.3.0",
-    "react-use-localstorage": "^3.4.1",
-    "socket.io": "^2.3.0"
-  },
-  "engines": {
-    "node": "13.6.0"
-  },
-  "scripts": {
-    "start": "concurrently 'npm run react' 'np run sever'",
-    "react": "node src/server/index.js",
-    "server": "nodemon src/server/index.js",
-    "dev": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-=======
   "name": "materialchat-server",
   "version": "1.0.0",
   "description": "Backend for materialchat",
@@ -36,12 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server",
     "start:prod": "SET NODE_ENV=production && nodemon server"
->>>>>>> Stashed changes
   },
   "author": "Kyle JVH",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
@@ -61,11 +32,7 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-<<<<<<< Updated upstream
-    "concurrently": "^5.0.2",
-=======
     "concurrently": "^5.1.0",
->>>>>>> Stashed changes
     "nodemon": "^2.0.2"
   }
 }

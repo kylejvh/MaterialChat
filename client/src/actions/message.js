@@ -9,6 +9,9 @@ import {
 } from "./types";
 import { notify } from "./notify";
 
+const localhost = "http://localhost:3100";
+let url;
+
 export const subscribeMessages = () => {
   return {
     event: "CHAT_MESSAGE_RECEIVED",
@@ -25,11 +28,13 @@ export const emitMessage = msg => {
 };
 
 export const getMessages = id => async dispatch => {
-  try {
-    const res = await axios.get(
-      `http://localhost:3100/api/v1/chatrooms/${id}/messages`
-    );
+  url =
+    process.env.NODE_ENV === "production"
+      ? `/api/v1/chatrooms/${id}/messages`
+      : `${localhost}/api/v1/chatrooms/${id}/messages`;
 
+  try {
+    const res = await axios.get(url);
     dispatch({
       type: GET_MESSAGES,
       payload: res.data
@@ -44,10 +49,15 @@ export const getMessages = id => async dispatch => {
 
 export const sendMessage = data => async (dispatch, getState) => {
   const chatroomID = getState().chatrooms.currentChatroom.id;
+  url =
+    process.env.NODE_ENV === "production"
+      ? `/api/v1/chatrooms/${chatroomID}/messages`
+      : `${localhost}/api/v1/chatrooms/${chatroomID}/messages`;
+
   try {
     const res = await axios({
       method: "POST",
-      url: `http://localhost:3100/api/v1/chatrooms/${chatroomID}/messages`,
+      url,
       withCredentials: true,
       data: {
         message: data.message

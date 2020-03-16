@@ -13,7 +13,6 @@ export const notify = (type, message, timeout = 5000) => async dispatch => {
 
 //* Typing events must be based on socket rooms - must be implemeted first.
 export const subscribeTyping = () => {
-  console.log("TYPING STARTED!!!");
   return {
     event: "TYPING",
     handle: USER_TYPING
@@ -21,7 +20,6 @@ export const subscribeTyping = () => {
 };
 
 export const emitTyping = data => {
-  console.log("EMIT TYPING FIRED, ISTYPING:", data.typing);
   return {
     event: "TYPING",
     emit: true,

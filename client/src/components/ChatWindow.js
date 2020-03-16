@@ -339,7 +339,6 @@ const ChatWindow = ({
                 </div>
               ))} */}
             </List>
-            {console.log("read msg state", messages)}
           </ExpansionPanelDetails>
         </ExpansionPanel>
       )}

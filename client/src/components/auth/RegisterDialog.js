@@ -51,7 +51,7 @@ const RegisterDialog = ({ register, isAuthenticated }) => {
     e.preventDefault();
 
     register(formValue);
-    console.log("from onsubmit", formValue);
+
     // if (value !== "") {
     // }
   };

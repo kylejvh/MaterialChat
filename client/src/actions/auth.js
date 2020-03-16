@@ -7,9 +7,17 @@ import {
 } from "./types";
 import { notify } from "./notify";
 
+const localhost = "http://localhost:3100";
+let url;
+
 export const getUser = () => async dispatch => {
+  url =
+    process.env.NODE_ENV === "production"
+      ? "/api/v1/users/logout"
+      : `${localhost}/api/v1/users/logout`;
+
   try {
-    const res = await axios.get("http://localhost:3100/api/v1/users/me", {
+    const res = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${localStorage.token}`
       }
@@ -31,10 +39,15 @@ export const getUser = () => async dispatch => {
 };
 
 export const login = (email, password) => async dispatch => {
+  url =
+    process.env.NODE_ENV === "production"
+      ? "/api/v1/users/login"
+      : `${localhost}/api/v1/users/login`;
+
   try {
     const res = await axios({
       method: "POST",
-      url: "http://localhost:3100/api/v1/users/login",
+      url,
       withCredentials: true,
       data: {
         email,
@@ -59,7 +72,12 @@ export const login = (email, password) => async dispatch => {
 
 export const logout = () => async dispatch => {
   try {
-    const res = await axios.get("http://localhost:3100/api/v1/users/logout");
+    url =
+      process.env.NODE_ENV === "production"
+        ? "/api/v1/users/logout"
+        : `${localhost}/api/v1/users/logout`;
+
+    const res = await axios.get(url);
     if ((res.data.status = "success")) {
       dispatch({ type: LOGOUT_SUCCEEDED });
       dispatch(notify("success", "Logged out successfully"));
@@ -83,11 +101,15 @@ export const register = ({
   passwordConfirm
 }) => async dispatch => {
   const body = { username, email, password, passwordConfirm };
+  url =
+    process.env.NODE_ENV === "production"
+      ? "/api/v1/users/signup"
+      : `${localhost}/api/v1/users/signup`;
 
   try {
     const res = await axios({
       method: "POST",
-      url: "http://localhost:3100/api/v1/users/signup",
+      url,
       data: body
     });
 
@@ -110,11 +132,17 @@ export const register = ({
 
 // type is either 'password' or 'data'
 export const updateSettings = (data, type) => async dispatch => {
+  const endpoint = type === "password" ? "updateMyPassword" : "updateMe";
+
+  url =
+    process.env.NODE_ENV === "production"
+      ? `/api/v1/users/${endpoint}`
+      : `${localhost}/api/v1/users/${endpoint}`;
+
   try {
-    const endpoint = type === "password" ? "updateMyPassword" : "updateMe";
     const res = await axios({
       method: "PATCH",
-      url: `http://localhost:3100/api/v1/users/${endpoint}`,
+      url,
       withCredentials: true,
       data
     });

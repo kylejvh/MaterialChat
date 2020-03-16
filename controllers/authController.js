@@ -45,8 +45,6 @@ const signToken = id => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id); // Token working...
 
-  console.log("--- FROM SENDTOKEN ----- ", user._id);
-  console.log("--- FROM SENDTOKEN ----- ", token);
   res.cookie("jwt", token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
@@ -120,7 +118,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  console.log("token ---", token);
 
   if (!token) {
     return next(
