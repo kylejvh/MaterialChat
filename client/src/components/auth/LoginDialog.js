@@ -1,8 +1,11 @@
-import React, { useContext, useState } from "react";
-import { CTX } from "../Store";
+import React, { useState } from "react";
+import { Link, Redirect } from "react-router-dom";
+import { connect } from "react-redux";
+import { login } from "../../actions/auth";
 
 import { makeStyles } from "@material-ui/core/styles";
 
+import ProgressButton from "../ProgressButton";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { Typography, Container } from "@material-ui/core";
@@ -25,21 +28,32 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const LoginDialog = () => {
+const LoginDialog = ({ login, isAuthenticated, error }) => {
   const classes = useStyles();
 
-  const { requestUsername, state, dispatch } = useContext(CTX);
-  const { error } = state.loginDialog;
-  const [value, setValue] = useState("");
+  //TODO: old ctx - const { requestUsername, state, dispatch } = useContext(CTX);
+  //TODO: old ctx - const { error } = state.loginDialog;
+  const [formValue, setFormValue] = useState({
+    email: "",
+    password: ""
+  });
 
-  const handleUsernameSubmit = e => {
+  const { email, password } = formValue;
+
+  const onChange = e =>
+    setFormValue({ ...formValue, [e.target.name]: e.target.value });
+
+  const onSubmit = e => {
     e.preventDefault();
-    if (value !== "") {
-      requestUsername({
-        username: value
-      });
+
+    if (e.target.value !== "") {
+      login(email, password);
     }
   };
+
+  if (isAuthenticated) {
+    return <Redirect to="/" />;
+  }
 
   return (
     <Dialog
@@ -51,24 +65,29 @@ const LoginDialog = () => {
     >
       <Container className={classes.titleContainer}>
         <Typography variant="h4">Hello! Welcome to MaterialChat!</Typography>
-        <Typography variant="h6">
-          Enter a username to begin chatting.
-        </Typography>
+        <Typography variant="h6">Please sign in to your account.</Typography>
       </Container>
       <DialogTitle id="form-dialog-title">Login</DialogTitle>
-      <form onSubmit={handleUsernameSubmit}>
+      <form
+        id="login-form"
+        onSubmit={e => {
+          onSubmit(e);
+        }}
+      >
         <DialogContent>
           <DialogContentText>
-            To begin messaging, please enter a username that is not currently in
-            use.
+            To begin messaging, please enter your email and password.
           </DialogContentText>
 
+          {/* Use materialUI Email and password Forms, look at docs. */}
           <TextField
             autoFocus
             fullWidth
-            margin="dense"
-            label="Username"
-            variant="filled"
+            margin="normal"
+            name="email"
+            type="email"
+            label="Email"
+            variant="outlined"
             error={error}
             InputProps={{
               startAdornment: (
@@ -77,30 +96,71 @@ const LoginDialog = () => {
                 </InputAdornment>
               )
             }}
-            placeholder="Enter username..."
-            helperText={error ? "Username is taken." : ""}
-            value={value}
+            placeholder="Email"
+            helperText={error ? "Email is already registered." : ""}
+            value={email}
             onChange={e => {
+              onChange(e);
               if (error) {
-                dispatch({ type: "LOGIN_ERROR_CLEARED" });
+                // dispatch({ type: "LOGIN_ERROR_CLEARED" });
               }
-              setValue(e.target.value);
+            }}
+          />
+
+          {/* TODO: Implement Auth - password form.  */}
+          <TextField
+            autoFocus
+            fullWidth
+            margin="normal"
+            type="password"
+            label="Password"
+            name="password"
+            variant="outlined"
+            error={error}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircle />
+                </InputAdornment>
+              )
+            }}
+            placeholder="Password"
+            helperText={error ? "Incorrect Password." : ""}
+            value={password}
+            onChange={e => {
+              onChange(e);
+              if (error) {
+                // dispatch({ type: "LOGIN_ERROR_CLEARED" });
+              }
             }}
           />
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="outlined"
+          <Link to="/register">
+            <Typography>Don't have an account?</Typography>
+          </Link>
+
+          {/* <Link to="/register">
+            <Button variant="outlined" color="primary">
+              Sign Up
+            </Button>
+          </Link> */}
+          <ProgressButton
+            title="Login"
+            form="login-form"
+            formId="login-form"
             type="submit"
             color="primary"
-            label="Submit"
-          >
-            Confirm
-          </Button>
+            loading=""
+          />
         </DialogActions>
       </form>
     </Dialog>
   );
 };
 
-export default LoginDialog;
+const mapStateToProps = state => ({
+  isAuthenticated: state.auth.isAuthenticated
+});
+
+export default connect(mapStateToProps, { login })(LoginDialog);
