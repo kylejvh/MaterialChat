@@ -100,20 +100,16 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
 
+console.log(__dirname);
 //TODO: Figure out how you need to serve this in production with React
 // Server static assets in production
 if (process.env.NODE_ENV === "production") {
   // Set static folder
-  app.use(express.static("client/build"));
+  app.use(express.static(path.join(__dirname, "client/build")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+    res.sendFile(path.join(__dirname + "/client/build/index.html"));
   });
 }
 
 module.exports = app;
-
-//! Questions to answer...
-//! HOW DO I INITIALIZE AND IMPORT MY SOCKETIO SERVER...
-//! How do I call controller methods with socketio and pass data?
-//

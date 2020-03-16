@@ -1,7 +1,13 @@
 import io from "socket.io-client";
 
 export default function socketMiddleware() {
-  const socketUrl = "http://localhost:3100";
+  let socketUrl;
+  if (process.env.NODE_ENV === "production") {
+    socketUrl = "";
+  } else {
+    socketUrl = "http://localhost:3100";
+  }
+
   const socket = io(socketUrl);
 
   return ({ dispatch }) => next => action => {
