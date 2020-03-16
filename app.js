@@ -14,6 +14,7 @@ const chatroomRouter = require("./routes/chatroomRoutes");
 const chatMessageRouter = require("./routes/chatMessageRoutes");
 const userRouter = require("./routes/userRoutes");
 
+const app = express();
 //* 1. GLOBAL MIDDLEWARES
 
 //TODO: Figure out how you need to serve this in production with React
@@ -26,8 +27,6 @@ if (process.env.NODE_ENV === "production") {
   //   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
   // });
 }
-
-const app = express();
 
 // var whitelist = [
 //   "http://localhost:3000",
