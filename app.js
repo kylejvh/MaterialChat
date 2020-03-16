@@ -29,7 +29,11 @@ const userRouter = require("./routes/userRoutes");
 
 const app = express();
 
-var whitelist = ["http://localhost:3000", "http://192.168.1.181:3000"];
+var whitelist = [
+  "http://localhost:3000",
+  "http://192.168.1.181:3000",
+  "https://kjvh-materialchat.herokuapp.com/"
+];
 var corsOptions = {
   origin: function(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
