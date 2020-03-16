@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server",
+    "dev": "nodemon server",
     "start:prod": "SET NODE_ENV=production && nodemon server"
+  },
+  "engines": {
+    "node": "13.6.0"
   },
   "author": "Kyle JVH",
   "license": "ISC",
@@ -32,7 +36,6 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "concurrently": "^5.1.0",
     "nodemon": "^2.0.2"
   }
 }
