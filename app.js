@@ -29,31 +29,30 @@ const userRouter = require("./routes/userRoutes");
 
 const app = express();
 
-var whitelist = [
-  "http://localhost:3000",
-  "http://192.168.1.181:3000",
-  "https://kjvh-materialchat.herokuapp.com/"
-];
-var corsOptions = {
-  origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-};
+// var whitelist = [
+//   "http://localhost:3000",
+//   "http://192.168.1.181:3000",
+//   "https://kjvh-materialchat.herokuapp.com/"
+// ];
+// var corsOptions = {
+//   origin: function(origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true
+// };
 
 //!  IMPLEMENT CORS - ADJUST AS NEEDED FOR PRODUCTION
 // Currently set to all domains - Access-Control-Allow-Origin *
 app.use(
-  cors(
-    corsOptions
-    // origin: "http://localhost:3000",
-    //     credentials: true
-    //   })
-  )
+  cors()
+  // corsOptions
+  // origin: "http://localhost:3000",
+  //     credentials: true
+  //   })
 );
 
 // app.use(
