@@ -1,5 +1,4 @@
 const express = require("express");
-
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -100,11 +99,8 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
 
-//TODO: Figure out how you need to serve this in production with React
 // Server static assets in production
 if (process.env.NODE_ENV === "production") {
-  // Set static folder
-
   app.use(express.static(path.join(__dirname, "./client/build")));
 
   app.get("*", function(_, res) {
