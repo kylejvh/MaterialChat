@@ -26,17 +26,6 @@ mongoose
 
 // Start server
 
-//TODO: Figure out how you need to serve this in production with React
-// Server static assets in production
-if (process.env.NODE_ENV === "production") {
-  // Set static folder
-  app.use(express.static("client/build"));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
-  });
-}
-
 // Make socket.io available where needed.
 io.on("connection", function(socket) {
   socket.on("SOCKET_ADDED_CHATROOM", chatroom => {

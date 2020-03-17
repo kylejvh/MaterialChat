@@ -100,8 +100,15 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
 
-console.log(__dirname);
-console.log(path.resolve(__dirname, "client", "build", "index.html"));
-console.log(path.dirname(require.main.filename));
+//TODO: Figure out how you need to serve this in production with React
+// Server static assets in production
+if (process.env.NODE_ENV === "production") {
+  // Set static folder
+  app.use(express.static(path.join(__dirname, "client/build")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname + "/client/build/index.html"));
+  });
+}
 
 module.exports = app;
