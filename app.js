@@ -33,6 +33,8 @@ const app = express();
 //   credentials: true
 // };
 
+app.use(express.static(path.join(__dirname, "client/build")));
+
 //!  IMPLEMENT CORS - ADJUST AS NEEDED FOR PRODUCTION
 // Currently set to all domains - Access-Control-Allow-Origin *
 app.use(
@@ -104,7 +106,6 @@ app.use("/api/v1/messages", chatMessageRouter);
 // Server static assets in production
 if (process.env.NODE_ENV === "production") {
   // Set static folder
-  app.use(express.static(path.join(__dirname, "client/build")));
 
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname + "/client/build/index.html"));
