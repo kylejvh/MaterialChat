@@ -4,13 +4,15 @@
   "description": "Backend for materialchat",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server",
+    "server": "nodemon server",
+    "client": "npm start --prefix client",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start:prod": "SET NODE_ENV=production && nodemon server"
   },
   "engines": {
-    "node": "13.6.0"
+    "node": "13.6.x"
   },
   "author": "Kyle JVH",
   "license": "ISC",
