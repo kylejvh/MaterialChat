@@ -75,15 +75,16 @@ import {
   USER_LOADED,
   ACCOUNT_UPDATED,
   USER_TYPING,
-  USER_STOPPED_TYPING
+  USER_STOPPED_TYPING,
 } from "../actions/types";
 
 const initState = {
   token: localStorage.getItem("token"),
   isAuthenticated: null,
   currentUser: null,
+  userPhoto: null,
   loading: false,
-  success: false
+  success: false,
   // typing: {
   //   userTyping: "",
   //   isTyping: false
@@ -103,12 +104,14 @@ export default (state = initState, action) => {
         ...state,
         isAuthenticated: true,
         loading: false,
+
         loginDialog: {
           isOpen: false,
           success: true,
-          error: false
+          error: false,
         },
-        currentUser: action.payload
+        currentUser: action.payload,
+        userPhoto: action.payload.photo,
       };
 
     case LOGIN_SUCCEEDED:
@@ -118,9 +121,9 @@ export default (state = initState, action) => {
         loginDialog: {
           isOpen: false,
           success: true,
-          error: false
+          error: false,
         },
-        currentUser: action.payload
+        currentUser: action.payload,
       };
 
     case LOGIN_FAILED:
@@ -129,8 +132,8 @@ export default (state = initState, action) => {
         loginDialog: {
           ...state.loginDialog,
           error: true,
-          success: false
-        }
+          success: false,
+        },
       };
 
     case LOGOUT_SUCCEEDED:
@@ -139,14 +142,14 @@ export default (state = initState, action) => {
         token: null,
         isAuthenticated: false,
         currentUser: null,
-        loading: false
+        loading: false,
       };
 
     case REGISTER_SUCCEEEDED:
       return {
         ...state,
         isAuthenticated: true,
-        currentUser: action.payload
+        currentUser: action.payload,
         // loginDialog: {
         //   ...state.loginDialog,
         //   isOpen: true,
@@ -160,8 +163,8 @@ export default (state = initState, action) => {
         ...state,
         loginDialog: {
           ...state.loginDialog,
-          error: false
-        }
+          error: false,
+        },
       };
 
     default:

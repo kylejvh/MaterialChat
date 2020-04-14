@@ -9,40 +9,37 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "A username must be specified."],
     unique: true,
-    trim: true
+    trim: true,
   },
   email: {
     type: String,
     required: [true, "Please provide your email"],
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email"]
+    validate: [validator.isEmail, "Please provide a valid email"],
   },
   role: {
     type: String,
-    //TODO: implement handling of chatroom creation -
-    //TODO: Track an array of chatrooms created???
-    // reference lesson 133
     enum: ["user", "admin"],
-    default: "user"
+    default: "user",
   },
   password: {
     type: String,
     required: [true, "Please provide a password"],
     minlength: 8,
     // Select - never show this field in output
-    select: false
+    select: false,
   },
   passwordConfirm: {
     type: String,
     required: [true, "Please confirm your password"],
     validate: {
       // This only works on CREATE and SAVE!!!
-      validator: function(el) {
+      validator: function (el) {
         return el === this.password;
       },
-      message: "Passwords are not the same!"
-    }
+      message: "Passwords are not the same!",
+    },
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
@@ -51,7 +48,7 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false
+    select: false,
   },
 
   // Specify imageCover url or filepath, and we read from the fs later. This is just a
@@ -59,14 +56,14 @@ const userSchema = new mongoose.Schema({
   // Consider renaming to avatarImage
   photo: {
     type: String,
-    default: "default.jpg"
+    default: "default.jpg",
   },
   slug: String,
   // Get timestamp of creation
   createdAt: {
     type: Date,
     default: Date.now(),
-    select: false
+    select: false,
   },
 
   // Implement discord nitro-like premium features upon payment.
@@ -74,11 +71,11 @@ const userSchema = new mongoose.Schema({
   // Node.js course had a lesson on middlewares and removing secret properties...
   isPremium: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isOnline: {
     type: Boolean,
-    default: false
+    default: false,
   },
   // handle here, or keep array of users on the chatroom schema?
 
@@ -87,23 +84,18 @@ const userSchema = new mongoose.Schema({
   currentChatroom: {
     // PARENT REFERENCE
     type: mongoose.Schema.ObjectId,
-    ref: "Chatroom"
+    ref: "Chatroom",
 
     //! CURRENT IMPLEMENTATION GUESS:
     // chatroom: ObjectID(23) <- references a chatroom's mongodb id
   },
   createdChatrooms: {
     type: mongoose.Schema.ObjectId,
-    ref: "Chatroom"
-  }
+    ref: "Chatroom",
+  },
 });
 
-//TODO -  socket.io:
-// userSchema.pre('something', function(next) {
-//   io.Socket.on(...)
-// })
-
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next) {
   // Only run this function if password was modified
   if (!this.isModified("password")) return next();
 
@@ -116,7 +108,7 @@ userSchema.pre("save", async function(next) {
 });
 
 // If password has been changed after user signup, update document
-userSchema.pre("save", function(next) {
+userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
@@ -125,13 +117,13 @@ userSchema.pre("save", function(next) {
 
 // Middileware - match any find type query and remove
 // inactive (deleted) users from output
-userSchema.pre(/^find/, function(next) {
+userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
 
 // Instance method - use bcrypt to compare password user enters to hashed password
-userSchema.methods.correctPassword = async function(
+userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
@@ -139,7 +131,7 @@ userSchema.methods.correctPassword = async function(
 };
 
 // Instance method - Check if password was changed after token was issued
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   // check if passwordChangedAt property exists on user document
   if (this.passwordChangedAt) {
     // See how long ago password was changed...
@@ -155,7 +147,7 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.createPasswordResetToken = function() {
+userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 
   this.passwordResetToken = crypto

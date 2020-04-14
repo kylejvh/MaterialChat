@@ -2,9 +2,9 @@ import React from "react";
 import { Link, Redirect } from "react-router-dom";
 
 const Landing = ({ isAuthenticated }) => {
-  if (isAuthenticated) {
-    return <Redirect to="/dashboard" />;
-  }
+  // if (isAuthenticated) {
+  //   return <Redirect to="/dashboard" />;
+  // }
 
   return (
     <section className="landing">

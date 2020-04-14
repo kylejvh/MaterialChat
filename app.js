@@ -16,41 +16,41 @@ const userRouter = require("./routes/userRoutes");
 const app = express();
 //* 1. GLOBAL MIDDLEWARES
 
-// var whitelist = [
-//   "http://localhost:3000",
-//   "http://192.168.1.181:3000",
-//   "https://kjvh-materialchat.herokuapp.com/"
-// ];
-// var corsOptions = {
-//   origin: function(origin, callback) {
-//     if (whitelist.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true
-// };
-
 //!  IMPLEMENT CORS - ADJUST AS NEEDED FOR PRODUCTION
 // Currently set to all domains - Access-Control-Allow-Origin *
-app.use(
-  cors()
-  // corsOptions
-  // origin: "http://localhost:3000",
-  //     credentials: true
-  //   })
-);
 
-// app.use(
-//   cors({
-//     origin: "http://localhost:3000",
-//     credentials: true
-//   })
-// );
+// Must use withCredentials for JWT cookie
+// But you cannot use cors() with withCredentials
+// So what are my options? Whitelist only?
+
+// Send JWT over headers only??
+
+// if (process.env.NODE_ENV === "production") {
+//   app.use(cors());
+// } else if (process.env.NODE_ENV === "development") {
+//   const whitelist = [
+//     "http://localhost:3000",
+//     "http://127.0.0.1:3100",
+//     "http://192.168.1.181:3000",
+//     "https://kjvh-materialchat.herokuapp.com/",
+//   ];
+//   const corsOptions = {
+//     origin: function (origin, callback) {
+//       if (whitelist.indexOf(origin) !== -1) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true,
+//   };
+
+//   app.use(cors());
+// }
 
 // Handle CORS pre-flight phase
 // app.options("*", cors(corsOptions));
+
 // Set security HTTP headers
 app.use(helmet());
 
@@ -64,7 +64,7 @@ if (process.env.NODE_ENV === "development") {
 const limiter = rateLimit({
   max: 1000,
   windowMs: 60 * 60 * 1000,
-  message: "Too many requests from this IP.\n Please try again in an hour."
+  message: "Too many requests from this IP.\n Please try again in an hour.",
 });
 app.use("/api", limiter);
 
@@ -82,7 +82,7 @@ app.use(xss());
 // Prevent parameter pollution with whitelist exceptions
 app.use(
   hpp({
-    whitelist: ["duration"]
+    whitelist: ["duration"],
   })
 );
 
@@ -103,8 +103,8 @@ app.use("/api/v1/messages", chatMessageRouter);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "./client/build")));
 
-  app.get("*", function(_, res) {
-    res.sendFile(path.join(__dirname, "./client/build/index.html"), function(
+  app.get("*", function (_, res) {
+    res.sendFile(path.join(__dirname, "./client/build/index.html"), function (
       err
     ) {
       if (err) {

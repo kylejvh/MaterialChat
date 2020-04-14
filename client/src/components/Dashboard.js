@@ -3,8 +3,10 @@ import { connect } from "react-redux";
 import {
   getChatrooms,
   joinChatroom,
-  subscribeChatrooms
+  subscribeChatrooms,
 } from "../actions/chatroom";
+import { updateUserData } from "../actions/auth";
+
 import { Route, useRouteMatch, useHistory, Link } from "react-router-dom";
 
 import clsx from "clsx";
@@ -47,23 +49,23 @@ import EditChatroom from "./chatroom/EditChatroom";
 const drawerWidth = 240;
 const mobileDrawerWidth = 120;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    display: "flex"
+    display: "flex",
   },
 
   appBar: {
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    })
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   appBarShift: {
     width: `calc(100% - ${drawerWidth}px)`,
     marginLeft: drawerWidth,
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
+      duration: theme.transitions.duration.enteringScreen,
     }),
 
     "@media (max-width: 600px)": {
@@ -71,69 +73,69 @@ const useStyles = makeStyles(theme => ({
       marginLeft: mobileDrawerWidth,
       transition: theme.transitions.create(["margin", "width"], {
         easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen
-      })
-    }
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+    },
   },
   appBarButtons: {
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   menuButton: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   hide: {
-    display: "none"
+    display: "none",
   },
   drawer: {
     width: drawerWidth,
     flexShrink: 0,
 
     "@media (max-width: 600px)": {
-      width: mobileDrawerWidth
-    }
+      width: mobileDrawerWidth,
+    },
   },
   drawerPaper: {
     width: drawerWidth,
 
     "@media (max-width: 600px)": {
-      width: mobileDrawerWidth
-    }
+      width: mobileDrawerWidth,
+    },
   },
   drawerHeader: {
     display: "flex",
     alignItems: "center",
     padding: theme.spacing(0, 1),
     ...theme.mixins.toolbar,
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
+      duration: theme.transitions.duration.leavingScreen,
     }),
     marginLeft: -drawerWidth,
 
     "@media (max-width: 600px)": {
-      marginLeft: -mobileDrawerWidth
-    }
+      marginLeft: -mobileDrawerWidth,
+    },
   },
   contentShift: {
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
+      duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: 0
+    marginLeft: 0,
   },
   navTitle: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   addChatroomButton: {
     display: "flex",
     alignItems: "flex-end",
-    flex: "1"
-  }
+    flex: "1",
+  },
 }));
 
 const Dashboard = ({
@@ -143,9 +145,10 @@ const Dashboard = ({
   subscribeChatrooms,
   currentChatroom,
   getChatrooms,
+  updateUserData,
   joinChatroom,
   loading,
-  children
+  children,
 }) => {
   useEffect(() => {
     getChatrooms();
@@ -158,12 +161,13 @@ const Dashboard = ({
   const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
   const [open, setOpen] = React.useState(true);
 
-  const handleChatroomChange = chatroom => {
+  const handleChatroomChange = (chatroom) => {
     if (currentChatroom && chatroom.id === currentChatroom.id) {
       return;
     }
 
     //TODO: implement change chatroom func
+    updateUserData({ currentChatroom: chatroom.id }, "chatroom");
     joinChatroom(chatroom);
     // Better implementation?
   };
@@ -191,7 +195,7 @@ const Dashboard = ({
       <AppBar
         position="fixed"
         className={clsx(classes.appBar, {
-          [classes.appBarShift]: open
+          [classes.appBarShift]: open,
         })}
       >
         <Toolbar>
@@ -251,7 +255,7 @@ const Dashboard = ({
         anchor="left"
         open={open}
         classes={{
-          paper: classes.drawerPaper
+          paper: classes.drawerPaper,
         }}
       >
         <div className={classes.drawerHeader}>
@@ -273,21 +277,19 @@ const Dashboard = ({
         >
           <Divider />
           {/* //TODO: Fix state below */}
-          {chatrooms.map(chatroom => (
+          {chatrooms.map((chatroom) => (
             <div key={chatroom._id}>
               <ListItem onClick={() => handleChatroomChange(chatroom)} button>
                 {/* //TODO: ADD IMAGE UPLOADS FOR CHATROOMS AND USERS */}
-                {/* <ListItemAvatar>
-                    <Avatar></Avatar>
-                  </ListItemAvatar> */}
                 <ListItemText
                   primary={chatroom.name}
                   // secondary={secondary ? "Secondary text" : null}
                 />
-
-                {chatroom.creator._id === currentUser._id && (
+                {chatroom.creator && chatroom.creator._id === currentUser._id && (
                   <ListItemSecondaryAction>
-                    {/* <IconButton edge="end" aria-label="delete"><DeleteIcon /></IconButton> */}
+                    {/* <IconButton edge="end" aria-label="delete">
+                      <DeleteIcon />
+                    </IconButton> */}
                     <EditChatroom />
                     <Link
                       to={`/chatrooms/edit/${chatroom._id}`}
@@ -307,7 +309,7 @@ const Dashboard = ({
       </Drawer>
       <main
         className={clsx(classes.content, {
-          [classes.contentShift]: open
+          [classes.contentShift]: open,
         })}
       >
         <div className={classes.drawerHeader} />
@@ -321,16 +323,17 @@ const Dashboard = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   auth: state.auth,
   currentUser: state.auth.currentUser,
   chatrooms: state.chatrooms.chatrooms,
   loading: state.chatrooms.loading,
-  currentChatroom: state.chatrooms.currentChatroom
+  currentChatroom: state.chatrooms.currentChatroom,
 });
 
 export default connect(mapStateToProps, {
   getChatrooms,
+  updateUserData,
   joinChatroom,
-  subscribeChatrooms
+  subscribeChatrooms,
 })(Dashboard);

@@ -63,12 +63,12 @@ chatroomSchema.virtual("messages", {
   foreignField: "sentInChatroom"
 });
 
-// Virtual Populate - Ties chatrooms to messages
-// chatroomSchema.virtual("messages", {
-//   ref: "ChatMessage",
-//   foreignField: "chatroom",
-//   localField: "_id"
-// });
+//TODO: Attempt at mapping users to chatrooms...
+chatroomSchema.virtual("activeUsers", {
+  ref: "User",
+  localField: "_id",
+  foreignField: "currentChatroom"
+});
 
 // Every find-type query will be populated with creator's username.
 chatroomSchema.pre(/^find/, function(next) {
@@ -76,13 +76,6 @@ chatroomSchema.pre(/^find/, function(next) {
 
   next();
 });
-
-//TODO: Another Potential Virtual Populate - GETTING CURRENT ACTIVE USERS of CHATROOM
-// chatroomSchema.virtual("activeUsers", {
-//   ref: "Users",
-//   foreignField: "currentChatroom",
-//   localField: "_id"
-// });
 
 const Chatroom = mongoose.model("Chatroom", chatroomSchema);
 

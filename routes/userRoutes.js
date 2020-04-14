@@ -2,6 +2,8 @@ const express = require("express");
 const userController = require("./../controllers/userController");
 const authController = require("./../controllers/authController");
 
+// IMGs are not uploaded to DB, just the links
+
 const router = express.Router();
 
 //! Look at authController, some password handlers are not working...
@@ -22,15 +24,13 @@ router.use(authController.protect);
 
 router.patch("/updateMyPassword", authController.updatePassword);
 router.get("/me", userController.getMe, userController.getUser);
-router.patch("/updateMe", userController.updateMe);
+router.patch(
+  "/updateMe",
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.updateMe
+);
 router.delete("/deleteMe", userController.deleteMe);
-
-//TODO: ROUTES NOT YET IMPLEMENTED
-// router.patch(
-//   "/updateMe",
-//   userController.uploadUserPhoto,
-//   userController.resizeUserPhoto
-// );
 
 //! SUPPOSED TO BE ADMIN ROUTES, PROTECTED.
 //! MAY NEED TO RECONFIGURE FOR NEEDED FEATURES - EX: SEARCH USERS AND ADD AS FRIEND, NEED GETALLUSERS...

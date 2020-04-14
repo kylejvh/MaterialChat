@@ -18,14 +18,14 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   loginDialog: {
-    padding: theme.spacing(3)
+    padding: theme.spacing(3),
   },
   titleContainer: {
     padding: theme.spacing(3),
-    paddingTop: "1.5em"
-  }
+    paddingTop: "1.5em",
+  },
 }));
 
 const LoginDialog = ({ login, isAuthenticated, error }) => {
@@ -35,15 +35,15 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
   //TODO: old ctx - const { error } = state.loginDialog;
   const [formValue, setFormValue] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const { email, password } = formValue;
 
-  const onChange = e =>
+  const onChange = (e) =>
     setFormValue({ ...formValue, [e.target.name]: e.target.value });
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault();
 
     if (e.target.value !== "") {
@@ -70,7 +70,7 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
       <DialogTitle id="form-dialog-title">Login</DialogTitle>
       <form
         id="login-form"
-        onSubmit={e => {
+        onSubmit={(e) => {
           onSubmit(e);
         }}
       >
@@ -94,12 +94,12 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
                 <InputAdornment position="start">
                   <AccountCircle />
                 </InputAdornment>
-              )
+              ),
             }}
             placeholder="Email"
             helperText={error ? "Email is already registered." : ""}
             value={email}
-            onChange={e => {
+            onChange={(e) => {
               onChange(e);
               if (error) {
                 // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -109,7 +109,6 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
 
           {/* TODO: Implement Auth - password form.  */}
           <TextField
-            autoFocus
             fullWidth
             margin="normal"
             type="password"
@@ -122,12 +121,12 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
                 <InputAdornment position="start">
                   <AccountCircle />
                 </InputAdornment>
-              )
+              ),
             }}
             placeholder="Password"
             helperText={error ? "Incorrect Password." : ""}
             value={password}
-            onChange={e => {
+            onChange={(e) => {
               onChange(e);
               if (error) {
                 // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -159,8 +158,8 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
   );
 };
 
-const mapStateToProps = state => ({
-  isAuthenticated: state.auth.isAuthenticated
+const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
 });
 
 export default connect(mapStateToProps, { login })(LoginDialog);

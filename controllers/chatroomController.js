@@ -90,10 +90,12 @@ exports.setChatroomCreatorIds = (req, res, next) => {
 exports.getChatroom = catchAsync(async (req, res, next) => {
   //TODO: limit response population of messages to needed fields and length.
   // TODO: ex: you don't want to fetch more than 100 messages at once...
-  const chatroom = await Chatroom.findById(req.params.id).populate({
-    path: "messages",
-    select: "message"
-  });
+  const chatroom = await Chatroom.findById(req.params.id)
+    .populate({
+      path: "messages",
+      select: "message"
+    })
+    .populate({ path: "activeUsers", select: "username" });
 
   if (!chatroom) {
     return next(new AppError("No Chatroom with specified ID", 404));
@@ -141,7 +143,10 @@ exports.deleteChatroom = factory.deleteOne(Chatroom);
 //! NOT WORKING AS ABOVE
 //TODO: Attach required fields?
 
-exports.createChatroom = factory.createOne(Chatroom);
+exports.createChatroom = factory.createOne(Chatroom, {
+  path: "creator",
+  select: "username"
+});
 
 //! Replaced with factory above...
 //! Can only currently update chatroom name...

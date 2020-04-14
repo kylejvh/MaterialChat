@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
+//TODO: this has got to be changed, so it suits functionality of register forms...
 const PrivateRoute = ({
   component: Component,
   auth: { isAuthenticated, loading },
@@ -9,7 +10,7 @@ const PrivateRoute = ({
 }) => (
   <Route
     {...rest}
-    render={props =>
+    render={(props) =>
       isAuthenticated ? <Component {...props} /> : <Redirect to="/login" />
     }
   />
@@ -20,8 +21,8 @@ const PrivateRoute = ({
 //   auth: PropTypes.object.isRequired
 // };
 
-const mapStateToProps = state => ({
-  auth: state.auth
+const mapStateToProps = (state) => ({
+  auth: state.auth,
 });
 
 export default connect(mapStateToProps)(PrivateRoute);

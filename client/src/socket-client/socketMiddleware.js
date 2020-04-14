@@ -10,7 +10,7 @@ export default function socketMiddleware() {
 
   const socket = io(socketUrl);
 
-  return ({ dispatch }) => next => action => {
+  return ({ dispatch }) => (next) => (action) => {
     if (typeof action === "function") {
       return next(action);
     }
@@ -32,7 +32,7 @@ export default function socketMiddleware() {
 
     let handleEvent = handle;
     if (typeof handleEvent === "string") {
-      handleEvent = result => {
+      handleEvent = (result) => {
         dispatch({ type: handle, payload: result, ...rest });
       };
     }

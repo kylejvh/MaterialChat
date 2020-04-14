@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
-import { updateSettings, deleteAccount } from "../actions/auth";
+import { updateUserData, deleteAccount } from "../actions/auth";
 
 import ProgressButton from "./ProgressButton";
 
@@ -56,7 +56,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Settings = ({
-  updateSettings,
+  updateUserData,
   deleteAccount,
   currentEmail,
   currentUsername
@@ -143,14 +143,14 @@ const Settings = ({
     if (Object.values(fields).includes("")) {
       return;
     } else if (type === "data") {
-      updateSettings(fields, "data");
+      updateUserData(fields, "data");
       setValues({
         ...values,
         email: "",
         username: ""
       });
     } else if (type === "password") {
-      updateSettings(fields, "password");
+      updateUserData(fields, "password");
       setValues({
         ...values,
         passwordCurrent: "",
@@ -557,6 +557,6 @@ const mapStateToProps = state => ({
 });
 
 export default connect(mapStateToProps, {
-  updateSettings,
+  updateUserData,
   deleteAccount
 })(Settings);

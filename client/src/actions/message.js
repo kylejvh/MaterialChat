@@ -5,39 +5,31 @@ import {
   CHAT_MESSAGE_SENT,
   ADD_CHAT_MESSAGE,
   EDIT_CHAT_MESSAGE,
-  DELETE_CHAT_MESSAGE
+  DELETE_CHAT_MESSAGE,
 } from "./types";
 import { notify } from "./notify";
-
-const localhost = "http://localhost:3100";
-let url;
 
 export const subscribeMessages = () => {
   return {
     event: "CHAT_MESSAGE_RECEIVED",
-    handle: "CHAT_MESSAGE_RECEIVED"
+    handle: "CHAT_MESSAGE_RECEIVED",
   };
 };
 
-export const emitMessage = msg => {
+const emitMessage = (msg) => {
   return {
-    event: CHAT_MESSAGE_SENT,
+    event: "CHAT_MESSAGE_SENT",
     emit: true,
-    payload: msg
+    payload: msg,
   };
 };
 
-export const getMessages = id => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/chatrooms/${id}/messages`
-      : `${localhost}/api/v1/chatrooms/${id}/messages`;
-
+export const getMessages = (id) => async (dispatch) => {
   try {
-    const res = await axios.get(url);
+    const res = await axios.get(`/api/v1/chatrooms/${id}/messages`);
     dispatch({
       type: GET_MESSAGES,
-      payload: res.data
+      payload: res.data,
     });
   } catch (err) {
     console.log(err);
@@ -47,26 +39,27 @@ export const getMessages = id => async dispatch => {
   }
 };
 
-export const sendMessage = data => async (dispatch, getState) => {
+export const sendMessage = (data) => async (dispatch, getState) => {
   const chatroomID = getState().chatrooms.currentChatroom.id;
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/chatrooms/${chatroomID}/messages`
-      : `${localhost}/api/v1/chatrooms/${chatroomID}/messages`;
 
   try {
     const res = await axios({
       method: "POST",
-      url,
+      url: `/api/v1/chatrooms/${chatroomID}/messages`,
       withCredentials: true,
       data: {
-        message: data.message
-      }
+        message: data.message,
+      },
     });
+
+    // emit here with the message....
+    console.log(res.data, "Message response, how do i Get room from this");
+
+    dispatch(emitMessage(res.data.data.newDoc));
 
     dispatch({
       type: CHAT_MESSAGE_SENT,
-      payload: data
+      payload: data,
     });
   } catch (err) {
     console.log(err);

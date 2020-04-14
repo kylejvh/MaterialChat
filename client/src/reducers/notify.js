@@ -29,17 +29,21 @@ export default (state = initState, action) => {
       };
 
     case USER_TYPING:
-      if (action.payload.typing) {
+      console.log(state.usersTyping);
+      if (
+        action.payload.typing &&
+        state.usersTyping.includes(action.payload.user)
+      ) {
+        return state;
+      } else if (action.payload.typing) {
         return {
           ...state,
           usersTyping: [...state.usersTyping, action.payload.user]
         };
-      } else if (!state.usersTyping.includes(action.payload)) {
+      } else {
         return {
           ...state,
-          usersTyping: state.usersTyping.filter(
-            i => i.name !== action.payload.name
-          )
+          usersTyping: state.usersTyping.filter(i => i !== action.payload.user)
         };
       }
 

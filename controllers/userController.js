@@ -4,11 +4,50 @@ const APIFeatures = require("./../utils/apiFeatures");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
 const io = require("./../server").io;
+const multer = require("multer");
+// const cloudinary = require("cloudinary");
+const sharp = require("sharp");
+
+const multerStorage = multer.memoryStorage();
+
+// Check if upload is image
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.uploadUserPhoto = upload.single("photo");
+
+//TODO: integrate cloudinary support for img uploads
+// cloudinary.config({
+//   cloud_name: process.env.CLOUD_NAME,
+//   api_key: process.env.API_KEY,
+//   api_secret: process.env.API_SECRET
+//   });
+
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`client/public/uploads/img/users/${req.file.filename}`);
+
+  next();
+});
 
 // function to limit req.body to specified properties
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
-  Object.keys(obj).forEach(el => {
+  Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
   });
   return newObj;
@@ -17,6 +56,9 @@ const filterObj = (obj, ...allowedFields) => {
 //? WORKING VIA POSTMAN
 // User update method
 exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log(req.file, "req file");
+  console.log(req.body, "req body");
+
   // 1. Create error if user POSTs password data, this is handled by authcontroller
   if (req.body.password || req.body.passwordConfirm) {
     return next(
@@ -28,19 +70,26 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // 2. Filtered out field names that should not be updated
-  const filteredBody = filterObj(req.body, "username", "email");
+  const filteredBody = filterObj(
+    req.body,
+    "username",
+    "email",
+    "currentChatroom"
+  );
+
+  if (req.file) filteredBody.photo = req.file.filename;
 
   // 3. Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
-    runValidators: true
+    runValidators: true,
   });
 
   res.status(200).json({
     status: "success",
     data: {
-      user: updatedUser
-    }
+      user: updatedUser,
+    },
   });
 });
 
@@ -50,7 +99,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 
   res.status(204).json({
     status: "success",
-    data: null
+    data: null,
   });
 });
 
@@ -80,7 +129,7 @@ exports.getAllUsers = factory.getAll(User);
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: "error",
-    message: "This route is not defined. Please use /signup."
+    message: "This route is not defined. Please use /signup.",
   });
 };
 

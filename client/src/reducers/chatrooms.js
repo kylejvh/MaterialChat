@@ -14,6 +14,7 @@ import {
 
 const initState = {
   currentChatroom: null,
+  activeUsers: [],
   chatrooms: [],
   loading: true,
   error: {},
@@ -77,10 +78,20 @@ export default (state = initState, action) => {
       };
 
     case RECEIVED_CURRENT_CHATROOM_USERS:
-      return {
-        ...state,
-        usersInChatroom: action.payload
-      };
+      if (state.activeUsers.some(i => i.id === action.payload.id)) {
+        return state;
+      } else if (action.payload.remove) {
+        return {
+          ...state,
+          activeUsers: state.activeUsers.filter(
+            i => i.id !== action.payload.user.id
+          )
+        };
+      } else
+        return {
+          ...state,
+          activeUsers: [...state.activeUsers, action.payload]
+        };
 
     default:
       return state;

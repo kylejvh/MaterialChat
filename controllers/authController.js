@@ -9,9 +9,9 @@ const AppError = require("./../utils/appError");
 const sendEmail = require("./../utils/email");
 
 // Create JWT token with secret and options object
-const signToken = id => {
+const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
@@ -49,7 +49,7 @@ const createSendToken = (user, statusCode, req, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true
+    httpOnly: true,
     // secure: req.secure || req.headers["x-forwarded-proto"] === "https"
   });
 
@@ -60,8 +60,8 @@ const createSendToken = (user, statusCode, req, res) => {
     status: "success",
     token,
     data: {
-      user
-    }
+      user,
+    },
   });
 };
 
@@ -69,12 +69,14 @@ const createSendToken = (user, statusCode, req, res) => {
 //! This has no error handling...
 //! Test on clientside - should also log user in on clientside after signup
 exports.signup = catchAsync(async (req, res, next) => {
+  // implement photo uploading here...
+
   const newUser = await User.create({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt
+    passwordChangedAt: req.body.passwordChangedAt,
   });
 
   createSendToken(newUser, 201, req, res);
@@ -83,6 +85,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 //? WORKING VIA POSTMAN
 //! Test on clientside - should also log user in on clientside after signup
 exports.login = catchAsync(async (req, res, next) => {
+  console.log("FROM LOGIN", req.headers);
   const { email, password } = req.body;
 
   // 1. check if email and password exist
@@ -109,6 +112,7 @@ exports.login = catchAsync(async (req, res, next) => {
 //! NOT SURE IF THIS IS WORKING CORRECTLY.
 exports.protect = catchAsync(async (req, res, next) => {
   // 1. Get token and check if it exists, send error if not
+  // console.log("REQ from protect", req);
   let token;
   if (
     req.headers.authorization &&
@@ -192,12 +196,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     await sendEmail({
       email: user.email,
       subject: "Your password reset token (valid for 10 minutes)",
-      message
+      message,
     });
 
     res.status(200).json({
       status: "success",
-      message: "Token sent to email."
+      message: "Token sent to email.",
     });
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -222,7 +226,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // Store if token has expired
   const user = await User.findOne({
     passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() }
+    passwordResetExpires: { $gt: Date.now() },
   });
 
   // 2. If token has not expired, and there is a user, set the new password.
@@ -313,9 +317,9 @@ exports.logout = (req, res) => {
   // Replaces cookie with a cookie of the same name, but with no login token. If you set up front end to check for cookie, you will be logged out.
   res.cookie("jwt", "loggedout", {
     expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
+    httpOnly: true,
   });
   res.status(200).json({
-    status: "success"
+    status: "success",
   });
 };

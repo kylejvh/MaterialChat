@@ -3,29 +3,22 @@ import {
   REGISTER_SUCCEEEDED,
   LOGIN_SUCCEEDED,
   LOGOUT_SUCCEEDED,
-  ACCOUNT_UPDATED
+  ACCOUNT_UPDATED,
 } from "./types";
 import { notify } from "./notify";
 
-const localhost = "http://localhost:3100";
-let url;
-
-export const getUser = () => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? "/api/v1/users/logout"
-      : `${localhost}/api/v1/users/logout`;
-
+export const getUser = () => async (dispatch) => {
+  console.log("FROM GETUSER", localStorage.token);
   try {
-    const res = await axios.get(url, {
+    const res = await axios.get("/api/v1/users/me", {
       headers: {
-        Authorization: `Bearer ${localStorage.token}`
-      }
+        Authorization: `Bearer ${localStorage.token}`,
+      },
     });
 
     dispatch({
       type: LOGIN_SUCCEEDED,
-      payload: res.data.data.doc
+      payload: res.data.data.doc,
     });
   } catch (err) {
     console.log(err);
@@ -38,21 +31,16 @@ export const getUser = () => async dispatch => {
   }
 };
 
-export const login = (email, password) => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? "/api/v1/users/login"
-      : `${localhost}/api/v1/users/login`;
-
+export const login = (email, password) => async (dispatch) => {
   try {
     const res = await axios({
       method: "POST",
-      url,
+      url: "/api/v1/users/login",
       withCredentials: true,
       data: {
         email,
-        password
-      }
+        password,
+      },
     });
 
     // Save token in response to localStorage
@@ -60,7 +48,7 @@ export const login = (email, password) => async dispatch => {
 
     dispatch({
       type: LOGIN_SUCCEEDED,
-      payload: res.data.data.user
+      payload: res.data.data.user,
     });
   } catch (err) {
     console.log(err);
@@ -70,14 +58,9 @@ export const login = (email, password) => async dispatch => {
   }
 };
 
-export const logout = () => async dispatch => {
+export const logout = () => async (dispatch) => {
   try {
-    url =
-      process.env.NODE_ENV === "production"
-        ? "/api/v1/users/logout"
-        : `${localhost}/api/v1/users/logout`;
-
-    const res = await axios.get(url);
+    const res = await axios.get("/api/v1/users/logout");
     if ((res.data.status = "success")) {
       dispatch({ type: LOGOUT_SUCCEEDED });
       dispatch(notify("success", "Logged out successfully"));
@@ -98,24 +81,25 @@ export const register = ({
   username,
   email,
   password,
-  passwordConfirm
-}) => async dispatch => {
+  passwordConfirm,
+}) => async (dispatch) => {
   const body = { username, email, password, passwordConfirm };
-  url =
-    process.env.NODE_ENV === "production"
-      ? "/api/v1/users/signup"
-      : `${localhost}/api/v1/users/signup`;
 
   try {
     const res = await axios({
       method: "POST",
-      url,
-      data: body
+      url: "/api/v1/users/signup",
+      data: body,
     });
+
+    console.log("RESPONSE FROM SIGNUP...", res.data);
+
+    // Save token in response to localStorage
+    localStorage.setItem("token", res.data.token);
 
     dispatch({
       type: REGISTER_SUCCEEEDED,
-      payload: res.data
+      payload: res.data.data.user,
     });
 
     dispatch(notify("success", "Account created successfully."));
@@ -131,49 +115,44 @@ export const register = ({
 };
 
 // type is either 'password' or 'data'
-export const updateSettings = (data, type) => async dispatch => {
+export const updateUserData = (data, type) => async (dispatch) => {
   const endpoint = type === "password" ? "updateMyPassword" : "updateMe";
-
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/users/${endpoint}`
-      : `${localhost}/api/v1/users/${endpoint}`;
+  console.log("PASSED IN DATA ----------", data);
 
   try {
     const res = await axios({
       method: "PATCH",
-      url,
+      url: `/api/v1/users/${endpoint}`,
       withCredentials: true,
-      data
+      data,
     });
+
+    console.log("RESPONSE FROM UPDATE USER CHATROOM", res.data);
 
     dispatch({
       type: ACCOUNT_UPDATED,
-      payload: res.data.data.user
+      payload: res.data.data.user,
     });
 
-    dispatch(
-      notify(
-        "success",
-        `${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`
-      )
-    );
+    if (type !== "chatroom") {
+      dispatch(notify("success", "Data updated successfully"));
+    }
   } catch (err) {
     console.log(err);
     dispatch(
       notify(
         "error",
-        "An error occured during signup. ee console for error details"
+        "An error occured while updating user data. See console for error details"
       )
     );
   }
 };
 
-export const deleteAccount = formValues => async dispatch => {
+export const deleteAccount = (formValues) => async (dispatch) => {
   //   try {
   //     const res = await axios({
   //       method: "PATCH",
-  //       url: "http://localhost:3100/api/v1/users/updateMyPassword",
+  //       url: "/api/v1/users/updateMyPassword",
   //       data: formValues
   //     });
   //     // dispatch({

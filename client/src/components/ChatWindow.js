@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import {
-  subscribeMessages,
-  sendMessage,
-  emitMessage
-} from "../actions/message";
+import { subscribeMessages, sendMessage } from "../actions/message";
 import { subscribeTyping, emitTyping } from "../actions/notify";
-
+import { subscribeChatroomUsers } from "../actions/chatroom";
 import { makeStyles } from "@material-ui/core/styles";
 import { useMediaQuery } from "react-responsive";
 import Typography from "@material-ui/core/Typography";
@@ -132,11 +128,12 @@ const ChatWindow = ({
   user,
   messages,
   subscribeMessages,
-  emitMessage,
   sendMessage,
   theme,
   subscribeTyping,
   usersTyping,
+  subscribeChatroomUsers,
+  activeUsers,
   emitTyping
 }) => {
   const [chatMessage, setChatMessage] = useState("");
@@ -146,9 +143,24 @@ const ChatWindow = ({
   useEffect(() => {
     if (currentChatroom) {
       subscribeMessages();
+      subscribeChatroomUsers();
       subscribeTyping();
     }
   }, [currentChatroom]);
+
+  useEffect(() => {
+    let typingTimeout;
+    if (currentChatroom && chatMessage !== "") {
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        emitTyping({ user, chatroom: currentChatroom.id, typing: true });
+      }, 1000);
+    } else if (currentChatroom && chatMessage === "") {
+      clearTimeout(typingTimeout);
+      emitTyping({ user, chatroom: currentChatroom.id, typing: false });
+    }
+    return () => clearTimeout(typingTimeout);
+  }, [currentChatroom, chatMessage]);
 
   const [drawer, setDrawer] = useState(false);
   const classes = useStyles(theme);
@@ -169,9 +181,13 @@ const ChatWindow = ({
 
   const onInputChange = e => {
     setChatMessage(e.target.value);
-    // e.target.value === ""
-    //   ? emitTyping({ user, typing: false })
-    //   : emitTyping({ user, typing: true });
+
+    // if (e.target.value === "") {
+    //   clearTimeout(typingTimeout);
+    //   // emitTyping({ user, chatroom: currentChatroom.id, typing: false });
+    // } else {
+    //   typingTimeout = setTimeout(() => 1500);
+    // }
   };
 
   const onSubmit = e => {
@@ -185,7 +201,6 @@ const ChatWindow = ({
         timestamp: Date.now()
       };
       sendMessage(data);
-      emitMessage(data);
     }
     setChatMessage("");
   };
@@ -197,7 +212,6 @@ const ChatWindow = ({
       <div className={classes.chatContainer}>
         <div className={classes.chatMessageWindow}>
           <List>
-            {/* //TODO: REIMPLEMENT MESSAGES */}
             {currentChatroom &&
               messages.map((message, i) => (
                 <div className={classes.chatMessageWrapper} key={i}>
@@ -328,16 +342,16 @@ const ChatWindow = ({
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <List dense>
-              //TODO: GET USERSINCHATROOM WORKING
-              {/* {usersInChatroom.map((user, i) => (
-                <div key={i}>
+              {activeUsers.map(user => (
+                <div key={user.id}>
                   <ListItem>
-                    {user === username && <PermIdentityIcon />}
-                    <ListItemText primary={user} />
+                    {/* //TODO: Replace with avatars
+                    {user === username && <PermIdentityIcon />} */}
+                    <ListItemText primary={user.username} />
                   </ListItem>
                   <Divider component="li" />
                 </div>
-              ))} */}
+              ))}
             </List>
           </ExpansionPanelDetails>
         </ExpansionPanel>
@@ -354,13 +368,14 @@ const mapStateToProps = state => ({
   messages: state.message.messages,
   user: state.auth.currentUser.username,
   currentChatroom: state.chatrooms.currentChatroom,
+  activeUsers: state.chatrooms.activeUsers,
   usersTyping: state.notify.usersTyping
 });
 
 export default connect(mapStateToProps, {
   subscribeMessages,
   sendMessage,
-  emitMessage,
   subscribeTyping,
+  subscribeChatroomUsers,
   emitTyping
 })(ChatWindow);

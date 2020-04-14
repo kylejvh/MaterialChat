@@ -4,9 +4,6 @@ import {} from "./types";
 
 import { notify } from "./notify";
 
-const localhost = "http://localhost:3100";
-let url;
-
 // export const getCurrentValues = () => async dispatch => {
 //   url =
 //     process.env.NODE_ENV === "production"
@@ -31,18 +28,13 @@ let url;
 // };
 
 //TODO: VERIFY WORKING
-export const updatePassword = () => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/users/updateMyPassword`
-      : `${localhost}/api/v1/users/updateMyPassword`;
-
+export const updatePassword = () => async (dispatch) => {
   try {
-    const res = await axios.patch(url);
+    const res = await axios.patch(`/api/v1/users/updateMyPassword`);
 
     dispatch({
       type: UPDATE_PASSWORD,
-      payload: res.data
+      payload: res.data,
     });
   } catch (err) {
     console.log(err);
@@ -52,27 +44,22 @@ export const updatePassword = () => async dispatch => {
   }
 };
 
-export const updateField = field => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/users/updateMe`
-      : `${localhost}/api/v1/users/updateMe`;
-
+export const updateField = (field) => async (dispatch) => {
   try {
-    const res = await axios.patch(url);
+    const res = await axios.patch(`/api/v1/users/updateMe`);
 
     if (field === "username") {
       // use an array and .includes??
       dispatch({
         type: UPDATE_USERNAME,
-        payload: res.data
+        payload: res.data,
       });
     }
 
     if (field === "email") {
       dispatch({
         type: UPDATE_EMAIL,
-        payload: res.data
+        payload: res.data,
       });
     }
   } catch (err) {
@@ -87,21 +74,16 @@ export const updateField = field => async dispatch => {
 };
 
 //TODO: VERIFY WORKING
-export const deleteAccount = () => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/users/deleteMe`
-      : `${localhost}/api/v1/users/deleteMe`;
-
+export const deleteAccount = () => async (dispatch) => {
   try {
-    const res = await axios.delete(url);
+    const res = await axios.delete(`/api/v1/users/deleteMe`);
 
     //TODO: HANDLE ACCOUNT DELETION
     // set isAuthenticated to false on auth,
     // notify with snackbar on redirect to login screen...
     dispatch({
       type: ACCOUNT_DELETED,
-      payload: res.data
+      payload: res.data,
     });
   } catch (err) {
     //TODO: HANDLE ERRORS

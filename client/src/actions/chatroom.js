@@ -5,43 +5,53 @@ import {
   USER_JOINED_CHATROOM,
   MESSAGES_LOADED_ON_CHATROOM_JOIN,
   ADD_CHATROOM_DIALOG_OPENED,
-  ADD_CHATROOM_DIALOG_CLOSED
+  ADD_CHATROOM_DIALOG_CLOSED,
+  RECEIVED_CURRENT_CHATROOM_USERS,
 } from "./types";
 import { notify } from "./notify";
 
-const localhost = "http://localhost:3100";
-let url;
-
+//TODO: refactor for factory func style, see if you can use less/one listener for all.
 export const subscribeChatrooms = () => {
   return {
     event: "SOCKET_ADDED_CHATROOM",
-    handle: "SOCKET_ADDED_CHATROOM"
+    handle: "SOCKET_ADDED_CHATROOM",
   };
 };
 
-const emitChatroom = chatroom => {
+export const subscribeChatroomUsers = () => {
+  return {
+    event: "CHATROOM_USERLIST_UPDATED",
+    handle: "RECEIVED_CURRENT_CHATROOM_USERS",
+  };
+};
+
+const emitChatroom = (chatroom) => {
   return {
     event: "SOCKET_ADDED_CHATROOM",
     emit: true,
-    payload: chatroom
+    payload: chatroom,
+  };
+};
+
+// Use general Function for DRY
+const emitEvent = (event, payload) => {
+  return {
+    event,
+    emit: true,
+    payload,
   };
 };
 
 // Get all chatrooms
-export const getChatrooms = () => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? "/api/v1/chatrooms"
-      : `${localhost}/api/v1/chatrooms`;
-
+export const getChatrooms = () => async (dispatch) => {
   try {
-    const res = await axios.get(url, {
-      withCredentials: true
+    const res = await axios.get("/api/v1/chatrooms", {
+      withCredentials: true,
     });
 
     dispatch({
       type: GET_CHATROOMS,
-      payload: res.data.data.chatrooms
+      payload: res.data.data.chatrooms,
     });
   } catch (err) {
     console.log(err);
@@ -52,25 +62,20 @@ export const getChatrooms = () => async dispatch => {
 };
 
 // TODO: Implement sending/adding addition details to chatrooms EX: images or descriptions
-export const createChatroom = chatroom => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? "/api/v1/chatrooms"
-      : `${localhost}/api/v1/chatrooms`;
-
+export const createChatroom = (chatroom) => async (dispatch) => {
   try {
     const res = await axios({
       method: "POST",
-      url,
+      url: "/api/v1/chatrooms",
       withCredentials: true,
       data: {
-        name: chatroom
-      }
+        name: chatroom,
+      },
     });
 
     dispatch({
       type: ADD_CHATROOM_SUCCEEDED,
-      payload: res.data.data.newDoc
+      payload: res.data.data.newDoc,
     });
 
     dispatch(notify("info", `"${res.data.data.newDoc.name}" created`));
@@ -87,35 +92,50 @@ export const createChatroom = chatroom => async dispatch => {
 };
 
 // Fetches Chatroom info and messages
-export const joinChatroom = chatroom => async dispatch => {
-  url =
-    process.env.NODE_ENV === "production"
-      ? `/api/v1/chatrooms/${chatroom.id}`
-      : `${localhost}/api/v1/chatrooms/${chatroom.id}`;
+export const joinChatroom = (chatroom) => async (dispatch, getState) => {
+  const prevChatroom = getState().chatrooms.currentChatroom;
+  const user = {
+    id: getState().auth.currentUser._id,
+    username: getState().auth.currentUser.username,
+  };
 
+  // Getting info of specific chatoom
   try {
-    const res = await axios.get(url, {
-      withCredentials: true
+    const res = await axios.get(`/api/v1/chatrooms/${chatroom.id}`, {
+      withCredentials: true,
     });
+
+    console.log("--------- JOIN POPULATE -----------", res.data.data.chatroom);
+
+    //TODO: Fix DB handling - Remove currentChatroom on DB when user leaves room or disconnects
+    // dispatch({
+    //   type: RECEIVED_CURRENT_CHATROOM_USERS,
+    //   payload: res.data.data.chatroom.activeUsers
+    // });
 
     dispatch({
       type: USER_JOINED_CHATROOM,
-      payload: res.data.data.chatroom
+      payload: res.data.data.chatroom,
     });
+
+    // If user is leaving a chatroom to join a new one, append previous chatroom id to emitted event.
+    const emitResponse = prevChatroom
+      ? {
+          ...res.data.data.chatroom,
+          user,
+          prevChatroom: prevChatroom.id,
+        }
+      : { ...res.data.data.chatroom, user };
+
+    console.log("Emitted response", emitResponse);
+    console.log("currentChatroom, grab the id", prevChatroom);
+
+    dispatch(emitEvent("SOCKET_JOINED_CHATROOM", emitResponse));
 
     dispatch({
       type: MESSAGES_LOADED_ON_CHATROOM_JOIN,
-      payload: res.data.data.chatroom.messages
+      payload: res.data.data.chatroom.messages,
     });
-
-    //! SEND USER'S CURRENT CHATROOM TO DB???
-    // dispatch({
-    //   type: ADD_CHATROOM_SUCCEEDED,
-    //   payload: res.data
-    // });
-    // if (!edit) {
-    //   history.push("/dashboard");
-    // }
   } catch (err) {
     console.log(err);
     dispatch(
