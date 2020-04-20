@@ -1,0 +1,17 @@
+extends baseEmail
+
+block content
+    p Hi #{username},
+    p Welcome to MaterialChat! Thanks for signing up. 🎉🙏
+    p This email is meant to illustrate the email handling functionality of my chat application. You should only receive this email if you opted in, for demonstration purposes only. You will not be spammed, and will only ever receive emails from this application for password reset purposes. 
+    table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+        tbody
+            tr
+                td(align='left')
+                    table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+                        tbody
+                            tr
+                                td
+                                    a(href="https://github.com/kylejvh", target='_blank') My Github
+    p Thanks for trying out MaterialChat. Check out my other projects at my Github, and leave a star if you liked it!
+    p - Kyle V, Full Stack Dev

@@ -1,73 +1,64 @@
-// const Chatroom = require("./../models/chatroomModel");
-// const APIFeatures = require("./../utils/apiFeatures");
-
-// exports.getAllChatrooms = async (req, res) => {
-//   // TBD
-// };
-
-// exports.createChatroom = async (req, res) => {
-//   try {
-//     const newChatroom = await Chatroom.create(req.body);
-
-//     res.status(201).json({
-//       status: "success",
-//       data: {
-//         chatroom: newChatroom
-//       }
-//     });
-//   } catch (err) {
-//     // 400 = bad request
-//     res.status(400).json({
-//       status: "fail",
-//       message: err
-//     });
-//   }
-// };
-
-// exports.getChatroom = async (req, res) => {
-//   try {
-//     const chatroom = await Chatroom.findById(req.params.id);
-
-//     res.status(200).json({
-//       status: "success",
-//       data: {
-//         chatroom
-//       }
-//     });
-//   } catch (err) {
-//     res.status(404).json({
-//       status: "fail",
-//       message: err
-//     });
-//   }
-// };
-
-// exports.updateUser = async (req, res) => {
-//   res.status(500).json({
-//     status: "error",
-//     message: "Not yet defined"
-//   });
-// };
-
-// exports.deleteUser = async (req, res) => {
-//   res.status(500).json({
-//     status: "error",
-//     message: "Not yet defined"
-//   });
-// };
-
-//! WORKING CHATROOM CODE...
-
 const Chatroom = require("./../models/chatroomModel");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
+const multer = require("multer");
+// const cloudinary = require("cloudinary");
+const sharp = require("sharp");
+
+const multerStorage = multer.memoryStorage();
+
+// Check if upload is image
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.uploadChatroomPhoto = upload.single("photo");
+// Multiple File Uploads if needed:
+// upload.fields([
+//   {
+//     name: "imageCover",
+//     maxCount: 1,
+//   },
+//   {
+//     name: "additionalImageName",
+//     maxCount: 3,
+//   },
+// ]);
+
+//TODO: integrate cloudinary support for img uploads
+// cloudinary.config({
+//   cloud_name: process.env.CLOUD_NAME,
+//   api_key: process.env.API_KEY,
+//   api_secret: process.env.API_SECRET
+//   });
+
+//TODO: edit resize logic for chatroom sidebar images
+// exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+//   if (!req.file) return next();
+
+//   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+//   await sharp(req.file.buffer)
+//     .resize(500, 500)
+//     .toFormat("jpeg")
+//     .jpeg({ quality: 90 })
+//     .toFile(`client/public/uploads/img/users/${req.file.filename}`);
+
+//   next();
+// });
 
 // function to limit req.body to specified properties
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
-  Object.keys(obj).forEach(el => {
+  Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
   });
   return newObj;
@@ -93,7 +84,7 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
   const chatroom = await Chatroom.findById(req.params.id)
     .populate({
       path: "messages",
-      select: "message"
+      select: "message",
     })
     .populate({ path: "activeUsers", select: "username" });
 
@@ -104,8 +95,8 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {
-      chatroom
-    }
+      chatroom,
+    },
   });
 });
 
@@ -145,7 +136,7 @@ exports.deleteChatroom = factory.deleteOne(Chatroom);
 
 exports.createChatroom = factory.createOne(Chatroom, {
   path: "creator",
-  select: "username"
+  select: "username",
 });
 
 //! Replaced with factory above...
@@ -206,7 +197,7 @@ exports.getAllChatrooms = catchAsync(async (req, res, next) => {
     status: "success",
     results: chatrooms.length,
     data: {
-      chatrooms
-    }
+      chatrooms,
+    },
   });
 });

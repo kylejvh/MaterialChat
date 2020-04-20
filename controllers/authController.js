@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
-const sendEmail = require("./../utils/email");
+const Email = require("./../utils/email");
 
 // Create JWT token with secret and options object
 const signToken = (id) => {
@@ -50,7 +50,7 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    // secure: req.secure || req.headers["x-forwarded-proto"] === "https"
+    // secure: req.secure || req.headers["x-forwarded-proto"] === "https" //TODO: look up lesson explaiing this option.
   });
 
   // Remove password from output
@@ -78,6 +78,15 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
   });
+
+  if (req.body.welcomeEmail) {
+    // Optional url not included, reserved for future use case.
+
+    await new Email(
+      newUser
+      // url
+    ).sendWelcome();
+  }
 
   createSendToken(newUser, 201, req, res);
 });
@@ -167,7 +176,7 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-//! NOT WORKING VIA POSTMAN - REQUIRES DEBUGGING.
+//*WORKING
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1. Get user based on the email input
   const user = await User.findOne({ email: req.body.email });
@@ -186,18 +195,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3. Send it to the user's email
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`;
-
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\n If you didn't forget your password, please ignore this email.`;
-
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset token (valid for 10 minutes)",
-      message,
-    });
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/resetPassword/${resetToken}`;
+
+    await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
       status: "success",
@@ -215,7 +218,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-//! NOT WORKING VIA POSTMAN - REQUIRES DEBUGGING.
+//*WORKING
 exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1. Get user based on the token
   const hashedToken = crypto
@@ -243,7 +246,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3. Update changedPasswordAt property for the user
 
   // 4. Log the user in, send token
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 //? WORKING VIA POSTMAN
