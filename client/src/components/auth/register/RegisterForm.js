@@ -1,9 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { Link, Redirect } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 
 import { makeStyles } from "@material-ui/core/styles";
 
+import Link from "@material-ui/core/Link";
 import ProgressButton from "../../ProgressButton";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -41,23 +42,35 @@ const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
   const onChange = (e) =>
     setFormValue({ ...formValue, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    register(formValue);
-    handleNext();
-    // if (value !== "") {
+    await register(formValue);
+
+    // if (isAuthenticated) {
+    //   handleNext();
+    // }
+
+    // let isEmpty = true;
+    // Object.keys(formValue).some((i) => {
+    //   if (formValue[i] !== "") isEmpty = false;
+    // });
+
+    // if (!isEmpty) {
+    //   await register(formValue);
+    //   if (isAuthenticated) {
+    //     handleNext();
+    //   }
     // }
   };
 
-  // if (isAuthenticated) {
-  //   return handleNext();
-  // }
+  useEffect(() => {
+    if (isAuthenticated) {
+      handleNext();
+    }
+  }, [isAuthenticated]);
 
-  // if (isAuthenticated) {
-  //   return <Redirect to="/" />;
-  // }
-
+  //TODO: implement progress button...
   //Todo: Fix privateroutes, and any edited isAuthenticated Redirect code, so it works as before.
   // Getting unauthorized for some reason...
   //TODO: Fix photo upload functionality, so it correctly displays and processes the uploaded file
@@ -74,12 +87,12 @@ const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
         <Typography>
           Register an account to log in and begin chatting!
         </Typography>
-        <Link to="/login">
-          <Typography>Already have an account?</Typography>
+        <Link component={RouterLink} to="/login">
+          Already have an account?
         </Link>
       </Container>
 
-      <form onSubmit={(e) => onSubmit(e)}>
+      <form onSubmit={onSubmit}>
         <TextField
           autoFocus
           fullWidth

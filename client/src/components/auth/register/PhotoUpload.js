@@ -39,8 +39,6 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
 
     updateUserData(formData);
 
-    // send photo field?
-
     // if (value !== "") {
     // }
   };
@@ -55,12 +53,8 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
       <form onSubmit={onSubmit}>
         <Paper square elevation={0} className={classes.dialogContainer}>
           <Typography>
-            You're signed up
-            {/* , 
-            {currentUser}.  */}
-            Customize your profile with an optional avatar photo below. You can
-            change this later, along with any other account settings when you're
-            logged in.
+            You're signed up, {currentUser.username}. Upload an optional avatar
+            photo below. You can always change this later.
           </Typography>
 
           <input
@@ -87,7 +81,7 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
 
               {userPhoto && (
                 <Avatar
-                  src={`uploads/img/users/${userPhoto}`}
+                  src={userPhoto}
                   style={{
                     margin: "10px",
                     width: "6em",

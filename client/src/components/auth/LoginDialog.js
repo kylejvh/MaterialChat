@@ -1,18 +1,17 @@
 import React, { useState } from "react";
-import { Link, Redirect } from "react-router-dom";
+import { Link as RouterLink, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+
 import { login } from "../../actions/auth";
+import ProgressButton from "../ProgressButton";
 
 import { makeStyles } from "@material-ui/core/styles";
-
-import ProgressButton from "../ProgressButton";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
 import { Typography, Container } from "@material-ui/core";
-import Dialog from "@material-ui/core/Dialog";
+import Link from "@material-ui/core/Link";
+import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-
+import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
@@ -31,8 +30,6 @@ const useStyles = makeStyles((theme) => ({
 const LoginDialog = ({ login, isAuthenticated, error }) => {
   const classes = useStyles();
 
-  //TODO: old ctx - const { requestUsername, state, dispatch } = useContext(CTX);
-  //TODO: old ctx - const { error } = state.loginDialog;
   const [formValue, setFormValue] = useState({
     email: "",
     password: "",
@@ -135,15 +132,9 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Link to="/register">
-            <Typography>Don't have an account?</Typography>
+          <Link component={RouterLink} to="/register">
+            Don't have an account?
           </Link>
-
-          {/* <Link to="/register">
-            <Button variant="outlined" color="primary">
-              Sign Up
-            </Button>
-          </Link> */}
           <ProgressButton
             title="Login"
             form="login-form"

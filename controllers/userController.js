@@ -5,13 +5,23 @@ const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
 const io = require("./../server").io;
 const multer = require("multer");
-// const cloudinary = require("cloudinary");
-const sharp = require("sharp");
+const cloudinary = require("cloudinary");
+const cloudinaryStorage = require("multer-storage-cloudinary");
 
-const multerStorage = multer.memoryStorage();
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+
+const storage = cloudinaryStorage({
+  cloudinary,
+  folder: "MaterialChat",
+  transformation: [{ width: 400, height: 400, crop: "limit" }],
+});
 
 // Check if upload is image
-const multerFilter = (req, file, cb) => {
+const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
   } else {
@@ -19,30 +29,9 @@ const multerFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+const parser = multer({ storage, fileFilter });
 
-exports.uploadUserPhoto = upload.single("photo");
-
-//TODO: integrate cloudinary support for img uploads
-// cloudinary.config({
-//   cloud_name: process.env.CLOUD_NAME,
-//   api_key: process.env.API_KEY,
-//   api_secret: process.env.API_SECRET
-//   });
-
-exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-  if (!req.file) return next();
-
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`client/public/uploads/img/users/${req.file.filename}`);
-
-  next();
-});
+exports.cloudinaryPhotoUpload = parser.single("photo");
 
 // function to limit req.body to specified properties
 const filterObj = (obj, ...allowedFields) => {
@@ -77,7 +66,10 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     "currentChatroom"
   );
 
-  if (req.file) filteredBody.photo = req.file.filename;
+  if (req.file) {
+    filteredBody.photo = req.file.secure_url;
+    filteredBody.photoId = req.file.public_id;
+  }
 
   // 3. Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {

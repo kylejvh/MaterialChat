@@ -12,6 +12,7 @@ const path = require("path");
 const chatroomRouter = require("./routes/chatroomRoutes");
 const chatMessageRouter = require("./routes/chatMessageRoutes");
 const userRouter = require("./routes/userRoutes");
+const premiumRouter = require("./routes/premiumRoutes");
 
 const app = express();
 //* 1. GLOBAL MIDDLEWARES
@@ -98,6 +99,7 @@ app.use((req, res, next) => {
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
+app.use("/api/v1/premium", premiumRouter);
 
 // Server static assets in production
 if (process.env.NODE_ENV === "production") {

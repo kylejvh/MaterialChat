@@ -1,26 +1,20 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { Link, Redirect } from "react-router-dom";
 import { useHistory } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
-
+import { notify } from "../../../actions/notify";
+import RegisterForm from "./RegisterForm";
+import PhotoUpload from "./PhotoUpload";
 import ProgressButton from "../../ProgressButton";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import { Typography, Container } from "@material-ui/core";
-import Dialog from "@material-ui/core/Dialog";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import AccountCircle from "@material-ui/icons/AccountCircle";
 
+import { makeStyles } from "@material-ui/core/styles";
+import { Typography } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
 import Paper from "@material-ui/core/Paper";
-
-import { notify } from "../../../actions/notify";
-import RegisterForm from "./RegisterForm";
-import PhotoUpload from "./PhotoUpload";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RegisterStepper = ({ isAuthenticated, notify }) => {
+const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -117,8 +111,6 @@ const RegisterStepper = ({ isAuthenticated, notify }) => {
 
   const handleSkip = () => {
     if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this,
-      // it should never occur unless someone's actively trying to break something.
       throw new Error("You can't skip a step that isn't optional.");
     }
 
@@ -157,10 +149,10 @@ const RegisterStepper = ({ isAuthenticated, notify }) => {
                           <Button
                             variant="contained"
                             color="primary"
-                            onClick={handleSkip}
+                            onClick={userPhoto ? handleNext : handleSkip}
                             className={classes.button}
                           >
-                            Skip
+                            {userPhoto ? "Next" : "Skip"}
                           </Button>
                         </div>
                       </div>
@@ -178,6 +170,7 @@ const RegisterStepper = ({ isAuthenticated, notify }) => {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: state.auth.isAuthenticated,
+  userPhoto: state.auth.userPhoto,
 });
 
 export default connect(mapStateToProps, { notify })(RegisterStepper);

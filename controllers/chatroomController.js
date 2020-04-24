@@ -4,56 +4,6 @@ const APIFeatures = require("./../utils/apiFeatures");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
 const multer = require("multer");
-// const cloudinary = require("cloudinary");
-const sharp = require("sharp");
-
-const multerStorage = multer.memoryStorage();
-
-// Check if upload is image
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
-
-exports.uploadChatroomPhoto = upload.single("photo");
-// Multiple File Uploads if needed:
-// upload.fields([
-//   {
-//     name: "imageCover",
-//     maxCount: 1,
-//   },
-//   {
-//     name: "additionalImageName",
-//     maxCount: 3,
-//   },
-// ]);
-
-//TODO: integrate cloudinary support for img uploads
-// cloudinary.config({
-//   cloud_name: process.env.CLOUD_NAME,
-//   api_key: process.env.API_KEY,
-//   api_secret: process.env.API_SECRET
-//   });
-
-//TODO: edit resize logic for chatroom sidebar images
-// exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-//   if (!req.file) return next();
-
-//   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-//   await sharp(req.file.buffer)
-//     .resize(500, 500)
-//     .toFormat("jpeg")
-//     .jpeg({ quality: 90 })
-//     .toFile(`client/public/uploads/img/users/${req.file.filename}`);
-
-//   next();
-// });
 
 // function to limit req.body to specified properties
 const filterObj = (obj, ...allowedFields) => {

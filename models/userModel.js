@@ -58,6 +58,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "default.jpg",
   },
+  photoId: {
+    type: String,
+  },
   slug: String,
   // Get timestamp of creation
   createdAt: {
