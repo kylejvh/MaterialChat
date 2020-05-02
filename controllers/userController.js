@@ -16,6 +16,7 @@ cloudinary.config({
 
 const storage = cloudinaryStorage({
   cloudinary,
+  // filename: (req, file, cb) => `user-${req.params.id}-${Date.now()}.jpeg`, //TODO: Fix form upload and styling
   folder: "MaterialChat",
   transformation: [{ width: 400, height: 400, crop: "limit" }],
 });
@@ -69,6 +70,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.file) {
     filteredBody.photo = req.file.secure_url;
     filteredBody.photoId = req.file.public_id;
+  }
+
+  if (req.body.deletePhoto) {
+    filteredBody.photo = "default.jpg";
+    filteredBody.photoId = null;
+
+    cloudinary.v2.uploader.destroy("sample", function (error, result) {
+      console.log(result, error);
+    });
   }
 
   // 3. Update user document

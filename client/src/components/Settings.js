@@ -34,32 +34,32 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    width: "100%"
+    width: "100%",
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
     flexBasis: "33.33%",
-    flexShrink: 0
+    flexShrink: 0,
   },
   secondaryHeading: {
     fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary
+    color: theme.palette.text.secondary,
   },
   details: {
-    alignItems: "center"
+    alignItems: "center",
   },
   column: {
-    flexBasis: "33.33%"
-  }
+    flexBasis: "33.33%",
+  },
 }));
 
 const Settings = ({
   updateUserData,
   deleteAccount,
   currentEmail,
-  currentUsername
+  currentUsername,
 }) => {
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState({
@@ -69,10 +69,10 @@ const Settings = ({
     password: "",
     passwordConfirm: "",
     showNewPassword: false,
-    showCurrentPassword: false
+    showCurrentPassword: false,
   });
 
-  const onChange = e =>
+  const onChange = (e) =>
     setValues({ ...values, [e.target.name]: e.target.value });
 
   const {
@@ -82,7 +82,7 @@ const Settings = ({
     password,
     passwordConfirm,
     showNewPassword,
-    showCurrentPassword
+    showCurrentPassword,
   } = values;
 
   const handleClickOpen = () => {
@@ -97,21 +97,21 @@ const Settings = ({
     setOpen(false);
   };
 
-  const handleClickShowPassword = newPass => {
+  const handleClickShowPassword = (newPass) => {
     if (newPass === "newPassword") {
       setValues({
         ...values,
-        showNewPassword: !showNewPassword
+        showNewPassword: !showNewPassword,
       });
     } else {
       setValues({
         ...values,
-        showCurrentPassword: !showCurrentPassword
+        showCurrentPassword: !showCurrentPassword,
       });
     }
   };
 
-  const handleMouseDownPassword = event => {
+  const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
@@ -134,7 +134,7 @@ const Settings = ({
 
   const [expanded, setExpanded] = React.useState(false);
 
-  const handleChange = panel => (event, isExpanded) => {
+  const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
 
@@ -143,19 +143,19 @@ const Settings = ({
     if (Object.values(fields).includes("")) {
       return;
     } else if (type === "data") {
-      updateUserData(fields, "data");
+      updateUserData({ ...fields, type: "data" });
       setValues({
         ...values,
         email: "",
-        username: ""
+        username: "",
       });
     } else if (type === "password") {
-      updateUserData(fields, "password");
+      updateUserData({ ...fields, type: "password" });
       setValues({
         ...values,
         passwordCurrent: "",
         password: "",
-        passwordConfirm: ""
+        passwordConfirm: "",
       });
     }
   };
@@ -209,7 +209,7 @@ const Settings = ({
                 <div className={classes.column}>
                   <Typography>Current Username: {currentUsername}</Typography>
                   <form
-                    onSubmit={e => submitFieldChange(e, { username }, "data")}
+                    onSubmit={(e) => submitFieldChange(e, { username }, "data")}
                     id="username"
                   >
                     <TextField
@@ -224,12 +224,12 @@ const Settings = ({
                           <InputAdornment position="start">
                             <AccountCircle />
                           </InputAdornment>
-                        )
+                        ),
                       }}
                       placeholder="Username"
                       // helperText={error ? "Email is already registered." : ""}
                       value={username}
-                      onChange={e => {
+                      onChange={(e) => {
                         onChange(e);
                         // if (error) {
                         //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -265,7 +265,7 @@ const Settings = ({
                 <div className={classes.column}>
                   <Typography>Current Email: {currentEmail}</Typography>
                   <form
-                    onSubmit={e => submitFieldChange(e, { email }, "data")}
+                    onSubmit={(e) => submitFieldChange(e, { email }, "data")}
                     id="email"
                   >
                     <TextField
@@ -280,12 +280,12 @@ const Settings = ({
                           <InputAdornment position="start">
                             <AccountCircle />
                           </InputAdornment>
-                        )
+                        ),
                       }}
                       placeholder="Email"
                       // helperText={error ? "Email is already registered." : ""}
                       value={email}
-                      onChange={e => {
+                      onChange={(e) => {
                         onChange(e);
                         // if (error) {
                         //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -329,13 +329,13 @@ const Settings = ({
                 <div className={classes.column} />
                 <div className={classes.column}>
                   <form
-                    onSubmit={e =>
+                    onSubmit={(e) =>
                       submitFieldChange(
                         e,
                         {
                           passwordCurrent,
                           password,
-                          passwordConfirm
+                          passwordConfirm,
                         },
                         "password"
                       )
@@ -355,7 +355,7 @@ const Settings = ({
                             <InputAdornment position="start">
                               <AccountCircle />
                             </InputAdornment>
-                          )
+                          ),
                         },
                         {
                           endAdornment: (
@@ -373,13 +373,13 @@ const Settings = ({
                                 )}
                               </IconButton>
                             </InputAdornment>
-                          )
+                          ),
                         })
                       }
                       placeholder="Current Password"
                       // helperText={error ? "Incorrect Password." : ""}
                       value={passwordCurrent}
-                      onChange={e => {
+                      onChange={(e) => {
                         onChange(e);
                         // if (error) {
                         //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -400,7 +400,7 @@ const Settings = ({
                             <InputAdornment position="start">
                               <AccountCircle />
                             </InputAdornment>
-                          )
+                          ),
                         },
                         {
                           endAdornment: (
@@ -420,13 +420,13 @@ const Settings = ({
                                 )}
                               </IconButton>
                             </InputAdornment>
-                          )
+                          ),
                         })
                       }
                       placeholder="New Password"
                       // helperText={error ? "Incorrect Password." : ""}
                       value={password}
-                      onChange={e => {
+                      onChange={(e) => {
                         onChange(e);
                         // if (error) {
                         //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
@@ -446,7 +446,7 @@ const Settings = ({
                             <InputAdornment position="start">
                               <AccountCircle />
                             </InputAdornment>
-                          )
+                          ),
                         },
                         {
                           endAdornment: (
@@ -466,13 +466,13 @@ const Settings = ({
                                 )}
                               </IconButton>
                             </InputAdornment>
-                          )
+                          ),
                         })
                       }
                       placeholder="Confirm New Password"
                       //TODO: fix error handling - helperText={error ? "Incorrect Password." : ""}
                       // value={passwordConfirm}
-                      onChange={e => {
+                      onChange={(e) => {
                         onChange(e);
                         //TODO: fix error handling -
                         // if (error) {
@@ -551,12 +551,12 @@ const Settings = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   currentUsername: state.auth.currentUser.username,
-  currentEmail: state.auth.currentUser.email
+  currentEmail: state.auth.currentUser.email,
 });
 
 export default connect(mapStateToProps, {
   updateUserData,
-  deleteAccount
+  deleteAccount,
 })(Settings);

@@ -32,7 +32,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -50,5 +51,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3100"
+  "proxy": "http://localhost:3100",
+  "devDependencies": {
+    "jest": "^25.5.3"
+  }
 }

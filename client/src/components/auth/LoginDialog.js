@@ -10,7 +10,9 @@ import { Typography, Container } from "@material-ui/core";
 import Link from "@material-ui/core/Link";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import AccountCircle from "@material-ui/icons/AccountCircle";
+import IconButton from "@material-ui/core/IconButton";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -20,6 +22,11 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 const useStyles = makeStyles((theme) => ({
   loginDialog: {
     padding: theme.spacing(3),
+  },
+  root: {
+    "& > *": {
+      margin: theme.spacing(3),
+    },
   },
   titleContainer: {
     padding: theme.spacing(3),
@@ -33,9 +40,18 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
   const [formValue, setFormValue] = useState({
     email: "",
     password: "",
+    showPassword: false,
   });
 
-  const { email, password } = formValue;
+  const { email, password, showPassword } = formValue;
+
+  const handleClickShowPassword = () => {
+    setFormValue({ ...formValue, showPassword: !showPassword });
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
 
   const onChange = (e) =>
     setFormValue({ ...formValue, [e.target.name]: e.target.value });
@@ -62,37 +78,31 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
     >
       <Container className={classes.titleContainer}>
         <Typography variant="h4">Hello! Welcome to MaterialChat!</Typography>
-        <Typography variant="h6">Please sign in to your account.</Typography>
       </Container>
-      <DialogTitle id="form-dialog-title">Login</DialogTitle>
+
       <form
+        className={classes.root}
         id="login-form"
         onSubmit={(e) => {
           onSubmit(e);
         }}
       >
+        <DialogTitle id="form-dialog-title">Login</DialogTitle>
         <DialogContent>
           <DialogContentText>
             To begin messaging, please enter your email and password.
           </DialogContentText>
-
-          {/* Use materialUI Email and password Forms, look at docs. */}
           <TextField
             autoFocus
+            required
             fullWidth
+            id="loginEmail"
             margin="normal"
             name="email"
             type="email"
             label="Email"
             variant="outlined"
             error={error}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccountCircle />
-                </InputAdornment>
-              ),
-            }}
             placeholder="Email"
             helperText={error ? "Email is already registered." : ""}
             value={email}
@@ -104,19 +114,27 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
             }}
           />
 
-          {/* TODO: Implement Auth - password form.  */}
           <TextField
+            required
             fullWidth
+            id="loginPassword"
             margin="normal"
-            type="password"
+            type={showPassword ? "text" : "password"}
             label="Password"
             name="password"
             variant="outlined"
             error={error}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccountCircle />
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
                 </InputAdornment>
               ),
             }}

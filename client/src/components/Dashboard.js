@@ -167,7 +167,7 @@ const Dashboard = ({
     }
 
     //TODO: implement change chatroom func
-    updateUserData({ currentChatroom: chatroom.id }, "chatroom");
+    updateUserData({ currentChatroom: chatroom.id, type: "chatroom" });
     joinChatroom(chatroom);
     // Better implementation?
   };

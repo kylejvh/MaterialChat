@@ -1,12 +1,5 @@
 import axios from "axios";
-import {
-  GET_MESSAGES,
-  GET_MESSAGE,
-  CHAT_MESSAGE_SENT,
-  ADD_CHAT_MESSAGE,
-  EDIT_CHAT_MESSAGE,
-  DELETE_CHAT_MESSAGE,
-} from "./types";
+import { GET_MESSAGES, CHAT_MESSAGE_SENT } from "./types";
 import { notify } from "./notify";
 
 export const subscribeMessages = () => {
@@ -52,9 +45,6 @@ export const sendMessage = (data) => async (dispatch, getState) => {
       },
     });
 
-    // emit here with the message....
-    console.log(res.data, "Message response, how do i Get room from this");
-
     dispatch(emitMessage(res.data.data.newDoc));
 
     dispatch({
@@ -68,23 +58,3 @@ export const sendMessage = (data) => async (dispatch, getState) => {
     );
   }
 };
-
-//TODO : Implement removal/editing of messages
-// Delete Chat Message
-// export const deleteChatMessage = id => async dispatch => {
-//   try {
-//     await axios.delete(`/api/posts/${id}`);
-
-//     dispatch({
-//       type: DELETE_POST,
-//       payload: id
-//     });
-
-//     dispatch(setAlert('Post Removed', 'success'));
-//   } catch (err) {
-//     dispatch({
-//       type: POST_ERROR,
-//       payload: { msg: err.response.statusText, status: err.response.status }
-//     });
-//   }
-// };

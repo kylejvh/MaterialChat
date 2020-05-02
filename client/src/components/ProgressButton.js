@@ -8,27 +8,27 @@ import Fab from "@material-ui/core/Fab";
 import CheckIcon from "@material-ui/icons/Check";
 import SaveIcon from "@material-ui/icons/Save";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
-    alignItems: "center"
+    alignItems: "center",
   },
   wrapper: {
     margin: theme.spacing(1),
-    position: "relative"
+    position: "relative",
   },
   buttonSuccess: {
     backgroundColor: green[500],
     "&:hover": {
-      backgroundColor: green[700]
-    }
+      backgroundColor: green[700],
+    },
   },
   fabProgress: {
     color: green[500],
     position: "absolute",
     top: -6,
     left: -6,
-    zIndex: 1
+    zIndex: 1,
   },
   buttonProgress: {
     color: green[500],
@@ -36,8 +36,8 @@ const useStyles = makeStyles(theme => ({
     top: "50%",
     left: "50%",
     marginTop: -12,
-    marginLeft: -12
-  }
+    marginLeft: -12,
+  },
 }));
 
 const ProgressButton = ({ title, formId }) => {
@@ -48,7 +48,7 @@ const ProgressButton = ({ title, formId }) => {
   const timer = React.useRef();
 
   const buttonClassname = clsx({
-    [classes.buttonSuccess]: success
+    [classes.buttonSuccess]: success,
   });
 
   React.useEffect(() => {
@@ -76,6 +76,7 @@ const ProgressButton = ({ title, formId }) => {
         variant="contained"
         color="primary"
         className={buttonClassname}
+        style={{ marginTop: ".5em" }}
         disabled={loading}
         // onClick={handleButtonClick}
       >

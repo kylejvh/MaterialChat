@@ -119,13 +119,14 @@ const Premium = ({}) => {
     if (Object.values(fields).includes("")) {
       return;
     } else if (type === "data") {
-      updateUserData(fields, "data");
+      updateUserData(fields, "data"); // old way, review this func in other places
       setValues({
         ...values,
         email: "",
         username: "",
       });
     } else if (type === "password") {
+      updateUserData(fields, "data"); // old way, review this func in other places
       updateUserData(fields, "password");
       setValues({
         ...values,

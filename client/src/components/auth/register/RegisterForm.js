@@ -73,7 +73,7 @@ const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
   //TODO: implement progress button...
   //Todo: Fix privateroutes, and any edited isAuthenticated Redirect code, so it works as before.
   // Getting unauthorized for some reason...
-  //TODO: Fix photo upload functionality, so it correctly displays and processes the uploaded file
+
   //TODO: Verify where the file is being stored, and figure out best place to do this...
   //TODO: Fix stepper functionality: Make it so that you cannot get to next step unless register is successful.
   //TODO: Fix spacing and styling where needed.
@@ -84,9 +84,6 @@ const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
         <DialogTitle id="form-dialog-title">
           Register a MaterialChat account
         </DialogTitle>
-        <Typography>
-          Register an account to log in and begin chatting!
-        </Typography>
         <Link component={RouterLink} to="/login">
           Already have an account?
         </Link>

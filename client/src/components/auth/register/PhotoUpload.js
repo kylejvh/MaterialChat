@@ -7,6 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { connect } from "react-redux";
 import ProgressButton from "../../ProgressButton";
 import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
 
 import Paper from "@material-ui/core/Paper";
 
@@ -21,6 +22,10 @@ const useStyles = makeStyles((theme) => ({
   input: {
     display: "none",
   },
+  avatarButton: {
+    flex: 1,
+  },
+
   button: {
     margin: theme.spacing(1),
   },
@@ -52,11 +57,11 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
     <div className={classes.root}>
       <form onSubmit={onSubmit}>
         <Paper square elevation={0} className={classes.dialogContainer}>
+          <Typography>You're signed up, {currentUser.username}.</Typography>
           <Typography>
-            You're signed up, {currentUser.username}. Upload an optional avatar
-            photo below. You can always change this later.
+            Upload an optional avatar photo below. You can always change this
+            later.
           </Typography>
-
           <input
             accept="image/*"
             className={classes.input}
@@ -66,7 +71,7 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
             type="file"
           />
           <label htmlFor="photo">
-            <Button
+            {/* <Button
               variant="contained"
               color="default"
               className={classes.button}
@@ -74,29 +79,55 @@ const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
               startIcon={<CloudUploadIcon />}
             >
               {filename}
-            </Button>
-            <IconButton>
-              {/* Read img from memory... */}
-              {/* Upon pressing next, send updateMe patch req? */}
+            </Button> */}
 
-              {userPhoto && (
+            <Box display="flex" flexDirection="column" justifyContent="center">
+              <IconButton
+                component="span"
+                // className={classes.avatarButton}
+              >
+                {/* Read img from memory... */}
+                {/* Upon pressing next, send updateMe patch req? */}
+
                 <Avatar
-                  src={userPhoto}
+                  src={userPhoto ? userPhoto : null}
                   style={{
                     margin: "10px",
                     width: "6em",
                     height: "6em",
                   }}
-                />
+                  alt={currentUser.username}
+                >
+                  {userPhoto ? currentUser.username : <CloudUploadIcon />}
+                </Avatar>
+              </IconButton>
+
+              {userPhoto && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  className={classes.button}
+                  onClick={() => {
+                    setFile("");
+                    setFilename("");
+
+                    updateUserData({
+                      public_id: currentUser.photoId,
+                      deletePhoto: true,
+                    });
+                  }}
+                >
+                  Remove
+                </Button>
               )}
-            </IconButton>
+              <ProgressButton
+                title="Confirm Photo"
+                type="submit"
+                color="primary"
+                loading=""
+              />
+            </Box>
           </label>
-          <ProgressButton
-            title="Confirm Photo"
-            type="submit"
-            color="primary"
-            loading=""
-          />
         </Paper>
       </form>
     </div>

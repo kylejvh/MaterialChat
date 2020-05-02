@@ -9,6 +9,7 @@ import { notify } from "./notify";
 
 export const getUser = () => async (dispatch) => {
   console.log("FROM GETUSER", localStorage.token);
+
   try {
     const res = await axios.get("/api/v1/users/me", {
       headers: {
@@ -92,8 +93,6 @@ export const register = ({
       data: body,
     });
 
-    console.log("RESPONSE FROM SIGNUP...", res.data);
-
     // Save token in response to localStorage
     localStorage.setItem("token", res.data.token);
 
@@ -115,9 +114,8 @@ export const register = ({
 };
 
 // type is either 'password' or 'data'
-export const updateUserData = (data, type) => async (dispatch) => {
-  const endpoint = type === "password" ? "updateMyPassword" : "updateMe";
-  console.log("PASSED IN DATA ----------", data);
+export const updateUserData = (data) => async (dispatch) => {
+  const endpoint = data.type === "password" ? "updateMyPassword" : "updateMe";
 
   try {
     const res = await axios({
@@ -127,14 +125,12 @@ export const updateUserData = (data, type) => async (dispatch) => {
       data,
     });
 
-    console.log("RESPONSE FROM UPDATE USER CHATROOM", res.data);
-
     dispatch({
       type: ACCOUNT_UPDATED,
       payload: res.data.data.user,
     });
 
-    if (type !== "chatroom") {
+    if (data.type !== "chatroom") {
       dispatch(notify("success", "Data updated successfully"));
     }
   } catch (err) {

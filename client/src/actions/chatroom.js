@@ -6,11 +6,9 @@ import {
   MESSAGES_LOADED_ON_CHATROOM_JOIN,
   ADD_CHATROOM_DIALOG_OPENED,
   ADD_CHATROOM_DIALOG_CLOSED,
-  RECEIVED_CURRENT_CHATROOM_USERS,
 } from "./types";
 import { notify } from "./notify";
 
-//TODO: refactor for factory func style, see if you can use less/one listener for all.
 export const subscribeChatrooms = () => {
   return {
     event: "SOCKET_ADDED_CHATROOM",
@@ -61,7 +59,6 @@ export const getChatrooms = () => async (dispatch) => {
   }
 };
 
-// TODO: Implement sending/adding addition details to chatrooms EX: images or descriptions
 export const createChatroom = (chatroom) => async (dispatch) => {
   try {
     const res = await axios({
@@ -105,14 +102,6 @@ export const joinChatroom = (chatroom) => async (dispatch, getState) => {
       withCredentials: true,
     });
 
-    console.log("--------- JOIN POPULATE -----------", res.data.data.chatroom);
-
-    //TODO: Fix DB handling - Remove currentChatroom on DB when user leaves room or disconnects
-    // dispatch({
-    //   type: RECEIVED_CURRENT_CHATROOM_USERS,
-    //   payload: res.data.data.chatroom.activeUsers
-    // });
-
     dispatch({
       type: USER_JOINED_CHATROOM,
       payload: res.data.data.chatroom,
@@ -126,9 +115,6 @@ export const joinChatroom = (chatroom) => async (dispatch, getState) => {
           prevChatroom: prevChatroom.id,
         }
       : { ...res.data.data.chatroom, user };
-
-    console.log("Emitted response", emitResponse);
-    console.log("currentChatroom, grab the id", prevChatroom);
 
     dispatch(emitEvent("SOCKET_JOINED_CHATROOM", emitResponse));
 
@@ -151,57 +137,3 @@ export const openDialog = () => {
 export const closeDialog = () => {
   return { type: ADD_CHATROOM_DIALOG_CLOSED };
 };
-
-//TODO: Get and edit chatroom functions
-// // Get current users chatroom
-// export const getCurrentChatroom = () => async dispatch => {
-//   try {
-//     const res = await axios.get("/api/v1/chatroom");
-
-//     dispatch({
-//       type: GET_PROFILE,
-//       payload: res.data
-//     });
-//   } catch (err) {
-//     dispatch({
-//       type: PROFILE_ERROR,
-//       payload: { msg: err.response.statusText, status: err.response.status }
-//     });
-//   }
-// };
-
-// // Get profile by ID
-// export const getChatroomById = userId => async dispatch => {
-//   try {
-//     const res = await axios.get(`/api/v1/chatroom/${Id}`);
-
-//     dispatch({
-//       type: GET_PROFILE,
-//       payload: res.data
-//     });
-//   } catch (err) {
-//     dispatch({
-//       type: PROFILE_ERROR,
-//       payload: { msg: err.response.statusText, status: err.response.status }
-//     });
-//   }
-// };
-
-// // Delete chatroom
-// export const deleteChatroom = () => async dispatch => {
-//   if (window.confirm("Are you sure? This can NOT be undone!")) {
-//     try {
-//       await axios.delete(`/api/v1/chatroom/${id}`);
-
-//       dispatch({ type: CLEAR_PROFILE });
-//       dispatch({ type: ACCOUNT_DELETED });
-
-//       dispatch(setAlert("Your account has been permanantly deleted"));
-//     } catch (err) {
-//       dispatch({
-//         type: PROFILE_ERROR,
-//         payload: { msg: err.response.statusText, status: err.response.status }
-//       });
-//     }
-//   }
-// };
