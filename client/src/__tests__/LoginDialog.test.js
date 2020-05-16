@@ -3,10 +3,9 @@
 
 // https://frontendmasters.com/courses/testing-react/adding-code-coverage-reports/
 
+// https://frontendmasters.com/courses/testing-react/integration-tests-demo/
 
-https://frontendmasters.com/courses/testing-react/integration-tests-demo/
-
-https://frontendmasters.com/courses/testing-react/integration-tests-exercise/
+// https://frontendmasters.com/courses/testing-react/integration-tests-exercise/
 // Create a test utils file
 
 // test cases

@@ -32,7 +32,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest --coverage",
+    "test": "jest",
     "test:watch": "jest --watch",
     "eject": "react-scripts eject"
   },
@@ -52,7 +52,5 @@
     ]
   },
   "proxy": "http://localhost:3100",
-  "devDependencies": {
-    "jest": "^25.5.3"
-  }
+  "devDependencies": {}
 }

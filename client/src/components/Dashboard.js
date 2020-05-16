@@ -49,7 +49,7 @@ import EditChatroom from "./chatroom/EditChatroom";
 const drawerWidth = 240;
 const mobileDrawerWidth = 120;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     display: "flex",
   },
@@ -161,7 +161,7 @@ const Dashboard = ({
   const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
   const [open, setOpen] = React.useState(true);
 
-  const handleChatroomChange = (chatroom) => {
+  const handleChatroomChange = chatroom => {
     if (currentChatroom && chatroom.id === currentChatroom.id) {
       return;
     }
@@ -277,7 +277,7 @@ const Dashboard = ({
         >
           <Divider />
           {/* //TODO: Fix state below */}
-          {chatrooms.map((chatroom) => (
+          {chatrooms.map(chatroom => (
             <div key={chatroom._id}>
               <ListItem onClick={() => handleChatroomChange(chatroom)} button>
                 {/* //TODO: ADD IMAGE UPLOADS FOR CHATROOMS AND USERS */}
@@ -323,7 +323,7 @@ const Dashboard = ({
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   auth: state.auth,
   currentUser: state.auth.currentUser,
   chatrooms: state.chatrooms.chatrooms,

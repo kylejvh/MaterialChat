@@ -10,7 +10,8 @@
     "client": "npm start --prefix client",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:prod": "cross-env NODE_ENV=production nodemon server.js"
+    "start:prod": "cross-env NODE_ENV=production nodemon server.js",
+    "cy": "cypress open"
   },
   "engines": {
     "node": "13.6.x"
@@ -46,6 +47,7 @@
   "devDependencies": {
     "concurrently": "^5.1.0",
     "cross-env": "^7.0.2",
+    "cypress": "^4.5.0",
     "nodemon": "^2.0.2"
   }
 }
