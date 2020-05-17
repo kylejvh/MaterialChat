@@ -16,7 +16,7 @@ import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
 import Paper from "@material-ui/core/Paper";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     width: "100%",
   },
@@ -90,11 +90,11 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
   const [skipped, setSkipped] = React.useState(new Set());
   const steps = getSteps();
 
-  const isStepOptional = (step) => {
+  const isStepOptional = step => {
     return step === 1;
   };
 
-  const isStepSkipped = (step) => {
+  const isStepSkipped = step => {
     return skipped.has(step);
   };
 
@@ -105,7 +105,7 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
       newSkipped.delete(activeStep);
     }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep(prevActiveStep => prevActiveStep + 1);
     setSkipped(newSkipped);
   };
 
@@ -114,8 +114,8 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
       throw new Error("You can't skip a step that isn't optional.");
     }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped((prevSkipped) => {
+    setActiveStep(prevActiveStep => prevActiveStep + 1);
+    setSkipped(prevSkipped => {
       const newSkipped = new Set(prevSkipped.values());
       newSkipped.add(activeStep);
       return newSkipped;
@@ -149,6 +149,11 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
                           <Button
                             variant="contained"
                             color="primary"
+                            data-test={
+                              userPhoto
+                                ? "nextUploadButton"
+                                : "skipUploadButton"
+                            }
                             onClick={userPhoto ? handleNext : handleSkip}
                             className={classes.button}
                           >
@@ -168,7 +173,7 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   isAuthenticated: state.auth.isAuthenticated,
   userPhoto: state.auth.userPhoto,
 });
