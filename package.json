@@ -4,9 +4,10 @@
   "description": "Backend for materialchat",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server",
+    "start": "node server",
     "debug": "ndb server",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server",
     "client": "npm start --prefix client",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client",
     "test": "echo \"Error: no test specified\" && exit 1",
