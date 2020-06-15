@@ -71,13 +71,15 @@ app.use(globalErrorHandler);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === "production") {
+  console.log("in production...");
   app.use(express.static(path.join(__dirname, "./client/build")));
 
-  app.get("*", function (_, res) {
+  app.get("*", function (req, res) {
     res.sendFile(path.join(__dirname, "./client/build/index.html"), function (
       err
     ) {
       if (err) {
+        console.log("error serving files");
         res.status(500).send(err);
       }
     });
