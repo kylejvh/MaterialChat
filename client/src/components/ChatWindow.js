@@ -28,21 +28,21 @@ import IconButton from "@material-ui/core/IconButton";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ListIcon from "@material-ui/icons/List";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   "@global": {
     "*::-webkit-scrollbar": {
-      width: "0.4em"
+      width: "0.4em",
     },
     "*::-webkit-scrollbar-track": {
-      "-webkit-box-shadow": "inset 0 0 6px rgba(0,0,0,0.00)"
+      "-webkit-box-shadow": "inset 0 0 6px rgba(0,0,0,0.00)",
     },
     "*::-webkit-scrollbar-thumb": {
       backgroundColor: theme.palette.primary.main,
-      outline: "3px solid slategrey"
-    }
+      outline: "3px solid slategrey",
+    },
   },
   content: {
-    padding: 0
+    padding: 0,
   },
   root: {
     display: "flex",
@@ -50,8 +50,8 @@ const useStyles = makeStyles(theme => ({
     height: "85vh",
 
     "@media (max-width: 600px)": {
-      height: "89vh"
-    }
+      height: "89vh",
+    },
   },
   chatContainer: {
     display: "flex",
@@ -60,8 +60,8 @@ const useStyles = makeStyles(theme => ({
     margin: ".5em 1em 0 1em",
 
     "@media (max-width: 600px)": {
-      margin: "1em 0"
-    }
+      margin: "1em 0",
+    },
   },
   chatMessageWindow: {
     border: "1px solid #ccc",
@@ -76,8 +76,8 @@ const useStyles = makeStyles(theme => ({
     "@media (max-width: 600px)": {
       border: "none",
       borderRadius: "0",
-      padding: "0"
-    }
+      padding: "0",
+    },
   },
   chatBar: {
     display: "flex",
@@ -85,42 +85,42 @@ const useStyles = makeStyles(theme => ({
     alignSelf: "flex-end",
 
     "@media (max-width: 600px)": {
-      margin: "0"
-    }
+      margin: "0",
+    },
   },
   chatBarInput: {},
   chatSendButton: {},
   userListPanel: {
     flex: "0 1",
-    alignSelf: "flex-start"
+    alignSelf: "flex-start",
   },
   userListIcon: {
-    marginRight: "0.5em"
+    marginRight: "0.5em",
   },
   mobileUserList: {
-    margin: "1em"
+    margin: "1em",
   },
   UserListDivider: {
-    width: "100%"
+    width: "100%",
   },
   typing: {
-    margin: "1rem"
+    margin: "1rem",
   },
   chatMessage: {
     fontSize: "1rem",
-    margin: "0 0 .5rem .5rem"
+    margin: "0 0 .5rem .5rem",
   },
   chatMessageWrapper: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   fromUserBubble: {
-    marginBottom: ".5rem"
+    marginBottom: ".5rem",
   },
   chatDivider: {
     width: "100%",
-    marginBottom: "1rem"
-  }
+    marginBottom: "1rem",
+  },
 }));
 
 const ChatWindow = ({
@@ -134,7 +134,7 @@ const ChatWindow = ({
   usersTyping,
   subscribeChatroomUsers,
   activeUsers,
-  emitTyping
+  emitTyping,
 }) => {
   const [chatMessage, setChatMessage] = useState("");
   const [showUserInfo, setShowUserInfo] = useState(false);
@@ -165,7 +165,7 @@ const ChatWindow = ({
   const [drawer, setDrawer] = useState(false);
   const classes = useStyles(theme);
 
-  const handleUserClick = event => {
+  const handleUserClick = (event) => {
     setShowUserInfo(!showUserInfo);
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
@@ -179,7 +179,7 @@ const ChatWindow = ({
     }
   };
 
-  const onInputChange = e => {
+  const onInputChange = (e) => {
     setChatMessage(e.target.value);
 
     // if (e.target.value === "") {
@@ -190,15 +190,15 @@ const ChatWindow = ({
     // }
   };
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault();
     if (chatMessage) {
       let data = {
         sender: {
-          username: user
+          username: user,
         },
         message: chatMessage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       sendMessage(data);
     }
@@ -227,7 +227,7 @@ const ChatWindow = ({
                       label={(message.sender && message.sender.username) || ""}
                       size="small"
                       color={message.sender === user ? "primary" : "secondary"}
-                      onClick={event => handleUserClick(event)}
+                      onClick={(event) => handleUserClick(event)}
                     ></Chip>
 
                     {/* //TODO: Implement Usercard popper
@@ -265,7 +265,7 @@ const ChatWindow = ({
             </div>
           </List>
         </div>
-        <form onSubmit={e => onSubmit(e)}>
+        <form onSubmit={(e) => onSubmit(e)}>
           <div className={classes.chatBar}>
             {isMobile && (
               <IconButton
@@ -284,7 +284,7 @@ const ChatWindow = ({
               variant="outlined"
               value={chatMessage}
               fullWidth
-              onChange={e => onInputChange(e)}
+              onChange={(e) => onInputChange(e)}
             />
             <Button
               className={classes.chatBarSend}
@@ -342,7 +342,7 @@ const ChatWindow = ({
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <List dense>
-              {activeUsers.map(user => (
+              {activeUsers.map((user) => (
                 <div key={user.id}>
                   <ListItem>
                     {/* //TODO: Replace with avatars
@@ -364,12 +364,12 @@ const ChatWindow = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   messages: state.message.messages,
   user: state.auth.currentUser.username,
   currentChatroom: state.chatrooms.currentChatroom,
   activeUsers: state.chatrooms.activeUsers,
-  usersTyping: state.notify.usersTyping
+  usersTyping: state.notify.usersTyping,
 });
 
 export default connect(mapStateToProps, {
@@ -377,5 +377,5 @@ export default connect(mapStateToProps, {
   sendMessage,
   subscribeTyping,
   subscribeChatroomUsers,
-  emitTyping
+  emitTyping,
 })(ChatWindow);
