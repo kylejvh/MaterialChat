@@ -122,14 +122,14 @@ io.on("connection", function (socket) {
 
 const PORT = process.env.PORT || 3100;
 
-const nodeServer = server.listen(PORT, (err) => {
+server.listen(PORT, (err) => {
   console.log(`App running on port ${PORT}`);
 });
 
 process.on("unhandledRejection", (err) => {
   console.log(`${err.name}: ${err.message}`);
   console.error("Unhandled rejection. Server shutting down...");
-  nodeServer.close(() => {
+  server.close(() => {
     process.exit(1);
   });
 });
