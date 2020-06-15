@@ -21,16 +21,7 @@ exports.setChatroomCreatorIds = (req, res, next) => {
   next();
 };
 
-// If you need to populate all find methods, view video
-// 152 for making a populate middleware...
-//! TEST VIA POSTMAN -- POPULATE NOT WORKING...
-// POPULATE MESSAGES USING THIS FUNC
-
-//! Replaced with factory - test it thoroughly
-
 exports.getChatroom = catchAsync(async (req, res, next) => {
-  //TODO: limit response population of messages to needed fields and length.
-  // TODO: ex: you don't want to fetch more than 100 messages at once...
   const chatroom = await Chatroom.findById(req.params.id)
     .populate({
       path: "messages",
@@ -38,8 +29,10 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
     })
     .populate({ path: "activeUsers", select: "username" });
 
+  //! This is not doing anything
   if (!chatroom) {
-    return next(new AppError("No Chatroom with specified ID", 404));
+    console.log("was i hit?");
+    return next(new AppError("No chatroom found with the specified ID", 404));
   }
 
   res.status(200).json({

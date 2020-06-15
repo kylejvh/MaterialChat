@@ -10,7 +10,7 @@ import { updateUserData } from "../actions/auth";
 import { Route, useRouteMatch, useHistory, Link } from "react-router-dom";
 
 import clsx from "clsx";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { makeStyles, withStyles, useTheme } from "@material-ui/core/styles";
 import { useMediaQuery } from "react-responsive";
 
 import ChatWindow from "./ChatWindow";
@@ -30,6 +30,7 @@ import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Avatar from "@material-ui/core/Avatar";
 
+import Badge from "@material-ui/core/Badge";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
@@ -49,7 +50,7 @@ import EditChatroom from "./chatroom/EditChatroom";
 const drawerWidth = 240;
 const mobileDrawerWidth = 120;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
   },
@@ -136,7 +137,39 @@ const useStyles = makeStyles(theme => ({
     alignItems: "flex-end",
     flex: "1",
   },
+  userAvatar: {
+    border: "2px solid currentColor",
+  },
 }));
+
+const StyledBadge = withStyles((theme) => ({
+  badge: {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "$ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}))(Badge);
 
 const Dashboard = ({
   auth,
@@ -161,7 +194,7 @@ const Dashboard = ({
   const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
   const [open, setOpen] = React.useState(true);
 
-  const handleChatroomChange = chatroom => {
+  const handleChatroomChange = (chatroom) => {
     if (currentChatroom && chatroom.id === currentChatroom.id) {
       return;
     }
@@ -221,18 +254,18 @@ const Dashboard = ({
           </Typography>
 
           <div className={classes.appBarButtons}>
-            <IconButton
+            {/* <IconButton
               aria-label="delete"
               // onClick={props.changeTheme}
               color="inherit"
-              // children={
-              //   props.isDarkTheme ? (
-              //     <Brightness4OutlinedIcon />
-              //   ) : (
-              //     <BrightnessLowOutlinedIcon />
-              //   )
-              // }
-            ></IconButton>
+              children={
+                props.isDarkTheme ? (
+                  <Brightness4OutlinedIcon />
+                ) : (
+                  <BrightnessLowOutlinedIcon />
+                )
+              }
+            ></IconButton> */}
             {/*  Implement logout authcontroller func */}
 
             {/* //TODO: Implement Friends screen
@@ -244,6 +277,26 @@ const Dashboard = ({
                 children={<PeopleAltIcon />}
               ></IconButton>
             </Tooltip> */}
+            <StyledBadge
+              overlap="circle"
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              variant="dot"
+            >
+              <Avatar
+                alt="Your Avatar"
+                src={
+                  currentUser.photo !== "default.jpg" ? currentUser.photo : null
+                }
+                className={classes.userAvatar}
+              >
+                {currentUser.photo === "default.jpg" &&
+                  `${currentUser.username.charAt(0)}`}
+              </Avatar>
+            </StyledBadge>
+
             <Settings />
             <LogoutDialog />
           </div>
@@ -277,7 +330,7 @@ const Dashboard = ({
         >
           <Divider />
           {/* //TODO: Fix state below */}
-          {chatrooms.map(chatroom => (
+          {chatrooms.map((chatroom) => (
             <div key={chatroom._id}>
               <ListItem onClick={() => handleChatroomChange(chatroom)} button>
                 {/* //TODO: ADD IMAGE UPLOADS FOR CHATROOMS AND USERS */}
@@ -323,7 +376,7 @@ const Dashboard = ({
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   auth: state.auth,
   currentUser: state.auth.currentUser,
   chatrooms: state.chatrooms.chatrooms,

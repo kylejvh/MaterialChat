@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { notify } from "../../../actions/notify";
+import { completeRegister } from "../../../actions/auth";
+
+import useMediaQuery from "@material-ui/core/useMediaQuery";
 import RegisterForm from "./RegisterForm";
 import PhotoUpload from "./PhotoUpload";
 import ProgressButton from "../../ProgressButton";
 
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
@@ -16,7 +19,7 @@ import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
 import Paper from "@material-ui/core/Paper";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
   },
@@ -35,20 +38,16 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
+const RegisterStepper = ({ isAuthenticated, completeRegister }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const history = useHistory();
 
-  const handleAuthRedirect = () => {
+  useEffect(() => {
     if (isAuthenticated) {
       return history.push("/");
-    } else {
-      notify(
-        "error",
-        "Error during registry. Please refresh the page and try again."
-      );
     }
-  };
+  }, [isAuthenticated, history]);
 
   function getSteps() {
     return [
@@ -58,12 +57,25 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
     ];
   }
 
+  const uploadFormButtons = () => <></>;
+
   function getStepContent(step) {
     switch (step) {
       case 0:
         return <RegisterForm handleNext={handleNext} />;
       case 1:
-        return <PhotoUpload />;
+        return (
+          <PhotoUpload handleNext={handleNext}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleSkip}
+              // className={classes.uploadFormButton}
+            >
+              Skip Step
+            </Button>
+          </PhotoUpload>
+        );
       case 2:
         return (
           <Paper square elevation={0} className={classes.dialogContainer}>
@@ -72,7 +84,7 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
             </Typography>
 
             <Button
-              onClick={() => handleAuthRedirect()}
+              onClick={completeRegister}
               variant="contained"
               color="primary"
               className={classes.button}
@@ -90,11 +102,11 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
   const [skipped, setSkipped] = React.useState(new Set());
   const steps = getSteps();
 
-  const isStepOptional = step => {
+  const isStepOptional = (step) => {
     return step === 1;
   };
 
-  const isStepSkipped = step => {
+  const isStepSkipped = (step) => {
     return skipped.has(step);
   };
 
@@ -105,7 +117,7 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
       newSkipped.delete(activeStep);
     }
 
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
   };
 
@@ -114,22 +126,19 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
       throw new Error("You can't skip a step that isn't optional.");
     }
 
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
-    setSkipped(prevSkipped => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setSkipped((prevSkipped) => {
       const newSkipped = new Set(prevSkipped.values());
       newSkipped.add(activeStep);
       return newSkipped;
     });
   };
 
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <>
-      <Dialog
-        className={classes.loginDialog}
-        fullWidth
-        open
-        aria-labelledby="form-dialog-title"
-      >
+      <Dialog fullScreen={fullScreen} open aria-labelledby="form-dialog-title">
         <div className={classes.root}>
           <Stepper activeStep={activeStep} orientation="vertical">
             {steps.map((label, index) => {
@@ -141,28 +150,7 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
               return (
                 <Step key={label} {...stepProps}>
                   <StepLabel>{label}</StepLabel>
-                  <StepContent>
-                    {getStepContent(index)}
-                    {isStepOptional(activeStep) && (
-                      <div className={classes.actionsContainer}>
-                        <div>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            data-test={
-                              userPhoto
-                                ? "nextUploadButton"
-                                : "skipUploadButton"
-                            }
-                            onClick={userPhoto ? handleNext : handleSkip}
-                            className={classes.button}
-                          >
-                            {userPhoto ? "Next" : "Skip"}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </StepContent>
+                  <StepContent>{getStepContent(index)}</StepContent>
                 </Step>
               );
             })}
@@ -173,9 +161,8 @@ const RegisterStepper = ({ isAuthenticated, userPhoto, notify }) => {
   );
 };
 
-const mapStateToProps = state => ({
-  isAuthenticated: state.auth.isAuthenticated,
-  userPhoto: state.auth.userPhoto,
+const mapStateToProps = ({ auth }) => ({
+  isAuthenticated: auth.isAuthenticated,
 });
 
-export default connect(mapStateToProps, { notify })(RegisterStepper);
+export default connect(mapStateToProps, { completeRegister })(RegisterStepper);

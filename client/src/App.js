@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store";
-
 import setAuthToken from "./utils/setAuthToken";
 import Routes from "./clientroutes/Routes";
 import { ThemeProvider } from "@material-ui/core/styles";
@@ -13,21 +12,21 @@ const lightTheme = createMuiTheme({
   palette: {
     type: "light",
     primary: {
-      main: "#b43bba"
-    }
-  }
+      main: "#b43bba",
+    },
+  },
 });
 
 const darkTheme = createMuiTheme({
   palette: {
     primary: {
-      main: "#27bf7f"
+      main: "#27bf7f",
     },
     secondary: {
-      main: "#249da5"
+      main: "#249da5",
     },
-    type: "dark"
-  }
+    type: "dark",
+  },
 });
 
 const App = () => {
@@ -49,7 +48,6 @@ const App = () => {
       <Provider store={store}>
         <Router>
           {/* <Dashboard isDarkTheme={isDarkTheme} changeTheme={toggleTheme} /> */}
-
           <Routes />
         </Router>
       </Provider>

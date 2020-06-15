@@ -1,87 +1,66 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-
+import { Formik, Form } from "formik";
 import { makeStyles } from "@material-ui/core/styles";
-
 import Link from "@material-ui/core/Link";
 import ProgressButton from "../../ProgressButton";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import { Typography, Container } from "@material-ui/core";
-
-import InputAdornment from "@material-ui/core/InputAdornment";
-import AccountCircle from "@material-ui/icons/AccountCircle";
+import { registerAccount } from "../../../actions/auth";
+import CustomFormikField from "./../../../utils/formik/CustomFormikField";
+import registerSchema from "./../../../utils/formik/registerSchema";
 
 import DialogTitle from "@material-ui/core/DialogTitle";
-
-import { register } from "../../../actions/auth";
+import { Container } from "@material-ui/core";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from "@material-ui/core/IconButton";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 const useStyles = makeStyles((theme) => ({
-  loginDialog: {
-    padding: theme.spacing(3),
-  },
   titleContainer: {
-    padding: theme.spacing(3),
-    paddingTop: "1.5em",
+    paddingTop: 0,
+    paddingBottom: theme.spacing(3),
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+  title: {
+    padding: 0,
   },
 }));
 
-const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
+const RegisterForm = ({ registerAccount, token, handleNext }) => {
   const classes = useStyles();
 
-  const [formValue, setFormValue] = useState({
-    username: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
-  });
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
 
-  const { username, email, password, passwordConfirm } = formValue;
-
-  const onChange = (e) =>
-    setFormValue({ ...formValue, [e.target.name]: e.target.value });
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-
-    await register(formValue);
-
-    // if (isAuthenticated) {
-    //   handleNext();
-    // }
-
-    // let isEmpty = true;
-    // Object.keys(formValue).some((i) => {
-    //   if (formValue[i] !== "") isEmpty = false;
-    // });
-
-    // if (!isEmpty) {
-    //   await register(formValue);
-    //   if (isAuthenticated) {
-    //     handleNext();
-    //   }
-    // }
+  const passwordInputProps = {
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton
+          aria-label="toggle password visibility"
+          onClick={() => setPasswordVisibility(!passwordVisibility)}
+          onMouseDown={handleMouseDownPassword}
+          edge="end"
+        >
+          {passwordVisibility ? <Visibility /> : <VisibilityOff />}
+        </IconButton>
+      </InputAdornment>
+    ),
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (token) {
       handleNext();
     }
-  }, [isAuthenticated]);
-
-  //TODO: implement progress button...
-  //Todo: Fix privateroutes, and any edited isAuthenticated Redirect code, so it works as before.
-  // Getting unauthorized for some reason...
-
-  //TODO: Verify where the file is being stored, and figure out best place to do this...
-  //TODO: Fix stepper functionality: Make it so that you cannot get to next step unless register is successful.
-  //TODO: Fix spacing and styling where needed.
+  }, [token]);
 
   return (
     <>
       <Container className={classes.titleContainer}>
-        <DialogTitle id="form-dialog-title">
+        <DialogTitle className={classes.title} id="form-dialog-title">
           Register a MaterialChat account
         </DialogTitle>
         <Link component={RouterLink} to="/login">
@@ -89,124 +68,69 @@ const RegisterForm = ({ register, isAuthenticated, handleNext }) => {
         </Link>
       </Container>
 
-      <form onSubmit={onSubmit}>
-        <TextField
-          autoFocus
-          fullWidth
-          margin="dense"
-          label="Username"
-          name="username"
-          variant="outlined"
-          //TODO: fix error handling - error={error}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle />
-              </InputAdornment>
-            ),
-          }}
-          placeholder="Enter username..."
-          //TODO: fix error handling - helperText={error ? "Username is taken." : ""}
-          value={username}
-          onChange={(e) => {
-            // if (error) {
-            //   dispatch({ type: "LOGIN_ERROR_CLEARED" });
-            // }
-            onChange(e);
-          }}
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          name="email"
-          type="email"
-          label="Email"
-          variant="outlined"
-          //TODO: fix error handling - error={error}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle />
-              </InputAdornment>
-            ),
-          }}
-          placeholder="Email"
-          //TODO: fix error handling - helperText={error ? "Email is already registered." : ""}
-          value={email}
-          onChange={(e) => {
-            onChange(e);
-            //TODO: fix error handling -
-            // if (error) {
-            //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
-            // }
-          }}
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          type="password"
-          label="Password"
-          name="password"
-          variant="outlined"
-          //TODO: fix error handling -  error={error}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle />
-              </InputAdornment>
-            ),
-          }}
-          placeholder="Password"
-          //TODO: fix error handling - helperText={error ? "Incorrect Password." : ""}
-          value={password}
-          onChange={(e) => {
-            onChange(e);
-            //TODO: fix error handling -
-            // if (error) {
-            //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
-            // }
-          }}
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          type="password"
-          label="Confirm Password"
-          name="passwordConfirm"
-          variant="outlined"
-          //TODO: fix error handling -  error={error}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle />
-              </InputAdornment>
-            ),
-          }}
-          placeholder="Confirm Password"
-          //TODO: fix error handling - helperText={error ? "Incorrect Password." : ""}
-          value={passwordConfirm}
-          onChange={(e) => {
-            onChange(e);
-            //TODO: fix error handling -
-            // if (error) {
-            //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
-            // }
-          }}
-        />
+      <Formik
+        initialValues={{
+          username: "",
+          email: "",
+          password: "",
+          passwordConfirm: "",
+        }}
+        validationSchema={registerSchema}
+        validateOnBlur={false}
+        onSubmit={(values, { setSubmitting }) => {
+          registerAccount(values);
+          setSubmitting(false);
+        }}
+      >
+        <Form>
+          <CustomFormikField
+            autoFocus
+            fullWidth
+            margin="dense"
+            label="Username"
+            name="username"
+            type="text"
+            placeholder="Username"
+          />
 
-        <ProgressButton
-          title="Sign Up"
-          type="submit"
-          color="primary"
-          loading=""
-        />
-      </form>
+          <CustomFormikField
+            fullWidth
+            margin="dense"
+            name="email"
+            type="email"
+            label="Email"
+            placeholder="Email"
+          />
+
+          <CustomFormikField
+            fullWidth
+            margin="dense"
+            label="Password"
+            name="password"
+            placeholder="Password"
+            type={passwordVisibility ? "text" : "password"}
+            InputProps={passwordInputProps}
+          />
+
+          <CustomFormikField
+            fullWidth
+            margin="dense"
+            label="Confirm Password"
+            name="passwordConfirm"
+            placeholder="Confirm Password"
+            type={passwordVisibility ? "text" : "password"}
+            InputProps={passwordInputProps}
+          />
+
+          <ProgressButton title="Sign Up" color="primary" loading="" />
+        </Form>
+      </Formik>
     </>
   );
 };
 
-const mapStateToProps = (state) => ({
-  isAuthenticated: state.auth.isAuthenticated,
+const mapStateToProps = ({ auth }) => ({
+  token: auth.token,
 });
 
-export default connect(mapStateToProps, { register })(RegisterForm);
+export default connect(mapStateToProps, { registerAccount })(RegisterForm);

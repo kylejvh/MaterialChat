@@ -20,6 +20,8 @@ router.get("/me", userController.getMe, userController.getUser);
 router.patch(
   "/updateMe",
   userController.cloudinaryPhotoUpload,
+  authController.verifyPassword,
+
   userController.updateMe
 );
 router.delete("/deleteMe", userController.deleteMe);

@@ -8,29 +8,30 @@ function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-const NotifyBar = ({ dispatch, type, message, isActive }) => {
+const NotifyBar = ({ dispatch, messages }) => {
   //* Types = "error" "warning" "info" "success"
 
-  const handleClose = (event, reason) => {
+  const handleClose = (event, reason, id) => {
     if (reason === "clickaway") {
       return;
     }
-    dispatch({ type: REMOVE_NOTIFICATION });
+    dispatch({ type: REMOVE_NOTIFICATION, payload: id });
   };
 
-  return (
-    <Snackbar open={isActive} onClose={handleClose}>
-      <Alert onClose={handleClose} severity={type}>
-        {message}
+  return messages.map((msg) => (
+    <Snackbar open key={msg.id} onClose={(e) => handleClose(e, null, msg.id)}>
+      <Alert
+        onClose={(e) => handleClose(e, null, msg.id)}
+        severity={msg.messageType}
+      >
+        {msg.message}
       </Alert>
     </Snackbar>
-  );
+  ));
 };
 
-const mapStateToProps = state => ({
-  type: state.notify.type,
-  message: state.notify.message,
-  isActive: state.notify.isActive
+const mapStateToProps = ({ notify }) => ({
+  messages: notify.messages,
 });
 
 export default connect(mapStateToProps)(NotifyBar);

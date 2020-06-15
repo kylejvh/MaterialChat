@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
-  REGISTER_SUCCEEEDED,
+  REGISTER_INITIAL_STEP_SUCCEEEDED,
+  REGISTER_FINAL_STEP_SUCCEEEDED,
   LOGIN_SUCCEEDED,
   LOGOUT_SUCCEEDED,
   ACCOUNT_UPDATED,
@@ -21,26 +22,21 @@ export const getUser = () => async (dispatch) => {
       type: LOGIN_SUCCEEDED,
       payload: res.data.data.doc,
     });
-  } catch (err) {
-    console.log(err);
-    dispatch(
-      notify(
-        "error",
-        "Could not re-authorize user. Please login again. See console for error details"
-      )
-    );
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
   }
 };
 
-export const login = (email, password) => async (dispatch) => {
+export const login = (values) => async (dispatch) => {
   try {
     const res = await axios({
       method: "POST",
       url: "/api/v1/users/login",
       withCredentials: true,
       data: {
-        email,
-        password,
+        email: values.email,
+        password: values.password,
       },
     });
 
@@ -51,24 +47,22 @@ export const login = (email, password) => async (dispatch) => {
       type: LOGIN_SUCCEEDED,
       payload: res.data.data.user,
     });
-  } catch (err) {
-    console.log(err);
-    dispatch(
-      notify("error", "A login error occured. See console for error details")
-    );
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
   }
 };
 
 export const logout = () => async (dispatch) => {
   try {
     const res = await axios.get("/api/v1/users/logout");
-    if ((res.data.status = "success")) {
+    if (res.data.status === "success") {
       dispatch({ type: LOGOUT_SUCCEEDED });
       dispatch(notify("success", "Logged out successfully"));
       localStorage.removeItem("token");
     }
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
     dispatch(
       notify(
         "error",
@@ -78,7 +72,7 @@ export const logout = () => async (dispatch) => {
   }
 };
 
-export const register = ({
+export const registerAccount = ({
   username,
   email,
   password,
@@ -97,30 +91,30 @@ export const register = ({
     localStorage.setItem("token", res.data.token);
 
     dispatch({
-      type: REGISTER_SUCCEEEDED,
-      payload: res.data.data.user,
+      type: REGISTER_INITIAL_STEP_SUCCEEEDED,
+      payload: res.data,
     });
 
     dispatch(notify("success", "Account created successfully."));
-  } catch (err) {
-    console.log(err);
-    dispatch(
-      notify(
-        "error",
-        "An error occured during signup. See console for error details"
-      )
-    );
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
   }
 };
 
-// type is either 'password' or 'data'
-export const updateUserData = (data) => async (dispatch) => {
-  const endpoint = data.type === "password" ? "updateMyPassword" : "updateMe";
+export const completeRegister = () => async (dispatch) => {
+  dispatch({
+    type: REGISTER_FINAL_STEP_SUCCEEEDED,
+  });
 
+  dispatch(notify("success", "Account created successfully."));
+};
+
+export const updateUserData = (data, callback = null) => async (dispatch) => {
   try {
     const res = await axios({
       method: "PATCH",
-      url: `/api/v1/users/${endpoint}`,
+      url: "/api/v1/users/updateMe",
       withCredentials: true,
       data,
     });
@@ -130,17 +124,46 @@ export const updateUserData = (data) => async (dispatch) => {
       payload: res.data.data.user,
     });
 
-    if (data.type !== "chatroom") {
+    // Allow a callback to be attached and executed after data updates.
+    if (res.data.status === "success" && callback) {
+      callback();
+    } else if (res.data.status === "success") {
       dispatch(notify("success", "Data updated successfully"));
     }
-  } catch (err) {
-    console.log(err);
-    dispatch(
-      notify(
-        "error",
-        "An error occured while updating user data. See console for error details"
-      )
-    );
+
+    // if (data.type !== "chatroom") {
+    //   dispatch(notify("success", "Data updated successfully"));
+    // }
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
+  }
+};
+
+export const updatePassword = (data) => async (dispatch) => {
+  try {
+    const res = await axios({
+      method: "PATCH",
+      url: "/api/v1/users/updateMyPassword",
+      withCredentials: true,
+      data: {
+        passwordCurrent: data.passwordCurrent,
+        newPassword: data.newPassword,
+        newPasswordConfirm: data.newPasswordConfirm,
+      },
+    });
+
+    if (res.data.status === "success") {
+      dispatch(notify("success", "Password updated successfully"));
+    }
+    dispatch({
+      type: ACCOUNT_UPDATED,
+      payload: res.data.data.user,
+    });
+  } catch (error) {
+    console.log(error);
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
   }
 };
 
@@ -162,7 +185,7 @@ export const deleteAccount = (formValues) => async (dispatch) => {
   //       console.error(errors);
   //     }
   //     dispatch({
-  //       type: REGISTER_FAILED
+  //       type:
   //     });
   //   }
 };

@@ -152,12 +152,38 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 4. Check if user changed password after the token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
-      new AppError("User recently changed password. Please log in again.", 401)
+      new AppError("Password recently changed. Please log in again.", 401)
     );
   }
 
   // Grant access to protected routes if all checks pass.
   req.user = currentUser;
+  next();
+});
+
+exports.verifyPassword = catchAsync(async (req, res, next) => {
+  // If user is editing/deleting avatar, don't require password
+  if (
+    (req.file && req.file.fieldname === "photo") ||
+    (req.body.deletePhoto && req.body.photoId)
+  ) {
+    return next();
+  }
+
+  // Get user from collection
+  const user = await User.findById(req.user.id).select("+password");
+
+  if (!req.body.passwordCurrent) {
+    return next(new AppError("Please provide your current password.", 401));
+  }
+
+  // Check if POSTed password is correct
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError("Your current password was incorrect.", 401));
+  }
+
+  // If correct, continue to next middlewware.
+  console.log("password check passed...");
   next();
 });
 
@@ -251,20 +277,26 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 //? WORKING VIA POSTMAN
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  // 1. Get user from collection
-  const user = await User.findById(req.user.id).select("+password");
+  // Final verification that required data is present
+  if (!req.body.newPassword || !req.body.newPasswordConfirm) {
+    return next(
+      new AppError("Please provide and confirm a new password.", 401)
+    );
+  }
 
-  // 2. Check if POSTed password is correct
+  // Get user from collection
+  const user = await User.findById(req.user.id).select("+password");
+  // Check if POSTed password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(new AppError("Your current password was incorrect.", 401));
   }
 
-  // 3. If correct, update password
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
+  //  If correct, update password
+  user.password = req.body.newPassword;
+  user.passwordConfirm = req.body.newPasswordConfirm;
   await user.save();
 
-  // 4. Log user in, send JWT
+  // Log user in, send JWT
   createSendToken(user, 200, req, res);
 });
 

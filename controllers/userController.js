@@ -5,8 +5,9 @@ const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
 const io = require("./../server").io;
 const multer = require("multer");
-const cloudinary = require("cloudinary");
-const cloudinaryStorage = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const filterObj = require("./../utils/filterObj");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -14,11 +15,13 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
-const storage = cloudinaryStorage({
+const storage = new CloudinaryStorage({
   cloudinary,
-  // filename: (req, file, cb) => `user-${req.params.id}-${Date.now()}.jpeg`, //TODO: Fix form upload and styling
-  folder: "MaterialChat",
-  transformation: [{ width: 400, height: 400, crop: "limit" }],
+  params: {
+    folder: (req, file) => "MaterialChat",
+    public_id: (req, file) => `user-${req.user._id}-${Date.now()}`,
+    // transformation: [{ width: 400, height: 400, crop: "limit" }],
+  },
 });
 
 // Check if upload is image
@@ -30,27 +33,19 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const parser = multer({ storage, fileFilter });
+const parser = multer({
+  storage,
+  fileFilter,
+});
 
 exports.cloudinaryPhotoUpload = parser.single("photo");
 
-// function to limit req.body to specified properties
-const filterObj = (obj, ...allowedFields) => {
-  const newObj = {};
-  Object.keys(obj).forEach((el) => {
-    if (allowedFields.includes(el)) newObj[el] = obj[el];
-  });
-  return newObj;
-};
-
-//? WORKING VIA POSTMAN
-// User update method
 exports.updateMe = catchAsync(async (req, res, next) => {
   console.log(req.file, "req file");
-  console.log(req.body, "req body");
+  console.log(req.body.photo, "req body");
 
   // 1. Create error if user POSTs password data, this is handled by authcontroller
-  if (req.body.password || req.body.passwordConfirm) {
+  if (req.body.newPassword || req.body.newPasswordConfirm) {
     return next(
       new AppError(
         "This route is not configured for password updates. Please use the correct route.",
@@ -68,17 +63,21 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   );
 
   if (req.file) {
-    filteredBody.photo = req.file.secure_url;
-    filteredBody.photoId = req.file.public_id;
+    filteredBody.photo = req.file.path;
+    filteredBody.photoId = req.file.filename;
   }
 
   if (req.body.deletePhoto) {
+    cloudinary.uploader.destroy(req.body.photoId, function (error, result) {
+      if (error) {
+        return next(
+          new AppError("Error encountered during user photo deletion", 500)
+        );
+      }
+    });
+
     filteredBody.photo = "default.jpg";
     filteredBody.photoId = null;
-
-    cloudinary.v2.uploader.destroy("sample", function (error, result) {
-      console.log(result, error);
-    });
   }
 
   // 3. Update user document

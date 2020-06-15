@@ -7,51 +7,17 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 const compression = require("compression");
-const cors = require("cors");
 const path = require("path");
+const globalErrorHandler = require("./controllers/errorController");
+const AppError = require("./utils/appError");
 const chatroomRouter = require("./routes/chatroomRoutes");
 const chatMessageRouter = require("./routes/chatMessageRoutes");
 const userRouter = require("./routes/userRoutes");
 const premiumRouter = require("./routes/premiumRoutes");
 
 const app = express();
+
 //* 1. GLOBAL MIDDLEWARES
-
-//!  IMPLEMENT CORS - ADJUST AS NEEDED FOR PRODUCTION
-// Currently set to all domains - Access-Control-Allow-Origin *
-
-// Must use withCredentials for JWT cookie
-// But you cannot use cors() with withCredentials
-// So what are my options? Whitelist only?
-
-// Send JWT over headers only??
-
-// if (process.env.NODE_ENV === "production") {
-//   app.use(cors());
-// } else if (process.env.NODE_ENV === "development") {
-//   const whitelist = [
-//     "http://localhost:3000",
-//     "http://127.0.0.1:3100",
-//     "http://192.168.1.181:3000",
-//     "https://kjvh-materialchat.herokuapp.com/",
-//   ];
-//   const corsOptions = {
-//     origin: function (origin, callback) {
-//       if (whitelist.indexOf(origin) !== -1) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true,
-//   };
-
-//   app.use(cors());
-// }
-
-// Handle CORS pre-flight phase
-// app.options("*", cors(corsOptions));
-
 // Set security HTTP headers
 app.use(helmet());
 
@@ -89,19 +55,21 @@ app.use(
 
 app.use(compression());
 
-// Test middleware
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
-
 //* 2. MOUNTING ROUTERS
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
 app.use("/api/v1/premium", premiumRouter);
 
-// Server static assets in production
+// Handle undefined routes
+app.all("*", (req, res, next) => {
+  next(new AppError(`Cannot find ${req.originalUrl} on the server.`, 404));
+});
+
+// Error Middleware
+app.use(globalErrorHandler);
+
+// Serve static assets in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "./client/build")));
 

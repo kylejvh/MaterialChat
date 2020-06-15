@@ -1,23 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, createRef, useEffect } from "react";
+import { connect } from "react-redux";
+import Dropzone from "react-dropzone";
+import AvatarEditor from "react-avatar-editor";
+import { updateUserData } from "../../../actions/auth";
+import ProgressButton from "../../ProgressButton";
+
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import Avatar from "@material-ui/core/Avatar";
-import IconButton from "@material-ui/core/IconButton";
-import { connect } from "react-redux";
-import ProgressButton from "../../ProgressButton";
 import Typography from "@material-ui/core/Typography";
-import Box from "@material-ui/core/Box";
-
-import Paper from "@material-ui/core/Paper";
-
-import { updateUserData } from "../../../actions/auth";
+import Slider from "@material-ui/core/Slider";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import ZoomInIcon from "@material-ui/icons/ZoomIn";
+import ZoomOutIcon from "@material-ui/icons/ZoomOut";
+import RotateLeftIcon from "@material-ui/icons/RotateLeft";
+import RotateRightIcon from "@material-ui/icons/RotateRight";
+import Grid from "@material-ui/core/Grid";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    "& > *": {
-      margin: theme.spacing(1),
-    },
+  root: {},
+  uploadContainer: {
+    flex: 1,
+    maxWidth: 500,
+    padding: theme.spacing(2),
   },
   input: {
     display: "none",
@@ -29,118 +34,235 @@ const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
+  avatarControls: {
+    margin: theme.spacing(1),
+  },
+  controlButtonGroup: {
+    margin: theme.spacing(1),
+  },
+  applyAvatarButton: {
+    margin: theme.spacing(1),
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  deleteAvatarButton: {
+    margin: theme.spacing(1),
+    marginTop: 0,
+    marginBottom: 0,
+    color: theme.palette.getContrastText(theme.palette.error.main),
+    background: theme.palette.error.main,
+    "&:hover": {
+      background: theme.palette.error.dark,
+    },
+  },
 }));
 
-const PhotoUpload = ({ updateUserData, currentUser, userPhoto }) => {
+const PhotoUpload = ({
+  updateUserData,
+  handleNext = null,
+  currentUser,
+  settingsPanel,
+  children,
+}) => {
   const classes = useStyles();
+  const dropzoneRef = createRef();
+  const editorRef = createRef();
 
-  const [file, setFile] = useState("");
-  const [filename, setFilename] = useState("Upload Avatar Photo");
+  const [file, setFile] = useState(null);
+  const [imageValues, setImageValues] = useState({
+    scale: 1,
+    rotation: 0,
+  });
+
+  useEffect(() => {
+    if (currentUser.photo !== "default.jpg") {
+      setFile(currentUser.photo);
+    }
+  }, [currentUser.photo]);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("photo", file);
 
-    updateUserData(formData);
+    if (file && editorRef.current) {
+      // Takes edited image data, converts to blob, and sends to backend as formdata.
+      const canvas = editorRef.current.getImage();
+      canvas.toBlob(function (imgBlob) {
+        const formData = new FormData();
+        formData.append("photo", imgBlob, "avatar.jpg");
 
-    // if (value !== "") {
-    // }
+        updateUserData(formData, handleNext);
+      }, "image/jpeg");
+    } else if (!file && settingsPanel) {
+      // Handle user removing an avatar photo completely from settings screen
+      updateUserData({ deletePhoto: true, photoId: currentUser.photoId });
+    }
   };
 
-  const onChange = (e) => {
-    setFile(e.target.files[0]);
-    setFilename(e.target.files[0].name);
+  const handleAddImage = (droppedFiles) => {
+    setFile(droppedFiles[0]);
+  };
+
+  const handleScaleChange = (e, newValue) => {
+    setImageValues({ ...imageValues, scale: newValue });
+  };
+
+  const handleRotationChange = (e, newValue) => {
+    setImageValues({ ...imageValues, rotation: newValue });
+  };
+
+  const handleImageReset = () => {
+    setImageValues({ scale: 1, rotation: 0 });
+  };
+
+  const openFilePrompt = () => {
+    if (dropzoneRef.current) {
+      dropzoneRef.current.open();
+    }
+  };
+
+  let buttonDisabledState;
+
+  const modifyButtonDisabledState = () => {
+    if (!file && currentUser.photo === "default.jpg") {
+      return (buttonDisabledState = true);
+    } else if (settingsPanel) {
+      return (buttonDisabledState = false);
+      // } else if (!file && !settingsPanel) {
+      //   return (buttonDisabledState = true);
+    } else {
+      return (buttonDisabledState = false);
+    }
   };
 
   return (
     <div className={classes.root}>
       <form onSubmit={onSubmit}>
-        <Paper square elevation={0} className={classes.dialogContainer}>
-          <Typography>You're signed up, {currentUser.username}.</Typography>
-          <Typography>
-            Upload an optional avatar photo below. You can always change this
-            later.
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          className={classes.uploadContainer}
+        >
+          <Typography gutterBottom>
+            Drag and drop or use the buttons to change your avatar.
           </Typography>
-          <input
-            accept="image/*"
-            className={classes.input}
-            onChange={onChange}
-            id="photo"
-            name="photo"
-            type="file"
-          />
-          <label htmlFor="photo">
-            {/* <Button
-              variant="contained"
-              color="default"
-              className={classes.button}
-              component="span"
-              startIcon={<CloudUploadIcon />}
+          <Dropzone
+            ref={dropzoneRef}
+            onDrop={handleAddImage}
+            noClick
+            noKeyboard
+            accept={["image/jpeg", "image/png", "image/bmp"]}
+            maxSize={5000000}
+            multiple={false}
+            style={{ width: "250px", height: "250px" }}
+          >
+            {({ getRootProps, getInputProps }) => (
+              <div {...getRootProps()}>
+                <AvatarEditor
+                  ref={editorRef}
+                  width={250}
+                  height={250}
+                  image={file}
+                  color={[0, 0, 0, 0.65]} // RGBA
+                  scale={imageValues.scale}
+                  rotate={imageValues.rotation}
+                  borderRadius={500}
+                />
+                <input {...getInputProps()} />
+              </div>
+            )}
+          </Dropzone>
+          <div className={classes.avatarControls}>
+            <ButtonGroup
+              color="primary"
+              aria-label="Avatar Editor Control Buttons"
+              className={classes.controlButtonGroup}
             >
-              {filename}
-            </Button> */}
+              <Button onClick={openFilePrompt}>New Image</Button>
+              <Button onClick={handleImageReset} disabled={!file}>
+                Reset
+              </Button>
+              <Button disabled={!file} onClick={() => setFile(null)}>
+                Remove Image
+              </Button>
+            </ButtonGroup>
 
-            <Box display="flex" flexDirection="column" justifyContent="center">
-              <IconButton
-                component="span"
-                // className={classes.avatarButton}
-              >
-                {/* Read img from memory... */}
-                {/* Upon pressing next, send updateMe patch req? */}
+            <Typography id="avatar-zoom-slider" gutterBottom>
+              Zoom
+            </Typography>
 
-                <Avatar
-                  src={userPhoto ? userPhoto : null}
-                  style={{
-                    margin: "10px",
-                    width: "6em",
-                    height: "6em",
-                  }}
-                  alt={currentUser.username}
-                >
-                  {userPhoto ? currentUser.username : <CloudUploadIcon />}
-                </Avatar>
-              </IconButton>
+            <Grid container spacing={2}>
+              <Grid item>
+                <ZoomOutIcon />
+              </Grid>
+              <Grid item xs>
+                <Slider
+                  value={imageValues.scale}
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  onChange={handleScaleChange}
+                  aria-labelledby="avatar-zoom-slider"
+                />
+              </Grid>
+              <Grid item>
+                <ZoomInIcon />
+              </Grid>
+            </Grid>
 
-              {userPhoto && (
-                <Button
-                  variant="contained"
-                  color="error"
-                  className={classes.button}
-                  onClick={() => {
-                    setFile("");
-                    setFilename("");
-
-                    updateUserData({
-                      public_id: currentUser.photoId,
-                      deletePhoto: true,
-                    });
-                  }}
-                >
-                  Remove
-                </Button>
-              )}
-              <ProgressButton
-                title="Confirm Photo"
-                type="submit"
-                color="primary"
-                loading=""
-              />
-            </Box>
-          </label>
-        </Paper>
+            <Typography id="avatar-rotation-slider" gutterBottom>
+              Rotate
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item>
+                <RotateLeftIcon />
+              </Grid>
+              <Grid item xs>
+                <Slider
+                  value={imageValues.rotation}
+                  min={0}
+                  max={360}
+                  onChange={handleRotationChange}
+                  aria-labelledby="avatar-rotation-slider"
+                />
+              </Grid>
+              <Grid item>
+                <RotateRightIcon />
+              </Grid>
+            </Grid>
+          </div>
+        </Grid>
+        <div>
+          {children}
+          {modifyButtonDisabledState()}
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            startIcon={
+              settingsPanel && !file && currentUser.photo !== "default.jpg" ? (
+                <DeleteIcon />
+              ) : null
+            }
+            className={
+              settingsPanel && !file && currentUser.photo !== "default.jpg"
+                ? classes.deleteAvatarButton
+                : classes.applyAvatarButton
+            }
+            disabled={buttonDisabledState}
+          >
+            {settingsPanel && !file && currentUser.photo !== "default.jpg"
+              ? "Remove Avatar"
+              : "Apply"}
+          </Button>
+        </div>
       </form>
     </div>
   );
 };
 
-// upon submit of form, you need to use updateMe endpoint? ?
-const mapStateToProps = (state) => {
-  return {
-    // currentUser: state.auth.currentUser.username,
-    currentUser: state.auth.currentUser,
-    userPhoto: state.auth.userPhoto,
-  };
-};
+const mapStateToProps = ({ auth }) => ({
+  currentUser: auth.currentUser,
+});
 
 export default connect(mapStateToProps, { updateUserData })(PhotoUpload);
