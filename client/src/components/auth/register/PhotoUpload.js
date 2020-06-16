@@ -75,10 +75,10 @@ const PhotoUpload = ({
   });
 
   useEffect(() => {
-    if (currentUser.photo !== "default.jpg") {
+    if (currentUser && currentUser.photo !== "default.jpg") {
       setFile(currentUser.photo);
     }
-  }, [currentUser.photo]);
+  }, [currentUser, currentUser.photo]);
 
   const onSubmit = (e) => {
     e.preventDefault();

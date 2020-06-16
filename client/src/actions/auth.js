@@ -9,8 +9,6 @@ import {
 import { notify } from "./notify";
 
 export const getUser = () => async (dispatch) => {
-  console.log("FROM GETUSER", localStorage.token);
-
   try {
     const res = await axios.get("/api/v1/users/me", {
       headers: {
@@ -23,8 +21,10 @@ export const getUser = () => async (dispatch) => {
       payload: res.data.data.doc,
     });
   } catch (error) {
-    console.log(error.response.data.message || `An error occurred: ${error}`);
-    dispatch(notify("error", error.response.data.message));
+    const errorResponse =
+      error.response.data.message || `An error occurred: ${error}`;
+    console.log(errorResponse);
+    dispatch(notify("error", errorResponse));
   }
 };
 

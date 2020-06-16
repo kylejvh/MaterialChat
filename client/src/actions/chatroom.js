@@ -51,6 +51,8 @@ export const getChatrooms = () => async (dispatch) => {
       type: GET_CHATROOMS,
       payload: res.data.data.chatrooms,
     });
+
+    console.log("chatrooms", res.data.data.chatrooms);
   } catch (err) {
     console.log(err);
     dispatch(
