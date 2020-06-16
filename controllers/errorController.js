@@ -40,14 +40,11 @@ const sendErrorProd = (err, res) => {
     // Non-specific catch-all error
   } else {
     console.error("ERROR:", err);
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
+
+    return res.status(500).json({
+      status: "error",
+      message: "An unexpected error occurred.",
     });
-    // return res.status(500).json({
-    //   status: "error",
-    //   message: "An unexpected error occurred.",
-    // });
   }
 };
 
