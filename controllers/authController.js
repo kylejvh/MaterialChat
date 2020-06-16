@@ -1,12 +1,10 @@
 const { promisify } = require("util");
 const User = require("../models/userModel");
-
-const crypto = require("crypto");
-
-const jwt = require("jsonwebtoken");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const Email = require("./../utils/email");
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
 // Create JWT token with secret and options object
 const signToken = (id) => {
@@ -14,33 +12,6 @@ const signToken = (id) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
-
-// const createSendToken = (user, statusCode, res) => {
-//   const token = signToken(user._id);
-
-//   const cookieOptions = {
-//     expires: new Date(
-//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-//     ),
-//     httpOnly: true
-//   };
-
-//   // Sends JWT over HTTPS cookie if env = production
-//   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-
-//   res.cookie("jwt", token, cookieOptions);
-
-//   // Remove password from document output upon creation
-//   user.password = undefined;
-
-//   res.status(statusCode).json({
-//     status: "success",
-//     token,
-//     data: {
-//       user
-//     }
-//   });
-// };
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id); // Token working...
@@ -50,10 +21,10 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    // secure: req.secure || req.headers["x-forwarded-proto"] === "https" //TODO: look up lesson explaiing this option.
+    // secure: req.secure || req.headers["x-forwarded-proto"] === "https"
   });
 
-  // Remove password from output
+  // Removes password from output
   user.password = undefined;
 
   res.status(statusCode).json({
@@ -66,11 +37,8 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 //? WORKING VIA POSTMAN
-//! This has no error handling...
-//! Test on clientside - should also log user in on clientside after signup
-exports.signup = catchAsync(async (req, res, next) => {
-  // implement photo uploading here...
 
+exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     username: req.body.username,
     email: req.body.email,
@@ -187,21 +155,6 @@ exports.verifyPassword = catchAsync(async (req, res, next) => {
   next();
 });
 
-//! TEST with POSTMAN - should be working but chatroom routes need to be configured to test.
-exports.restrictTo = (...roles) => {
-  return (req, res, next) => {
-    // roles will be a passed in array of roles allowed to access endpoint
-    // EX: only roles = ["admin"] can delete a document
-
-    // Forbid user without required role
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError("You do not have permission to perform this action.", 403)
-      );
-    }
-  };
-};
-
 //*WORKING
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1. Get user based on the email input
@@ -300,9 +253,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, req, res);
 });
 
-//TODO: WATCH VIDEO AND IMPLEMENT
-//! This one is mainly for server side rendering, and I'm not sure I need it.
-//! Rewatch course vid 189.
 exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     try {
@@ -333,7 +283,6 @@ exports.isLoggedIn = async (req, res, next) => {
   next();
 };
 
-//! TEST with POSTMAN - should be working but chatroom routes need to be configured to test.
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     // roles will be a passed in array of roles allowed to access endpoint
@@ -347,7 +296,7 @@ exports.restrictTo = (...roles) => {
     }
   };
 };
-//TODO: WATCH VIDEO AND IMPLEMENT
+
 exports.logout = (req, res) => {
   // Replaces cookie with a cookie of the same name, but with no login token. If you set up front end to check for cookie, you will be logged out.
   res.cookie("jwt", "loggedout", {

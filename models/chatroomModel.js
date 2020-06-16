@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 
 const chatroomSchema = new mongoose.Schema(
   {
@@ -7,71 +6,48 @@ const chatroomSchema = new mongoose.Schema(
       type: String,
       required: [true, "A chatroom name must be specified."],
       unique: true,
-      trim: true
+      trim: true,
     },
     slug: String,
-    //! How should I handle private chatrooms?
-    //! Should I require a password?
-    //! Where should the password be stored?
-    //! Look for answers in node.js course
-    private: {
-      type: Boolean
-      // required: [true, "Chatroom privacy must be specified"]
-    },
     description: {
       type: String,
-      trim: true
+      trim: true,
     },
-    // Specify imageCover url or filepath, and we read from the fs later. This is just a
-    // reference.
-    //! Have an image to represent the chatroom?
-    imageCover: {
-      type: String
-      // required: [true, "A tour must have a cover image"]
-    },
-    // To specify a type of array, with strings as values:
-    images: [String],
     // Get timestamp of creation
     createdAt: {
       type: Date,
       default: Date.now(),
-      select: false
+      select: false,
     },
-    // Reference user who created chatroom
-    //TODO: implement front end/back end - check to see if logged in user
-    //TODO: is the creator, and show delete options for that user.
-    //TODO: can you use the restrict middleware for this?
-    //TODO: Populate is on for this when getting chatroom, do you need it?
-
-    //! Creator populate is now correctly working...
+    // Reference to user who created chatroom - of User Model
     creator: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
-      required: [true, "Chatroom must have a creator"]
-    }
-    //TODO: figure out how to model the data and best relationship type...
+      required: [true, "Chatroom must have a creator"],
+    },
   },
   {
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
   }
 );
 
+// Virtual populate - retrieves/populates messages relating to a specific chatroom.
 chatroomSchema.virtual("messages", {
   ref: "ChatMessage",
   localField: "_id",
-  foreignField: "sentInChatroom"
+  foreignField: "sentInChatroom",
 });
 
-//TODO: Attempt at mapping users to chatrooms...
+// Virtual populate - retrieves/populates active users currently in a specfic chatroom.
 chatroomSchema.virtual("activeUsers", {
   ref: "User",
   localField: "_id",
-  foreignField: "currentChatroom"
+  foreignField: "currentChatroom",
 });
 
 // Every find-type query will be populated with creator's username.
-chatroomSchema.pre(/^find/, function(next) {
+chatroomSchema.pre(/^find/, function (next) {
   this.populate({ path: "creator", select: "username" });
 
   next();

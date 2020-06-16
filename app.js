@@ -17,21 +17,6 @@ const premiumRouter = require("./routes/premiumRoutes");
 
 const app = express();
 
-// Serve static assets in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-
-  app.get("*", function (req, res) {
-    res.sendFile(path.join(__dirname, "client/build/index.html"), function (
-      err
-    ) {
-      if (err) {
-        res.status(500).send(err);
-      }
-    });
-  });
-}
-
 //* 1. GLOBAL MIDDLEWARES
 // Set security HTTP headers
 app.use(helmet());
@@ -41,7 +26,6 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-//TODO: You may need to change this for a chat application...
 // Limit a connection to 1000 requests per hour
 const limiter = rateLimit({
   max: 1000,
@@ -60,7 +44,6 @@ app.use(mongoSanitize());
 // Data sanitization against XSS
 app.use(xss());
 
-// TODO: edit whitelist
 // Prevent parameter pollution with whitelist exceptions
 app.use(
   hpp({
@@ -76,8 +59,23 @@ app.use("/api/v1/chatrooms", chatroomRouter);
 app.use("/api/v1/messages", chatMessageRouter);
 app.use("/api/v1/premium", premiumRouter);
 
+// Serve static assets in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/build")));
+
+  app.get("*", function (req, res) {
+    res.sendFile(path.join(__dirname, "client/build/index.html"), function (
+      err
+    ) {
+      if (err) {
+        res.status(500).send(err);
+      }
+    });
+  });
+}
+
 // Handle undefined routes
-//! This is order dependent! Must be placed before globalErrorHandler.
+//! Order dependent! Must be placed before globalErrorHandler.
 app.all("*", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on the server.`, 404));
 });

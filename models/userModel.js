@@ -1,13 +1,12 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, "A username must be specified."],
+    required: [true, "A unique username must be specified."],
     unique: true,
     trim: true,
   },
@@ -44,16 +43,12 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-  //! Used for account deletion
+  //! Used for account deletion - deleted accounts are put into an inactive state.
   active: {
     type: Boolean,
     default: true,
     select: false,
   },
-
-  // Specify imageCover url or filepath, and we read from the fs later. This is just a
-  // reference.
-  // Consider renaming to avatarImage
   photo: {
     type: String,
     default: "default.jpg",
@@ -68,29 +63,15 @@ const userSchema = new mongoose.Schema({
     default: Date.now(),
     select: false,
   },
-
-  // Implement discord nitro-like premium features upon payment.
-  // Is it best practice to keep these on schema???
-  // Node.js course had a lesson on middlewares and removing secret properties...
-  isPremium: {
-    type: Boolean,
-    default: false,
-  },
   isOnline: {
     type: Boolean,
     default: false,
   },
-  // handle here, or keep array of users on the chatroom schema?
-
-  //TODO: figure out how to model the data and best relationship type...
-  //! CURRENT: PARENT REFERENCING...
+  // PARENT REFERENCE
+  // Reference to user's current chatroom - of Chatroom Model
   currentChatroom: {
-    // PARENT REFERENCE
     type: mongoose.Schema.ObjectId,
     ref: "Chatroom",
-
-    //! CURRENT IMPLEMENTATION GUESS:
-    // chatroom: ObjectID(23) <- references a chatroom's mongodb id
   },
   createdChatrooms: {
     type: mongoose.Schema.ObjectId,
@@ -130,7 +111,6 @@ userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
-  console.log(candidatePassword, "bcrypt error?");
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 

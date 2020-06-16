@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 const pug = require("pug");
 const htmlToText = require("html-to-text");
 
-// Example usage
+// Example usage:
 // new Email(user, url).sendWelcome();
 
 module.exports = class Email {
@@ -37,7 +37,6 @@ module.exports = class Email {
   }
 
   // Send the actual email
-
   async send(template, subject) {
     // 1.) Render HTML based on a pug template.
     const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
@@ -52,7 +51,6 @@ module.exports = class Email {
       to: this.to,
       subject,
       html,
-      // TODO: install html-to-text for text conversion
       text: htmlToText.fromString(html),
     };
 

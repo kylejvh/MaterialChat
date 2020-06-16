@@ -1,8 +1,7 @@
 const express = require("express");
+const router = express.Router({ mergeParams: true });
 const chatMessageController = require("./../controllers/chatMessageController");
 const authController = require("./../controllers/authController");
-
-const router = express.Router({ mergeParams: true });
 
 router.use(authController.protect);
 

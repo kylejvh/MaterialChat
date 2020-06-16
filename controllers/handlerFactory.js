@@ -2,8 +2,6 @@ const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 
-//TODO: IMPLEMENT FACTOIRES IN ALL CONTROLLERS WHERE APPROPRIATE
-
 exports.getAll = (Model, filtered = null) =>
   catchAsync(async (req, res, next) => {
     let modelFindQuery = Model.find();
@@ -30,7 +28,7 @@ exports.getAll = (Model, filtered = null) =>
     });
   });
 
-exports.deleteOne = Model =>
+exports.deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id);
 
@@ -63,7 +61,6 @@ exports.getOne = (Model, popOptions) =>
     });
   });
 
-//TODO: is this a bad practice to send the whole body? probably...
 exports.createOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = await Model.create(req.body);
@@ -83,21 +80,7 @@ exports.createOne = (Model, popOptions) =>
     });
   });
 
-// exports.createChatroom = catchAsync(async (req, res, next) => {
-//   const newChatroom = await Chatroom.create({
-//     name: req.body.name,
-//     creator: req.user.id
-//   });
-
-//   res.status(201).json({
-//     status: "success",
-//     data: {
-//       newChatroom
-//     }
-//   });
-// });
-
-exports.updateOne = Model =>
+exports.updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
