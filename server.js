@@ -122,7 +122,7 @@ io.on("connection", function (socket) {
 
 const PORT = process.env.PORT || 3100;
 
-server.listen(PORT, (err) => {
+server.listen(PORT, () => {
   console.log(`App running on port ${PORT}`);
 });
 

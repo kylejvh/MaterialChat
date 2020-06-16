@@ -17,6 +17,21 @@ const premiumRouter = require("./routes/premiumRoutes");
 
 const app = express();
 
+// Serve static assets in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/build")));
+
+  app.get("*", function (req, res) {
+    res.sendFile(path.join(__dirname, "client/build/index.html"), function (
+      err
+    ) {
+      if (err) {
+        res.status(500).send(err);
+      }
+    });
+  });
+}
+
 //* 1. GLOBAL MIDDLEWARES
 // Set security HTTP headers
 app.use(helmet());
@@ -62,28 +77,12 @@ app.use("/api/v1/messages", chatMessageRouter);
 app.use("/api/v1/premium", premiumRouter);
 
 // Handle undefined routes
+//! This is order dependent! Must be placed before globalErrorHandler.
 app.all("*", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on the server.`, 404));
 });
 
 // Error Middleware
 app.use(globalErrorHandler);
-
-// Serve static assets in production
-if (process.env.NODE_ENV === "production") {
-  console.log("in production...");
-  app.use(express.static(path.join(__dirname, "client/build")));
-
-  app.get("*", function (req, res) {
-    res.sendFile(path.join(__dirname, "client/build/index.html"), function (
-      err
-    ) {
-      if (err) {
-        console.log("error serving files");
-        res.status(500).send(err);
-      }
-    });
-  });
-}
 
 module.exports = app;
