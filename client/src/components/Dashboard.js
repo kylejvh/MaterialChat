@@ -197,6 +197,13 @@ const Dashboard = ({
     }
   }, [currentChatroom]);
 
+  const headerTitle = currentChatroom
+    ? `Current Chatroom: ${currentChatroom.name}`
+    : "MaterialChat";
+  const mobileHeaderTitle = currentChatroom
+    ? currentChatroom.name
+    : "MaterialChat";
+
   return loading ? (
     <Loader />
   ) : (
@@ -219,13 +226,7 @@ const Dashboard = ({
             <MenuIcon />
           </IconButton>
           <Typography className={classes.navTitle} variant="h6" noWrap>
-            {isMobile
-              ? currentChatroom
-                ? currentChatroom
-                : "Welcome!"
-              : currentChatroom
-              ? `Current Chatroom: ${currentChatroom.name}`
-              : "Welcome!"}
+            {isMobile ? mobileHeaderTitle : headerTitle}
           </Typography>
 
           <div className={classes.appBarButtons}>

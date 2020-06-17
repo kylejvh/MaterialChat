@@ -124,10 +124,10 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 exports.verifyPassword = catchAsync(async (req, res, next) => {
   // If user is editing/deleting avatar, don't require password
-
   if (
     (req.file && req.file.fieldname === "photo") ||
-    (req.body.deletePhoto && req.body.photoId)
+    (req.body.deletePhoto && req.body.photoId) ||
+    (req.body.currentChatroom && req.body.type === "chatroom")
   ) {
     return next();
   }

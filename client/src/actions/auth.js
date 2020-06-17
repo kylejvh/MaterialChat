@@ -127,13 +127,9 @@ export const updateUserData = (data, callback = null) => async (dispatch) => {
     // Allow a callback to be attached and executed after data updates.
     if (res.data.status === "success" && callback) {
       callback();
-    } else if (res.data.status === "success") {
+    } else if (data.type !== "chatroom" && res.data.status === "success") {
       dispatch(notify("success", "Data updated successfully"));
     }
-
-    // if (data.type !== "chatroom") {
-    //   dispatch(notify("success", "Data updated successfully"));
-    // }
   } catch (error) {
     console.log(error.response.data.message || `An error occurred: ${error}`);
     dispatch(notify("error", error.response.data.message));
