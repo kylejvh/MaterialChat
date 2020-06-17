@@ -12,9 +12,6 @@ const app = require("./app");
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 
-// to export:
-// const io = (exports.io = require("socket.io")(server));
-
 // Set up mongoDB connection
 const DB = process.env.DATABASE.replace(
   "<PASSWORD>",
@@ -46,21 +43,6 @@ io.on("connection", function (socket) {
       });
     }
 
-    //* continue with socket rooms
-    //?DONE Change messaging functionality to emit to only the rooms needed
-    //* Change/implement user list updating to only the rooms needed
-    //* Change/fix typing functionality to work for only the rooms needed...
-
-    //TODO: To get users in previous or current chatroom, you could
-    //TODO: either map sockets to users and perform array methods like filter, or...
-
-    // Update userlist of previous chatroom - Set user's chatroom to the requested chatroom
-    //
-    // previousChatroomUsers = serverSideUsers
-    //   .filter(item => item.currentChatroom === previousChatroom) // Get list of usernames currently in previous chatroom.
-    //   .map(item => item.username);
-    // Send ONLY clients in PREVIOUS CHATROOM a list of chatroom users...
-
     // Put socket in new chatroom
     socket.join(data.id);
 
@@ -78,18 +60,11 @@ io.on("connection", function (socket) {
   });
 
   // Append chatroom to data...
-  //TODO: Debounce or rewrite client functions, fix reducer filter...
   socket.on("TYPING", (data) => {
     socket.to(data.chatroom).emit("TYPING", data);
   });
 
-  //TODO: Handle a user logging out - Remove socket from chatroom and disconnect socket.
   socket.on("LOGOUT", (data) => {
-    // You need to handle  removing the socket from the rooms it's in,
-    // then updating the serversideuser obj,
-    // then broadcasting new usercount,
-    // then updating the user's frontend.
-
     if (data.currentChatroom !== "") {
       let previousChatroomUsers = [];
       socket.leave(data.currentChatroom);
@@ -103,11 +78,6 @@ io.on("connection", function (socket) {
 
   socket.on("disconnect", (data) => {
     console.log("--- DISCONNECT EVENT ---", data);
-    // You need to handle  removing the socket from the rooms it's in,
-    // then update DB to remove currentChatroom...
-    // then broadcasting new usercount,
-    // then updating the user's frontend.
-
     if (data.currentChatroom !== "") {
       let previousChatroomUsers = [];
       socket.leave(data.currentChatroom);

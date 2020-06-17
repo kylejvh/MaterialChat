@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { createChatroom, openDialog, closeDialog } from "../actions/chatroom";
-
 import { makeStyles } from "@material-ui/core/styles";
-
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Fab from "@material-ui/core/Fab";
@@ -13,35 +11,33 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import AddIcon from "@material-ui/icons/Add";
-import Snackbar from "@material-ui/core/Snackbar";
 
 const useStyles = makeStyles({
   AddChatroomButton: {
     margin: "2em 2em",
 
     "@media (max-width: 600px)": {
-      margin: "1em .25em"
-    }
-  }
+      margin: "1em .25em",
+    },
+  },
 });
 
 const AddChatroomDialog = ({
   createChatroom,
   openDialog,
   closeDialog,
-  isOpen
+  isOpen,
 }) => {
   const [newChatroom, setNewChatroom] = useState("");
   const classes = useStyles();
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault();
     if (newChatroom === "") {
       return;
     }
 
     createChatroom(newChatroom);
-
     setNewChatroom("");
   };
 
@@ -65,7 +61,7 @@ const AddChatroomDialog = ({
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Create Chatroom</DialogTitle>
-        <form onSubmit={e => onSubmit(e)}>
+        <form onSubmit={(e) => onSubmit(e)}>
           <DialogContent>
             <DialogContentText>
               Enter the name of the chatroom you wish to create. Chatroom names
@@ -82,10 +78,7 @@ const AddChatroomDialog = ({
               // helperText={error ? "Chatroom name is taken." : ""}
               margin="dense"
               fullWidth
-              onChange={e => {
-                // if (error) {
-                //   dispatch({ type: "ADD_CHATROOM_ERROR_CLEARED" });
-                // }
+              onChange={(e) => {
                 setNewChatroom(e.target.value);
               }}
             />
@@ -104,12 +97,12 @@ const AddChatroomDialog = ({
   );
 };
 
-const mapStateToProps = state => ({
-  isOpen: state.chatrooms.addChatroomDialog.isOpen
+const mapStateToProps = ({ chatrooms }) => ({
+  isOpen: chatrooms.addChatroomDialog.isOpen,
 });
 
 export default connect(mapStateToProps, {
   createChatroom,
   openDialog,
-  closeDialog
+  closeDialog,
 })(AddChatroomDialog);

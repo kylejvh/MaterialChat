@@ -9,16 +9,12 @@ import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-
-import Tooltip from "@material-ui/core/Tooltip";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import Avatar from "@material-ui/core/Avatar";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import Chip from "@material-ui/core/Chip";
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
-import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import TextField from "@material-ui/core/TextField";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
@@ -125,7 +121,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ChatWindow = ({
   currentChatroom = null,
-  user,
+  currentUser,
   messages,
   subscribeMessages,
   sendMessage,
@@ -153,11 +149,19 @@ const ChatWindow = ({
     if (currentChatroom && chatMessage !== "") {
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => {
-        emitTyping({ user, chatroom: currentChatroom.id, typing: true });
+        emitTyping({
+          user: currentUser.username,
+          chatroom: currentChatroom.id,
+          typing: true,
+        });
       }, 1000);
     } else if (currentChatroom && chatMessage === "") {
       clearTimeout(typingTimeout);
-      emitTyping({ user, chatroom: currentChatroom.id, typing: false });
+      emitTyping({
+        user: currentUser.username,
+        chatroom: currentChatroom.id,
+        typing: false,
+      });
     }
     return () => clearTimeout(typingTimeout);
   }, [currentChatroom, chatMessage]);
@@ -195,7 +199,7 @@ const ChatWindow = ({
     if (chatMessage) {
       let data = {
         sender: {
-          username: user,
+          username: currentUser.username,
         },
         message: chatMessage,
         timestamp: Date.now(),
@@ -216,33 +220,33 @@ const ChatWindow = ({
               messages.map((message, i) => (
                 <div className={classes.chatMessageWrapper} key={i}>
                   <ListItem alignItems="flex-start">
-                    {/* //TODO: Implement Avatar upload, and usercard popper onclick...
-                  <ListItemAvatar>
-                    <Avatar
-                    //  onClick={handleUserClick}
-                    />
-                  </ListItemAvatar> */}
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Your Avatar"
+                        src={
+                          message.sender &&
+                          message.sender.photo !== "default.jpg"
+                            ? message.sender.photo
+                            : null
+                        }
+                        // className={classes.userAvatar}
+                      >
+                        {currentUser.photo === "default.jpg" &&
+                          `${currentUser.username.charAt(0)}`}
+                      </Avatar>
+                    </ListItemAvatar>
                     <Chip
                       className={classes.fromUserBubble}
                       label={(message.sender && message.sender.username) || ""}
                       size="small"
-                      color={message.sender === user ? "primary" : "secondary"}
+                      color={
+                        message.sender &&
+                        message.sender.username === currentUser.username
+                          ? "primary"
+                          : "secondary"
+                      }
                       onClick={(event) => handleUserClick(event)}
                     ></Chip>
-
-                    {/* //TODO: Implement Usercard popper
-                  <UserInfo anchorEl={anchorEl} isOpen={showUserInfo} /> */}
-                    {/* //TODO: Implement Popper to edit/delete message...
-                  <ListItemIcon>
-                    <Tooltip title="Edit Message">
-                      <IconButton
-                        aria-label="Edit Message"
-                        color="inherit"
-                        // onClick={() => history.push("/friends")}
-                        children={<MoreHorizIcon />}
-                      ></IconButton>
-                    </Tooltip>
-                  </ListItemIcon> */}
                     <Typography className={classes.chatMessage} variant="body1">
                       {message.message}
                     </Typography>
@@ -254,8 +258,6 @@ const ChatWindow = ({
               style={{ float: "left", clear: "both", paddingBottom: "2em" }}
               ref={messagesEndRef}
             >
-              {/* //TODO: FIX TYPING */}
-
               {usersTyping &&
                 usersTyping.map((user, i) => (
                   <i key={i} className={classes.typing}>
@@ -314,7 +316,6 @@ const ChatWindow = ({
                   </ListSubheader>
                 }
               >
-                //TODO: GET USERSINCHATROOM WORKING
                 {/* {usersInChatroom.map((user, i) => (
                   <div key={i}>
                     <ListItem>
@@ -345,8 +346,6 @@ const ChatWindow = ({
               {activeUsers.map((user) => (
                 <div key={user.id}>
                   <ListItem>
-                    {/* //TODO: Replace with avatars
-                    {user === username && <PermIdentityIcon />} */}
                     <ListItemText primary={user.username} />
                   </ListItem>
                   <Divider component="li" />
@@ -359,14 +358,14 @@ const ChatWindow = ({
     </div>
   ) : (
     <Typography variant="h5" component="h5">
-      Hello, {user}. Join a chatroom to Chat!
+      Hello, {currentUser.username}. Join a chatroom to Chat!
     </Typography>
   );
 };
 
 const mapStateToProps = (state) => ({
   messages: state.message.messages,
-  user: state.auth.currentUser.username,
+  currentUser: state.auth.currentUser,
   currentChatroom: state.chatrooms.currentChatroom,
   activeUsers: state.chatrooms.activeUsers,
   usersTyping: state.notify.usersTyping,

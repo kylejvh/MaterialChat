@@ -12,10 +12,6 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 const LogoutDialog = ({ logout }) => {
   const [open, setOpen] = React.useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -26,18 +22,18 @@ const LogoutDialog = ({ logout }) => {
 
   return (
     <>
-      <Button variant="outlined" color="inherit" onClick={handleClickOpen}>
+      <Button variant="outlined" color="inherit" onClick={() => setOpen(true)}>
         Logout
       </Button>
       <Dialog
         open={open}
         onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        aria-labelledby="logout-dialog-title"
+        aria-describedby="logout-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Confirm Logout</DialogTitle>
+        <DialogTitle id="logout-dialog-title">Confirm Logout</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id="logout-dialog-description">
             Are you sure you want to log out?
           </DialogContentText>
         </DialogContent>

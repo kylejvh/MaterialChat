@@ -22,15 +22,15 @@ import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    "& > *": {
+      margin: theme.spacing(3),
+    },
+  },
   loginDialog: {
     padding: theme.spacing(3),
     [theme.breakpoints.down("sm")]: {
       padding: 0,
-    },
-  },
-  root: {
-    "& > *": {
-      margin: theme.spacing(3),
     },
   },
   titleContainer: {
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoginDialog = ({ login, isAuthenticated, error }) => {
+const LoginDialog = ({ login, isAuthenticated }) => {
   const [passwordVisibility, setPasswordVisibility] = useState(false);
 
   const handleMouseDownPassword = (event) => {
@@ -129,9 +129,8 @@ const LoginDialog = ({ login, isAuthenticated, error }) => {
   );
 };
 
-const mapStateToProps = ({ auth, notify }) => ({
+const mapStateToProps = ({ auth }) => ({
   isAuthenticated: auth.isAuthenticated,
-  errors: notify.messages,
 });
 
 export default connect(mapStateToProps, { login })(LoginDialog);

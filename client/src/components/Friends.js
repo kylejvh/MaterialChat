@@ -6,25 +6,25 @@ import Paper from "@material-ui/core/Paper";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
     flexBasis: "33.33%",
-    flexShrink: 0
+    flexShrink: 0,
   },
   secondaryHeading: {
     fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary
+    color: theme.palette.text.secondary,
   },
   details: {
-    alignItems: "center"
+    alignItems: "center",
   },
   column: {
-    flexBasis: "33.33%"
-  }
+    flexBasis: "33.33%",
+  },
 }));
 
 const Friends = ({}) => {
@@ -55,9 +55,9 @@ const Friends = ({}) => {
   );
 };
 
-const mapStateToProps = state => ({
-  currentUsername: state.auth.currentUser.username,
-  currentEmail: state.auth.currentUser.email
+const mapStateToProps = ({ auth }) => ({
+  currentUsername: auth.currentUser.username,
+  currentEmail: auth.currentUser.email,
 });
 
-export default connect(mapStateToProps, {})(Friends);
+export default connect(mapStateToProps)(Friends);

@@ -38,16 +38,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RegisterStepper = ({ isAuthenticated, completeRegister }) => {
+const RegisterStepper = ({
+  currentUser,
+  isAuthenticated,
+  completeRegister,
+}) => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (currentUser && isAuthenticated) {
       return history.push("/");
     }
-  }, [isAuthenticated, history]);
+  }, [currentUser, isAuthenticated, history]);
 
   function getSteps() {
     return [
@@ -163,6 +167,7 @@ const RegisterStepper = ({ isAuthenticated, completeRegister }) => {
 
 const mapStateToProps = ({ auth }) => ({
   isAuthenticated: auth.isAuthenticated,
+  currentUser: auth.currentUser,
 });
 
 export default connect(mapStateToProps, { completeRegister })(RegisterStepper);

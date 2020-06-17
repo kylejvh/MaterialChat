@@ -11,11 +11,8 @@ const Routes = () => {
   return (
     <section className="container">
       <NotifyBar />
-      {/* //! PrivateRoute // Render Dashboard always, then show chatroom with id */}
-      <PrivateRoute
-        path={["/", "/chatroom/:id", "/friends"]}
-        component={Dashboard}
-      />
+      {/* // Render Dashboard always, then show chatroom with id */}
+      <PrivateRoute path={["/", "/chatroom/:id"]} component={Dashboard} />
       <Route exact path="/login" component={LoginDialog} />
       <Route exact path="/register" component={RegisterStepper} />
     </section>

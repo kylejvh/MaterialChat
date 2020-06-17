@@ -36,8 +36,6 @@ const createSendToken = (user, statusCode, req, res) => {
   });
 };
 
-//? WORKING VIA POSTMAN
-
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     username: req.body.username,
@@ -59,20 +57,18 @@ exports.signup = catchAsync(async (req, res, next) => {
   createSendToken(newUser, 201, req, res);
 });
 
-//? WORKING VIA POSTMAN
-//! Test on clientside - should also log user in on clientside after signup
 exports.login = catchAsync(async (req, res, next) => {
   console.log("FROM LOGIN", req.headers);
   const { email, password } = req.body;
 
-  // 1. check if email and password exist
+  // 1. Check if email and password exist
   if (!email || !password) {
     return next(new AppError("Please provide email and password!", 400));
   }
 
   // 2. Check if user exists and password is correct
 
-  // .select method will grab a select field that we need. use + to select a field
+  // .select method will grab a specific field that we need. use + to select a field
   // not included in db output
   const user = await User.findOne({ email }).select("+password");
 
@@ -81,15 +77,12 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  //3 if everything is good, send token to client
+  // 3. If everything is good, send token to client
   createSendToken(user, 200, req, res);
 });
 
-// Login and signup reviewed, looks to work correctly.
-//! NOT SURE IF THIS IS WORKING CORRECTLY.
 exports.protect = catchAsync(async (req, res, next) => {
   // 1. Get token and check if it exists, send error if not
-  // console.log("REQ from protect", req);
   let token;
   if (
     req.headers.authorization &&
@@ -131,6 +124,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 exports.verifyPassword = catchAsync(async (req, res, next) => {
   // If user is editing/deleting avatar, don't require password
+
   if (
     (req.file && req.file.fieldname === "photo") ||
     (req.body.deletePhoto && req.body.photoId)
@@ -155,7 +149,6 @@ exports.verifyPassword = catchAsync(async (req, res, next) => {
   next();
 });
 
-//*WORKING
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1. Get user based on the email input
   const user = await User.findOne({ email: req.body.email });
@@ -197,7 +190,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-//*WORKING
 exports.resetPassword = catchAsync(async (req, res, next) => {
   // 1. Get user based on the token
   const hashedToken = crypto
@@ -222,13 +214,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  // 3. Update changedPasswordAt property for the user
-
-  // 4. Log the user in, send token
+  // 3. Log the user in, send token
   createSendToken(user, 200, req, res);
 });
 
-//? WORKING VIA POSTMAN
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // Final verification that required data is present
   if (!req.body.newPassword || !req.body.newPasswordConfirm) {

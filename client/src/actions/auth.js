@@ -107,7 +107,7 @@ export const completeRegister = () => async (dispatch) => {
     type: REGISTER_FINAL_STEP_SUCCEEEDED,
   });
 
-  dispatch(notify("success", "Account created successfully."));
+  dispatch(notify("success", "Register complete. Welcome!"));
 };
 
 export const updateUserData = (data, callback = null) => async (dispatch) => {
@@ -167,25 +167,20 @@ export const updatePassword = (data) => async (dispatch) => {
   }
 };
 
-export const deleteAccount = (formValues) => async (dispatch) => {
-  //   try {
-  //     const res = await axios({
-  //       method: "PATCH",
-  //       url: "/api/v1/users/updateMyPassword",
-  //       data: formValues
-  //     });
-  //     // dispatch({
-  //     //   type: PASSWORD_UPDATED,
-  //     //   payload: res.data
-  //     // });
-  //   } catch (err) {
-  //     const errors = err.response.data.errors;
-  //     if (errors) {
-  //       //   errors.forEach(error => dispatch(setAlert(error.msg, 'danger')));
-  //       console.error(errors);
-  //     }
-  //     dispatch({
-  //       type:
-  //     });
-  //   }
+export const deleteAccount = () => async (dispatch) => {
+  try {
+    const res = await axios.delete("/api/v1/users/deleteMe");
+    // dispatch({
+    //   type: DELETED,
+    //   payload: res.data
+    // });
+
+    if (res.data.status === "success") {
+      dispatch(notify("success", "Account deleted. Goodbye!"));
+    }
+  } catch (error) {
+    console.log(error);
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
+  }
 };

@@ -1,35 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
+import { useRouteMatch, useHistory } from "react-router-dom";
 import {
   getChatrooms,
   joinChatroom,
   subscribeChatrooms,
 } from "../actions/chatroom";
 import { updateUserData } from "../actions/auth";
-
-import { Route, useRouteMatch, useHistory, Link } from "react-router-dom";
-
 import clsx from "clsx";
 import { makeStyles, withStyles, useTheme } from "@material-ui/core/styles";
 import { useMediaQuery } from "react-responsive";
-
 import ChatWindow from "./ChatWindow";
 import AddChatroomDialog from "./AddChatroomDialog";
 import Settings from "./Settings";
-import Friends from "./Friends";
 import LogoutDialog from "./auth/LogoutDialog";
 import Loader from "./notify/Loader";
-
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemText from "@material-ui/core/ListItemText";
-
-import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Avatar from "@material-ui/core/Avatar";
-
 import Badge from "@material-ui/core/Badge";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -41,10 +33,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
-import SettingsSharpIcon from "@material-ui/icons/SettingsSharp";
 import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
-import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
-import Tooltip from "@material-ui/core/Tooltip";
 import EditChatroom from "./chatroom/EditChatroom";
 
 const drawerWidth = 240;
@@ -172,7 +161,6 @@ const StyledBadge = withStyles((theme) => ({
 }))(Badge);
 
 const Dashboard = ({
-  auth,
   currentUser,
   chatrooms = [],
   subscribeChatrooms,
@@ -181,7 +169,6 @@ const Dashboard = ({
   updateUserData,
   joinChatroom,
   loading,
-  children,
 }) => {
   useEffect(() => {
     getChatrooms();
@@ -199,26 +186,16 @@ const Dashboard = ({
       return;
     }
 
-    //TODO: implement change chatroom func
     updateUserData({ currentChatroom: chatroom.id, type: "chatroom" });
     joinChatroom(chatroom);
-    // Better implementation?
   };
 
   useEffect(() => {
     subscribeChatrooms();
     if (currentChatroom) {
-      history.push(`${url}chatroom/${currentChatroom._id}`);
+      return history.push(`${url}chatroom/${currentChatroom._id}`);
     }
   }, [currentChatroom]);
-
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
 
   return loading ? (
     <Loader />
@@ -235,15 +212,13 @@ const Dashboard = ({
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={() => setOpen(true)}
             edge="start"
             className={clsx(classes.menuButton, open && classes.hide)}
           >
             <MenuIcon />
           </IconButton>
-
           <Typography className={classes.navTitle} variant="h6" noWrap>
-            {/* //TODO: Replace state below */}
             {isMobile
               ? currentChatroom
                 ? currentChatroom
@@ -255,7 +230,7 @@ const Dashboard = ({
 
           <div className={classes.appBarButtons}>
             {/* <IconButton
-              aria-label="delete"
+              aria-label="Dark or Light Theme Toggle"
               // onClick={props.changeTheme}
               color="inherit"
               children={
@@ -266,17 +241,6 @@ const Dashboard = ({
                 )
               }
             ></IconButton> */}
-            {/*  Implement logout authcontroller func */}
-
-            {/* //TODO: Implement Friends screen
-            <Tooltip title="Friends">
-              <IconButton
-                aria-label="friends"
-                color="inherit"
-                onClick={() => history.push("/friends")}
-                children={<PeopleAltIcon />}
-              ></IconButton>
-            </Tooltip> */}
             <StyledBadge
               overlap="circle"
               anchorOrigin={{
@@ -312,7 +276,7 @@ const Dashboard = ({
         }}
       >
         <div className={classes.drawerHeader}>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={() => setOpen(false)}>
             {theme.direction === "ltr" ? (
               <ChevronLeftIcon />
             ) : (
@@ -329,25 +293,13 @@ const Dashboard = ({
           }
         >
           <Divider />
-          {/* //TODO: Fix state below */}
           {chatrooms.map((chatroom) => (
             <div key={chatroom._id}>
-              <ListItem onClick={() => handleChatroomChange(chatroom)} button>
-                {/* //TODO: ADD IMAGE UPLOADS FOR CHATROOMS AND USERS */}
-                <ListItemText
-                  primary={chatroom.name}
-                  // secondary={secondary ? "Secondary text" : null}
-                />
+              <ListItem button onClick={() => handleChatroomChange(chatroom)}>
+                <ListItemText primary={chatroom.name} />
                 {chatroom.creator && chatroom.creator._id === currentUser._id && (
                   <ListItemSecondaryAction>
-                    {/* <IconButton edge="end" aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton> */}
                     <EditChatroom />
-                    <Link
-                      to={`/chatrooms/edit/${chatroom._id}`}
-                      className="ui button primary"
-                    ></Link>
                   </ListItemSecondaryAction>
                 )}
               </ListItem>
@@ -356,7 +308,6 @@ const Dashboard = ({
           ))}
         </List>
         <div className={classes.addChatroomButton}>
-          {/* //TODO: Fix state of below component */}
           <AddChatroomDialog />
         </div>
       </Drawer>
@@ -366,22 +317,17 @@ const Dashboard = ({
         })}
       >
         <div className={classes.drawerHeader} />
-        {/* //TODO: Fix state below */}
-        <Route exact path="/friends">
-          <Friends />
-        </Route>
         <ChatWindow />
       </main>
     </div>
   );
 };
 
-const mapStateToProps = (state) => ({
-  auth: state.auth,
-  currentUser: state.auth.currentUser,
-  chatrooms: state.chatrooms.chatrooms,
-  loading: state.chatrooms.loading,
-  currentChatroom: state.chatrooms.currentChatroom,
+const mapStateToProps = ({ auth, chatrooms }) => ({
+  currentUser: auth.currentUser,
+  chatrooms: chatrooms.chatrooms,
+  loading: chatrooms.loading,
+  currentChatroom: chatrooms.currentChatroom,
 });
 
 export default connect(mapStateToProps, {

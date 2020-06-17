@@ -116,14 +116,9 @@ const EditChatroom = ({}) => {
           // error={error}
 
           placeholder="Chatroom Name"
-          // helperText={error ? "Email is already registered." : ""}
+          // helperText={error }
           // value={email}
-          onChange={(e) => {
-            // onChange(e);
-            // if (error) {
-            //   // dispatch({ type: "LOGIN_ERROR_CLEARED" });
-            // }
-          }}
+          onChange={(e) => {}}
         />
         <ProgressButton title="Confirm" formId="email" />
       </form>
@@ -155,4 +150,4 @@ const EditChatroom = ({}) => {
 
 const mapStateToProps = (state) => ({});
 
-export default connect(null, {})(EditChatroom);
+export default connect(null)(EditChatroom);

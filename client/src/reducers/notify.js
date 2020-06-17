@@ -5,7 +5,7 @@ import {
 } from "../actions/types";
 
 const initState = {
-  messages: [],
+  notifications: [],
   usersTyping: [],
 };
 
@@ -14,17 +14,18 @@ export default (state = initState, action) => {
     case SET_NOTIFICATION:
       return {
         ...state,
-        messages: [...state.messages, action.payload],
+        notifications: [...state.notifications, action.payload],
       };
 
     case REMOVE_NOTIFICATION:
       return {
         ...state,
-        messages: state.messages.filter((msg) => msg.id !== action.payload),
+        notifications: state.notifications.filter(
+          (msg) => msg.id !== action.payload
+        ),
       };
 
     case USER_TYPING:
-      console.log(state.usersTyping);
       if (
         action.payload.typing &&
         state.usersTyping.includes(action.payload.user)

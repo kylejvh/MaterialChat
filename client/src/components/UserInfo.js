@@ -1,18 +1,9 @@
-//
-//
-//
-//* USE POPPER LIB YOU INSTALLED FOR THIS
-//
-//
-//
-//
-
 import React from "react";
 import { connect } from "react-redux";
 import {
   usePopupState,
   bindToggle,
-  bindPopper
+  bindPopper,
 } from "material-ui-popup-state/hooks";
 import Fade from "@material-ui/core/Fade";
 
@@ -47,18 +38,18 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 //   }
 // }));
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
     border: "1px solid",
     padding: theme.spacing(1),
-    backgroundColor: theme.palette.background.paper
-  }
+    backgroundColor: theme.palette.background.paper,
+  },
 }));
 
 const UserInfo = ({ isOpen, anchorEl }) => {
   const popupState = usePopupState({
     variant: "popper",
-    popupId: "demoPopper"
+    popupId: "demoPopper",
   });
   const classes = useStyles();
   // const [anchorEl, setAnchorEl] = React.useState(null);
