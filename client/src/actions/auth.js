@@ -118,12 +118,13 @@ export const updateUserData = (data, callback = null) => async (dispatch) => {
       withCredentials: true,
       data,
     });
-
+    console.log(data);
     dispatch({
       type: ACCOUNT_UPDATED,
       payload: res.data.data.user,
     });
 
+    console.log(res);
     // Allow a callback to be attached and executed after data updates.
     if (res.data.status === "success" && callback) {
       return callback();
