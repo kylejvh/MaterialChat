@@ -2,7 +2,6 @@ import {
   REGISTER_INITIAL_STEP_SUCCEEEDED,
   REGISTER_FINAL_STEP_SUCCEEEDED,
   LOGIN_SUCCEEDED,
-  LOGOUT_SUCCEEDED,
   ACCOUNT_UPDATED,
 } from "../actions/types";
 
@@ -26,15 +25,6 @@ export default (state = initState, action) => {
         ...state,
         isAuthenticated: true,
         currentUser: action.payload,
-      };
-
-    case LOGOUT_SUCCEEDED:
-      return {
-        ...state,
-        token: null,
-        isAuthenticated: false,
-        currentUser: null,
-        loading: false,
       };
 
     case REGISTER_INITIAL_STEP_SUCCEEEDED:

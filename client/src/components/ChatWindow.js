@@ -142,7 +142,12 @@ const ChatWindow = ({
       subscribeChatroomUsers();
       subscribeTyping();
     }
-  }, [currentChatroom]);
+  }, [
+    currentChatroom,
+    subscribeMessages,
+    subscribeChatroomUsers,
+    subscribeTyping,
+  ]);
 
   useEffect(() => {
     let typingTimeout;
@@ -164,7 +169,7 @@ const ChatWindow = ({
       });
     }
     return () => clearTimeout(typingTimeout);
-  }, [currentChatroom, chatMessage]);
+  }, [currentChatroom, chatMessage, currentUser, emitTyping]);
 
   const [drawer, setDrawer] = useState(false);
   const classes = useStyles(theme);

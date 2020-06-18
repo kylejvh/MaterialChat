@@ -46,7 +46,10 @@ const EditChatroom = ({}) => {
     e.preventDefault();
   };
 
-  const editChatroomTopics = ["General", "Delete Chatroom"];
+  const editChatroomTopics = [
+    "General",
+    // "Delete Chatroom"
+  ];
 
   {
     /* General - Change Chatroom name and other options */
@@ -118,7 +121,7 @@ const EditChatroom = ({}) => {
           placeholder="Chatroom Name"
           // helperText={error }
           // value={email}
-          onChange={(e) => {}}
+          // onChange={(e) => {}}
         />
         <ProgressButton title="Confirm" formId="email" />
       </form>
@@ -139,7 +142,10 @@ const EditChatroom = ({}) => {
       <FullscreenDialog
         dialogTitle="Edit Chatroom Settings"
         topicList={editChatroomTopics}
-        componentList={[editName, deleteChatroom]}
+        componentList={[
+          editName,
+          // deleteChatroom
+        ]}
         isOpen={open}
         handleClose={() => setOpen(false)}
         ariaDescriptionID="editchatroom-dialog-description"
@@ -147,7 +153,5 @@ const EditChatroom = ({}) => {
     </>
   );
 };
-
-const mapStateToProps = (state) => ({});
 
 export default connect(null)(EditChatroom);

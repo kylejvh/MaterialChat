@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
-import store from "./store";
-import setAuthToken from "./utils/setAuthToken";
-import Routes from "./clientroutes/Routes";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { createMuiTheme } from "@material-ui/core/styles";
 import { getUser } from "./actions/auth";
+import store from "./store";
+import Routes from "./clientroutes/Routes";
+// import setAuthToken from "./utils/setAuthToken";
 
 const lightTheme = createMuiTheme({
   palette: {

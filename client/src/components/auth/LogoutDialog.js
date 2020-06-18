@@ -41,7 +41,7 @@ const LogoutDialog = ({ logout }) => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={() => logout()} color="primary" autoFocus>
+          <Button onClick={logout} color="primary" autoFocus>
             Logout
           </Button>
         </DialogActions>

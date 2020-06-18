@@ -1,13 +1,10 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { notify } from "../../../actions/notify";
 import { completeRegister } from "../../../actions/auth";
-
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import RegisterForm from "./RegisterForm";
 import PhotoUpload from "./PhotoUpload";
-import ProgressButton from "../../ProgressButton";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { Typography } from "@material-ui/core";

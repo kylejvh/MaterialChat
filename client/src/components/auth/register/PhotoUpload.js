@@ -58,10 +58,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const PhotoUpload = ({
-  updateUserData,
   handleNext = null,
+  settingsPanel = false,
+  updateUserData,
   currentUser,
-  settingsPanel,
   children,
 }) => {
   const classes = useStyles();
@@ -74,11 +74,12 @@ const PhotoUpload = ({
     rotation: 0,
   });
 
+  // If user is editing their avatar from settings, load current avatar.
   useEffect(() => {
-    if (currentUser && currentUser.photo !== "default.jpg") {
+    if (settingsPanel && currentUser && currentUser.photo !== "default.jpg") {
       setFile(currentUser.photo);
     }
-  }, [currentUser, currentUser.photo]);
+  }, [settingsPanel, currentUser]);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -123,7 +124,7 @@ const PhotoUpload = ({
   let buttonDisabledState;
 
   const modifyButtonDisabledState = () => {
-    if (!file && currentUser.photo === "default.jpg") {
+    if (!file && currentUser && currentUser.photo === "default.jpg") {
       return (buttonDisabledState = true);
     } else if (settingsPanel) {
       return (buttonDisabledState = false);

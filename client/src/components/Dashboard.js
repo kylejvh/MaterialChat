@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { useRouteMatch, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import {
   getChatrooms,
   joinChatroom,
@@ -15,6 +15,7 @@ import AddChatroomDialog from "./AddChatroomDialog";
 import Settings from "./Settings";
 import LogoutDialog from "./auth/LogoutDialog";
 import Loader from "./notify/Loader";
+import EditChatroom from "./chatroom/EditChatroom";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -32,9 +33,8 @@ import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
-import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
-import EditChatroom from "./chatroom/EditChatroom";
+// import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
+// import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
 
 const drawerWidth = 240;
 const mobileDrawerWidth = 120;
@@ -172,9 +172,8 @@ const Dashboard = ({
 }) => {
   useEffect(() => {
     getChatrooms();
-  }, []);
+  }, [getChatrooms]);
 
-  let { path, url } = useRouteMatch();
   let history = useHistory();
   const classes = useStyles();
   const theme = useTheme();
@@ -193,9 +192,9 @@ const Dashboard = ({
   useEffect(() => {
     subscribeChatrooms();
     if (currentChatroom) {
-      return history.push(`${url}chatroom/${currentChatroom._id}`);
+      return history.push(`/chatroom/${currentChatroom._id}`);
     }
-  }, [currentChatroom]);
+  }, [subscribeChatrooms, currentChatroom, history]);
 
   const headerTitle = currentChatroom
     ? `Current Chatroom: ${currentChatroom.name}`

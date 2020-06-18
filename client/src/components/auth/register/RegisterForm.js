@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RegisterForm = ({ registerAccount, token, handleNext }) => {
+const RegisterForm = ({ registerAccount, currentUser, token, handleNext }) => {
   const classes = useStyles();
 
   const [passwordVisibility, setPasswordVisibility] = useState(false);
@@ -52,10 +52,10 @@ const RegisterForm = ({ registerAccount, token, handleNext }) => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (currentUser && token) {
       handleNext();
     }
-  }, [token]);
+  }, [currentUser, token]);
 
   return (
     <>
@@ -130,6 +130,7 @@ const RegisterForm = ({ registerAccount, token, handleNext }) => {
 };
 
 const mapStateToProps = ({ auth }) => ({
+  currentUser: auth.currentUser,
   token: auth.token,
 });
 
