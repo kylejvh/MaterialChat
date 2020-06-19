@@ -6,7 +6,6 @@ import {
 } from "../actions/types";
 
 const initState = {
-  token: localStorage.getItem("token"),
   isAuthenticated: null,
   currentUser: null,
   loading: false,
@@ -31,7 +30,6 @@ export default (state = initState, action) => {
       return {
         ...state,
         currentUser: action.payload.data.user,
-        token: action.payload.token,
       };
 
     case REGISTER_FINAL_STEP_SUCCEEEDED:

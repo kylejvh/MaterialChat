@@ -43,9 +43,7 @@ const emitEvent = (event, payload) => {
 // Get all chatrooms
 export const getChatrooms = () => async (dispatch) => {
   try {
-    const res = await axios.get("/api/v1/chatrooms", {
-      withCredentials: true,
-    });
+    const res = await axios.get("/api/v1/chatrooms");
 
     dispatch({
       type: GET_CHATROOMS,
@@ -64,7 +62,6 @@ export const createChatroom = (chatroom) => async (dispatch) => {
     const res = await axios({
       method: "POST",
       url: "/api/v1/chatrooms",
-      withCredentials: true,
       data: {
         name: chatroom,
       },
@@ -98,9 +95,7 @@ export const joinChatroom = (chatroom) => async (dispatch, getState) => {
 
   // Getting info of specific chatoom
   try {
-    const res = await axios.get(`/api/v1/chatrooms/${chatroom.id}`, {
-      withCredentials: true,
-    });
+    const res = await axios.get(`/api/v1/chatrooms/${chatroom.id}`);
 
     dispatch({
       type: USER_JOINED_CHATROOM,

@@ -39,7 +39,6 @@ export const sendMessage = (data) => async (dispatch, getState) => {
     const res = await axios({
       method: "POST",
       url: `/api/v1/chatrooms/${chatroomID}/messages`,
-      withCredentials: true,
       data: {
         message: data.message,
       },

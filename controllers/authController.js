@@ -22,6 +22,8 @@ const createSendToken = (user, statusCode, req, res) => {
     ),
     httpOnly: true,
     // secure: req.secure || req.headers["x-forwarded-proto"] === "https"
+    secure: true,
+    sameSite: true,
   });
 
   // Removes password from output
@@ -29,7 +31,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
   res.status(statusCode).json({
     status: "success",
-    token,
+    // token,   <- Token access in JavaScript not currently needed on front end, not sent on response body throughout application
     data: {
       user,
     },
@@ -45,9 +47,10 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
   });
 
-  if (req.body.welcomeEmail) {
+  // Only send welcome emails to new users in production
+  if (process.env.NODE_ENV === "production") {
+    console.log("Sending email from nodemailer...");
     // Optional url not included, reserved for future use case.
-
     await new Email(
       newUser
       // url
@@ -58,7 +61,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  console.log("FROM LOGIN", req.headers);
   const { email, password } = req.body;
 
   // 1. Check if email and password exist
@@ -123,7 +125,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 exports.verifyPassword = catchAsync(async (req, res, next) => {
-  // If user is editing/deleting avatar, don't require password
+  // If handling chatroom or avatar data, don't require password
   if (
     (req.file && req.file.fieldname === "photo") ||
     (req.body.deletePhoto && req.body.photoId) ||
@@ -145,7 +147,6 @@ exports.verifyPassword = catchAsync(async (req, res, next) => {
   }
 
   // If correct, continue to next middlewware.
-  console.log("password check passed...");
   next();
 });
 
@@ -242,6 +243,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, req, res);
 });
 
+// Used for persistence of user login, will return 204 no content instead of errors if req.cookies.jwt is not present.
 exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     try {
@@ -254,22 +256,33 @@ exports.isLoggedIn = async (req, res, next) => {
       // 2. Check if user still exists - user may delete account after token is issued. Token will still be valid if not expired and not handled correctly.
       const currentUser = await User.findById(decoded.id);
       if (!currentUser) {
-        return next();
+        return next(
+          new AppError(
+            "Invalid login token. Please clear your cookies and log in.",
+            401
+          )
+        );
       }
 
       // 3. Check if user changed password after the token was issued
       if (currentUser.changedPasswordAfter(decoded.iat)) {
-        return next();
+        return next(
+          new AppError("Password recently changed. Please log in again.", 401)
+        );
       }
 
-      // Grant access to protected routers if all checks pass.
-      req.locals.user = currentUser;
+      // Set req.user info for use in next middlewares
+      req.user = currentUser;
       return next();
     } catch (err) {
       return next();
     }
+  } else {
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
   }
-  next();
 };
 
 exports.restrictTo = (...roles) => {
@@ -287,11 +300,8 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.logout = (req, res) => {
-  // Replaces cookie with a cookie of the same name, but with no login token. If you set up front end to check for cookie, you will be logged out.
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
+  // Clears token cookie
+  res.clearCookie("jwt");
   res.status(200).json({
     status: "success",
   });

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link as RouterLink, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { Formik, Form } from "formik";
-import { login } from "../../actions/auth";
+import { login, sendForgotPassword } from "../../actions/auth";
 import ProgressButton from "../ProgressButton";
 import CustomFormikField from "./../../utils/formik/CustomFormikField";
 import loginSchema from "./../../utils/formik/loginSchema";
@@ -20,6 +20,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoginDialog = ({ login, isAuthenticated }) => {
+const LoginDialog = ({ isAuthenticated, login, forgotPassword }) => {
   const [passwordVisibility, setPasswordVisibility] = useState(false);
 
   const handleMouseDownPassword = (event) => {
@@ -53,6 +54,12 @@ const LoginDialog = ({ login, isAuthenticated }) => {
   if (isAuthenticated) {
     return <Redirect to="/" />;
   }
+
+  // const initPasswordReset = () => {
+  // Use formik values and validation. On successful send, render a popover, card, dialog, or some simple notification like notify
+
+  //   forgotPassword({ email: initialValues.email });
+  // };
 
   return (
     <Dialog
@@ -74,55 +81,94 @@ const LoginDialog = ({ login, isAuthenticated }) => {
           initialValues={{
             email: "",
             password: "",
+            forgotPassword: false,
           }}
           validationSchema={loginSchema}
           validateOnBlur={false}
-          onSubmit={(values, { setSubmitting }) => {
-            login(values);
-            setSubmitting(false);
+          onSubmit={(
+            { email, password, forgotPassword },
+            { setSubmitting }
+          ) => {
+            if (forgotPassword) {
+              sendForgotPassword({ email });
+              setSubmitting(false);
+            } else {
+              login({ email, password });
+              setSubmitting(false);
+            }
           }}
         >
-          <Form>
-            <CustomFormikField
-              label="Email"
-              autoFocus
-              fullWidth
-              id="email"
-              margin="normal"
-              name="email"
-              type="email"
-              placeholder="Email"
-            />
-            <CustomFormikField
-              label="Password"
-              fullWidth
-              id="password"
-              margin="normal"
-              name="password"
-              placeholder="Password"
-              type={passwordVisibility ? "text" : "password"}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setPasswordVisibility(!passwordVisibility)}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                    >
-                      {passwordVisibility ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <DialogActions>
-              <Link component={RouterLink} to="/register">
-                Don't have an account?
-              </Link>
-              <ProgressButton title="Login" color="primary" loading="" />
-            </DialogActions>
-          </Form>
+          {/* Expose setter function to forgotPassword button */}
+          {({ setFieldValue }) => (
+            <Form>
+              <CustomFormikField
+                label="Email"
+                autoFocus
+                fullWidth
+                id="email"
+                margin="normal"
+                name="email"
+                type="email"
+                placeholder="Email"
+              />
+              <CustomFormikField
+                label="Password"
+                fullWidth
+                id="password"
+                margin="normal"
+                name="password"
+                placeholder="Password"
+                type={passwordVisibility ? "text" : "password"}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() =>
+                          setPasswordVisibility(!passwordVisibility)
+                        }
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {passwordVisibility ? (
+                          <Visibility />
+                        ) : (
+                          <VisibilityOff />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <DialogActions>
+                <Link
+                  style={{ marginRight: "auto" }}
+                  component="button"
+                  type="submit"
+                  onClick={() => setFieldValue("forgotPassword", true)}
+                >
+                  Reset Password
+                </Link>
+                <Button
+                  component={RouterLink}
+                  variant="outlined"
+                  color="primary"
+                  to="/register"
+                >
+                  Register
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  onClick={() => setFieldValue("forgotPassword", false)}
+                >
+                  Login
+                </Button>
+              </DialogActions>
+            </Form>
+          )}
         </Formik>
       </DialogContent>
     </Dialog>
@@ -133,4 +179,6 @@ const mapStateToProps = ({ auth }) => ({
   isAuthenticated: auth.isAuthenticated,
 });
 
-export default connect(mapStateToProps, { login })(LoginDialog);
+export default connect(mapStateToProps, { login, sendForgotPassword })(
+  LoginDialog
+);

@@ -10,16 +10,14 @@ import { notify } from "./notify";
 
 export const getUser = () => async (dispatch) => {
   try {
-    const res = await axios.get("/api/v1/users/me", {
-      headers: {
-        Authorization: `Bearer ${localStorage.token}`,
-      },
-    });
+    const res = await axios.get("/api/v1/users/queryMe");
 
-    dispatch({
-      type: LOGIN_SUCCEEDED,
-      payload: res.data.data.doc,
-    });
+    if (res.status !== 204 && res.data) {
+      dispatch({
+        type: LOGIN_SUCCEEDED,
+        payload: res.data.data.doc,
+      });
+    }
   } catch (error) {
     const errorResponse =
       error.response.data.message || `An error occurred: ${error}`;
@@ -33,15 +31,11 @@ export const login = (values) => async (dispatch) => {
     const res = await axios({
       method: "POST",
       url: "/api/v1/users/login",
-      withCredentials: true,
       data: {
         email: values.email,
         password: values.password,
       },
     });
-
-    // Save token in response to localStorage
-    localStorage.setItem("token", res.data.token);
 
     dispatch({
       type: LOGIN_SUCCEEDED,
@@ -59,7 +53,6 @@ export const logout = () => async (dispatch) => {
     if (res.data.status === "success") {
       dispatch({ type: LOGOUT_SUCCEEDED });
       dispatch(notify("success", "Logged out successfully"));
-      localStorage.removeItem("token");
     }
   } catch (error) {
     console.log(error.response.data.message || `An error occurred: ${error}`);
@@ -87,9 +80,6 @@ export const registerAccount = ({
       data: body,
     });
 
-    // Save token in response to localStorage
-    localStorage.setItem("token", res.data.token);
-
     dispatch({
       type: REGISTER_INITIAL_STEP_SUCCEEEDED,
       payload: res.data,
@@ -115,7 +105,6 @@ export const updateUserData = (data, callback = null) => async (dispatch) => {
     const res = await axios({
       method: "PATCH",
       url: "/api/v1/users/updateMe",
-      withCredentials: true,
       data,
     });
 
@@ -141,7 +130,6 @@ export const updatePassword = (data) => async (dispatch) => {
     const res = await axios({
       method: "PATCH",
       url: "/api/v1/users/updateMyPassword",
-      withCredentials: true,
       data: {
         passwordCurrent: data.passwordCurrent,
         newPassword: data.newPassword,
@@ -156,6 +144,29 @@ export const updatePassword = (data) => async (dispatch) => {
       type: ACCOUNT_UPDATED,
       payload: res.data.data.user,
     });
+  } catch (error) {
+    console.log(error);
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
+  }
+};
+
+export const sendForgotPassword = (data) => async (dispatch) => {
+  try {
+    const res = await axios({
+      method: "PATCH",
+      url: "/api/v1/users/forgotPassword",
+      data,
+    });
+
+    if (res.data.status === "success") {
+      dispatch(
+        notify(
+          "success",
+          "Password reset email sent. Please check your inbox or spam folder."
+        )
+      );
+    }
   } catch (error) {
     console.log(error);
     console.log(error.response.data.message || `An error occurred: ${error}`);

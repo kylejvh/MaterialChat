@@ -6,7 +6,6 @@ import { createMuiTheme } from "@material-ui/core/styles";
 import { getUser } from "./actions/auth";
 import store from "./store";
 import Routes from "./clientroutes/Routes";
-// import setAuthToken from "./utils/setAuthToken";
 
 const lightTheme = createMuiTheme({
   palette: {
@@ -31,10 +30,8 @@ const darkTheme = createMuiTheme({
 
 const App = () => {
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      // setAuthToken(localStorage.token);
-      store.dispatch(getUser());
-    }
+    // Check if user was previously authenticated with a token
+    store.dispatch(getUser());
   }, []);
 
   const [isDarkTheme, setIsDarkTheme] = useState(true);

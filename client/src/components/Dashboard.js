@@ -203,7 +203,7 @@ const Dashboard = ({
     ? currentChatroom.name
     : "MaterialChat";
 
-  return loading ? (
+  return loading && currentUser === null ? (
     <Loader />
   ) : (
     <div className={classes.root}>

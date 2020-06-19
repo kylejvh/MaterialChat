@@ -34,7 +34,7 @@
     "node": "13.6.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "jest",
     "test:watch": "jest --watch",

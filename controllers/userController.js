@@ -102,6 +102,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
+// Reserved for future use - middleware that allows use of /me with url params
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
