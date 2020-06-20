@@ -3,14 +3,12 @@ import { Link as RouterLink, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { Formik, Form } from "formik";
 import { login, sendForgotPassword } from "../../actions/auth";
-import ProgressButton from "../ProgressButton";
 import CustomFormikField from "./../../utils/formik/CustomFormikField";
 import loginSchema from "./../../utils/formik/loginSchema";
 
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { Typography, Container } from "@material-ui/core";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import Link from "@material-ui/core/Link";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -40,26 +38,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoginDialog = ({ isAuthenticated, login, forgotPassword }) => {
+const LoginDialog = ({ isAuthenticated, login, sendForgotPassword }) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [passwordVisibility, setPasswordVisibility] = useState(false);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
-  const classes = useStyles();
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
   if (isAuthenticated) {
     return <Redirect to="/" />;
   }
-
-  // const initPasswordReset = () => {
-  // Use formik values and validation. On successful send, render a popover, card, dialog, or some simple notification like notify
-
-  //   forgotPassword({ email: initialValues.email });
-  // };
 
   return (
     <Dialog
@@ -98,8 +90,8 @@ const LoginDialog = ({ isAuthenticated, login, forgotPassword }) => {
             }
           }}
         >
-          {/* Expose setter function to forgotPassword button */}
-          {({ setFieldValue }) => (
+          {/* Expose Formik functions for forgotPassword button */}
+          {({ setFieldValue, submitForm }) => (
             <Form>
               <CustomFormikField
                 label="Email"
@@ -140,16 +132,18 @@ const LoginDialog = ({ isAuthenticated, login, forgotPassword }) => {
                   ),
                 }}
               />
-
               <DialogActions>
-                <Link
+                <Button
                   style={{ marginRight: "auto" }}
-                  component="button"
-                  type="submit"
-                  onClick={() => setFieldValue("forgotPassword", true)}
+                  color="primary"
+                  variant="outlined"
+                  onClick={async () => {
+                    await setFieldValue("forgotPassword", true);
+                    submitForm();
+                  }}
                 >
-                  Reset Password
-                </Link>
+                  Forgot Password
+                </Button>
                 <Button
                   component={RouterLink}
                   variant="outlined"

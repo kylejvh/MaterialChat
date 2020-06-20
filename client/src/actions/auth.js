@@ -154,7 +154,7 @@ export const updatePassword = (data) => async (dispatch) => {
 export const sendForgotPassword = (data) => async (dispatch) => {
   try {
     const res = await axios({
-      method: "PATCH",
+      method: "POST",
       url: "/api/v1/users/forgotPassword",
       data,
     });
@@ -163,7 +163,8 @@ export const sendForgotPassword = (data) => async (dispatch) => {
       dispatch(
         notify(
           "success",
-          "Password reset email sent. Please check your inbox or spam folder."
+          "Password reset email sent. Please check your inbox or spam folder.",
+          10000
         )
       );
     }
