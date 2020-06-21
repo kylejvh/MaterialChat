@@ -175,6 +175,35 @@ export const sendForgotPassword = (data) => async (dispatch) => {
   }
 };
 
+export const changeForgottenPassword = (
+  { password, passwordConfirm, token },
+  callback = null
+) => async (dispatch) => {
+  try {
+    const res = await axios({
+      method: "PATCH",
+      url: `/api/v1/users/resetPassword/${token}`,
+      data: {
+        password,
+        passwordConfirm,
+      },
+    });
+
+    if (res.data.status === "success") {
+      dispatch(notify("success", "Password change and login successful."));
+      dispatch({
+        type: LOGIN_SUCCEEDED,
+        payload: res.data.data.user,
+      });
+      callback();
+    }
+  } catch (error) {
+    console.log(error);
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
+  }
+};
+
 export const deleteAccount = () => async (dispatch) => {
   try {
     const res = await axios.delete("/api/v1/users/deleteMe");

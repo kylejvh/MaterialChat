@@ -21,8 +21,7 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    // secure: req.secure || req.headers["x-forwarded-proto"] === "https"
-    secure: true,
+    secure: process.env.NODE_ENV === "production" ? true : false,
     sameSite: true,
   });
 
@@ -169,9 +168,10 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3. Send it to the user's email
   try {
-    const resetURL = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    const resetURL =
+      process.env.NODE_ENV === "development"
+        ? `${req.protocol}://localhost:3000/reset/${resetToken}`
+        : `${req.protocol}://${req.get("host")}/reset/${resetToken}`;
 
     await new Email(user, resetURL).sendPasswordReset();
 

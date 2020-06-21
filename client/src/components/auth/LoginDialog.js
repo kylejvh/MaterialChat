@@ -38,7 +38,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoginDialog = ({ isAuthenticated, login, sendForgotPassword }) => {
+const LoginDialog = ({
+  isAuthenticated,
+  login,
+  sendForgotPassword,
+  location,
+}) => {
   const classes = useStyles();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -49,8 +54,10 @@ const LoginDialog = ({ isAuthenticated, login, sendForgotPassword }) => {
     event.preventDefault();
   };
 
+  const { from } = location.state || { from: { pathname: "/" } };
+
   if (isAuthenticated) {
-    return <Redirect to="/" />;
+    return <Redirect to={from} />;
   }
 
   return (
@@ -59,12 +66,12 @@ const LoginDialog = ({ isAuthenticated, login, sendForgotPassword }) => {
       fullScreen={fullScreen}
       fullWidth
       open
-      aria-labelledby="form-dialog-title"
+      aria-labelledby="login-dialog-title"
     >
       <Container className={classes.titleContainer}>
         <Typography variant="h4">Hello! Welcome to MaterialChat!</Typography>
       </Container>
-      <DialogTitle id="form-dialog-title">Login</DialogTitle>
+      <DialogTitle id="login-dialog-title">Login</DialogTitle>
       <DialogContent>
         <DialogContentText>
           To begin messaging, please enter your email and password.
