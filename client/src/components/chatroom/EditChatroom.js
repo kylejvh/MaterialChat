@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EditChatroom = ({}) => {
+const EditChatroom = ({ chatroomToEdit: chatroom }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
 
@@ -124,6 +124,7 @@ const EditChatroom = ({}) => {
           // onChange={(e) => {}}
         />
         <ProgressButton title="Confirm" formId="email" />
+        <button onClick={() => deleteChatroom(chatroom._id)} />
       </form>
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useHistory, Route } from "react-router-dom";
 import {
   getChatrooms,
   joinChatroom,
@@ -33,8 +33,9 @@ import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-// import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
-// import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
+import Tooltip from "@material-ui/core/Tooltip";
+import BrightnessLowOutlinedIcon from "@material-ui/icons/BrightnessLowOutlined";
+import Brightness4OutlinedIcon from "@material-ui/icons/Brightness4Outlined";
 
 const drawerWidth = 240;
 const mobileDrawerWidth = 120;
@@ -132,6 +133,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StyledBadge = withStyles((theme) => ({
+  root: {
+    margin: "0 6px",
+  },
   badge: {
     backgroundColor: "#44b700",
     color: "#44b700",
@@ -162,13 +166,14 @@ const StyledBadge = withStyles((theme) => ({
 
 const Dashboard = ({
   currentUser,
-  chatrooms = [],
+  chatrooms,
   subscribeChatrooms,
   currentChatroom,
   getChatrooms,
   updateUserData,
   joinChatroom,
   loading,
+  toggleTheme,
 }) => {
   useEffect(() => {
     getChatrooms();
@@ -229,18 +234,6 @@ const Dashboard = ({
           </Typography>
 
           <div className={classes.appBarButtons}>
-            {/* <IconButton
-              aria-label="Dark or Light Theme Toggle"
-              // onClick={props.changeTheme}
-              color="inherit"
-              children={
-                props.isDarkTheme ? (
-                  <Brightness4OutlinedIcon />
-                ) : (
-                  <BrightnessLowOutlinedIcon />
-                )
-              }
-            ></IconButton> */}
             <StyledBadge
               overlap="circle"
               anchorOrigin={{
@@ -260,7 +253,23 @@ const Dashboard = ({
                   `${currentUser.username.charAt(0)}`}
               </Avatar>
             </StyledBadge>
-
+            <Tooltip
+              title="Toggle light/dark theme"
+              aria-label="Toggle light/dark theme"
+            >
+              <IconButton
+                aria-label="Dark or Light Theme Toggle"
+                onClick={toggleTheme}
+                color="inherit"
+                children={
+                  theme.palette.type === "dark" ? (
+                    <BrightnessLowOutlinedIcon />
+                  ) : (
+                    <Brightness4OutlinedIcon />
+                  )
+                }
+              />
+            </Tooltip>
             <Settings />
             <LogoutDialog />
           </div>
@@ -299,7 +308,7 @@ const Dashboard = ({
                 <ListItemText primary={chatroom.name} />
                 {chatroom.creator && chatroom.creator._id === currentUser._id && (
                   <ListItemSecondaryAction>
-                    <EditChatroom />
+                    <EditChatroom chatroomToEdit={chatroom} />
                   </ListItemSecondaryAction>
                 )}
               </ListItem>
@@ -317,7 +326,7 @@ const Dashboard = ({
         })}
       >
         <div className={classes.drawerHeader} />
-        <ChatWindow />
+        <Route path="/chatroom/:id" component={ChatWindow} />
       </main>
     </div>
   );

@@ -25,7 +25,16 @@ mongoose
     useFindAndModify: false,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("mongoDB connection successful"));
+  .then(() => {
+    console.log("mongoDB connection successful");
+
+    // mongoose.set("toJSON", {
+    //   virtuals: true,
+    //   transform: (doc, converted) => {
+    //     delete converted._id;
+    //   },
+    // });
+  });
 
 // Make socket.io available where needed.
 io.on("connection", function (socket) {

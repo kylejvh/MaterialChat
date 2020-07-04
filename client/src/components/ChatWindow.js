@@ -102,9 +102,15 @@ const useStyles = makeStyles((theme) => ({
   typing: {
     margin: "1rem",
   },
-  chatMessage: {
-    fontSize: "1rem",
-    margin: "0 0 .5rem .5rem",
+  chatMessageInitial: {
+    paddingLeft: "80px",
+    marginLeft: "-72px",
+  },
+  chatMessageSequential: {
+    paddingLeft: "64px",
+  },
+  chatAvatar: {
+    margin: 0,
   },
   chatMessageWrapper: {
     display: "flex",
@@ -112,6 +118,7 @@ const useStyles = makeStyles((theme) => ({
   },
   fromUserBubble: {
     marginBottom: ".5rem",
+    maxWidth: "fit-content",
   },
   chatDivider: {
     width: "100%",
@@ -216,49 +223,106 @@ const ChatWindow = ({
 
   React.useEffect(scrollToBottom, [messages]);
 
+  const renderWithNewSender = (message) => (
+    <>
+      <ListItemAvatar className={classes.chatAvatar}>
+        <Avatar
+          alt="Your Avatar"
+          src={
+            message.sender.photo !== "default.jpg" ? message.sender.photo : null
+          }
+          // className={classes.userAvatar}
+        >
+          {currentUser.photo === "default.jpg" &&
+            `${currentUser.username.charAt(0)}`}
+        </Avatar>
+      </ListItemAvatar>
+      <div
+
+      // style={{ paddingLeft: "72px", marginLeft: "-72px" }}
+      >
+        <Chip
+          className={classes.fromUserBubble}
+          label={message?.sender?.username || ""}
+          size="small"
+          color={
+            message.sender.username === currentUser.username
+              ? "primary"
+              : "secondary"
+          }
+          onClick={(event) => handleUserClick(event)}
+        ></Chip>
+        <Typography className={classes.chatMessageInitial} variant="body1">
+          {message.message}
+        </Typography>
+      </div>
+    </>
+  );
+
+  const renderWithSameSender = (message) => (
+    <Typography className={classes.chatMessageSequential} variant="body1">
+      {message.message}
+    </Typography>
+  );
+
+  // Need to either memoize or come up with a better method. Every time you type it's rerendering i think.
+
+  const renderMessages = (messages, message, i) => {
+    console.log("INITIAL MESSAGES", messages);
+    if (i === 0) {
+      return renderWithNewSender(message);
+    }
+
+    // Compare messages after intial and render new/successive conditionally
+    switch (messages[i - 1]?.sender?._id) {
+      case message?.sender?._id:
+        console.log("first case, equal", message);
+        console.log("first index", i);
+        return renderWithSameSender(message);
+      case !message?.sender?._id:
+        console.log("second case, not equal", message);
+        console.log("second index", i);
+
+        return renderWithNewSender(message);
+
+      default:
+        console.log(
+          "default case, should match if first message(null)",
+          message
+        );
+        console.log("third index", i);
+
+        return renderWithNewSender(message);
+    }
+  };
+
+  // switch (message) {
+  //   case message[0] || message[i - 1].sender._id !== message.sender._id:
+  //     return renderWithNewSender;
+  //   case message[i - 1] && message[i - 1].sender._id === message.sender._id:
+  //     return renderWithSameSender;
+  //   default:
+  //     renderWithNewSender;
+  // }
+
+  // If there was a last message (message[i-1]) and the last message was sent by the current message's sender, rendersameSender
+  // If
+
   return currentChatroom ? (
     <div className={classes.root}>
       <div className={classes.chatContainer}>
         <div className={classes.chatMessageWindow}>
           <List>
             {currentChatroom &&
-              messages.map((message, i) => (
-                <div className={classes.chatMessageWrapper} key={i}>
+              messages?.map((message, i) => (
+                <div className={classes.chatMessageWrapper} key={message.id}>
+                  {/* {console.log(message)} */}
                   <ListItem alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar
-                        alt="Your Avatar"
-                        src={
-                          message.sender &&
-                          message.sender.photo !== "default.jpg"
-                            ? message.sender.photo
-                            : null
-                        }
-                        // className={classes.userAvatar}
-                      >
-                        {currentUser.photo === "default.jpg" &&
-                          `${currentUser.username.charAt(0)}`}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <Chip
-                      className={classes.fromUserBubble}
-                      label={(message.sender && message.sender.username) || ""}
-                      size="small"
-                      color={
-                        message.sender &&
-                        message.sender.username === currentUser.username
-                          ? "primary"
-                          : "secondary"
-                      }
-                      onClick={(event) => handleUserClick(event)}
-                    ></Chip>
-                    <Typography className={classes.chatMessage} variant="body1">
-                      {message.message}
-                    </Typography>
-                    {/* <Divider className={classes.chatDivider} component="li" /> */}
+                    {message && renderMessages(messages, message, i)}
                   </ListItem>
                 </div>
               ))}
+
             <div
               style={{ float: "left", clear: "both", paddingBottom: "2em" }}
               ref={messagesEndRef}

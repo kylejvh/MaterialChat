@@ -2,31 +2,10 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { ThemeProvider } from "@material-ui/core/styles";
-import { createMuiTheme } from "@material-ui/core/styles";
+import { defaultTheme, lightTheme } from "./utils/themes";
 import { getUser } from "./actions/auth";
 import store from "./store";
 import Routes from "./clientroutes/Routes";
-
-const lightTheme = createMuiTheme({
-  palette: {
-    type: "light",
-    primary: {
-      main: "#b43bba",
-    },
-  },
-});
-
-const darkTheme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#27bf7f",
-    },
-    secondary: {
-      main: "#249da5",
-    },
-    type: "dark",
-  },
-});
 
 const App = () => {
   useEffect(() => {
@@ -34,18 +13,17 @@ const App = () => {
     store.dispatch(getUser());
   }, []);
 
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [useLightTheme, setUseLightTheme] = useState(false);
 
   const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
+    setUseLightTheme(!useLightTheme);
   };
 
   return (
-    <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
+    <ThemeProvider theme={useLightTheme ? lightTheme : defaultTheme}>
       <Provider store={store}>
         <Router>
-          {/* <Dashboard isDarkTheme={isDarkTheme} changeTheme={toggleTheme} /> */}
-          <Routes />
+          <Routes toggleTheme={toggleTheme} />
         </Router>
       </Provider>
     </ThemeProvider>

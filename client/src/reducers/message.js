@@ -5,7 +5,7 @@ import {
 } from "../actions/types";
 
 const initState = {
-  messages: [{ message: "", sender: null, timestamp: "" }],
+  messages: [],
   loading: true,
 };
 

@@ -9,7 +9,7 @@ import {
 } from "../actions/types";
 
 const initState = {
-  currentChatroom: null,
+  currentChatroom: localStorage.getItem("currentChatroom"),
   activeUsers: [],
   chatrooms: [],
   loading: true,
@@ -46,6 +46,9 @@ export default (state = initState, action) => {
           isOpen: false,
         },
       };
+
+    // case "DELETE_CHATROOM":
+    //   return state.chatrooms.filter((chatroom) => chatroom === action.payload)
 
     case ADD_CHATROOM_DIALOG_OPENED:
       return {
