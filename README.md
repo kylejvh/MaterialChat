@@ -1,6 +1,6 @@
 # MaterialChat
 
-## **<a href="https://materialchat.kylejvh.com/" target="_blank">Demo</a>**
+## **<a href="https://materialchat.kylejvh.com/" target="_blank">Demo</a>** [![Netlify Status](https://api.netlify.com/api/v1/badges/ad03cf71-f612-4e4b-94e8-14118921becd/deploy-status)](https://app.netlify.com/sites/materialchat/deploys)
 
 > A real-time, multi-user chat application built using React, Material-UI and Socket.io + Node.js 
 
