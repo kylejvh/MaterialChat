@@ -1,6 +1,6 @@
 # MaterialChat
 
-## **<a href="https://kjvh-materialchat.herokuapp.com/" target="_blank">Demo</a>**
+## **<a href="https://materialchat.kylejvh.com/" target="_blank">Demo</a>**
 
 > A real-time, multi-user chat application built using React, Material-UI and Socket.io + Node.js 
 
