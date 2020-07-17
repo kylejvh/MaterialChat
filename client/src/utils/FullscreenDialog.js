@@ -96,33 +96,35 @@ export default function FullscreenDialog({
               </IconButton>
             </Toolbar>
           </AppBar>
-          <Drawer
-            className={classes.drawer}
-            variant="permanent"
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-          >
-            <Toolbar />
-            <div className={classes.drawerContainer}>
-              <List>
-                {topicList.map((text, index) => (
-                  <ListItem
-                    button
-                    key={text}
-                    selected={selectedIndex === index}
-                    onClick={(e) => handleListItemClick(e, index)}
-                  >
-                    {iconList.length > 0 && (
-                      <ListItemIcon>{iconList[selectedIndex]}</ListItemIcon>
-                    )}
-                    <ListItemText primary={text} />
-                  </ListItem>
-                ))}
-              </List>
-              <Divider />
-            </div>
-          </Drawer>
+          {topicList && (
+            <Drawer
+              className={classes.drawer}
+              variant="permanent"
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+            >
+              <Toolbar />
+              <div className={classes.drawerContainer}>
+                <List>
+                  {topicList.map((text, index) => (
+                    <ListItem
+                      button
+                      key={text}
+                      selected={selectedIndex === index}
+                      onClick={(e) => handleListItemClick(e, index)}
+                    >
+                      {iconList.length > 0 && (
+                        <ListItemIcon>{iconList[selectedIndex]}</ListItemIcon>
+                      )}
+                      <ListItemText primary={text} />
+                    </ListItem>
+                  ))}
+                </List>
+                <Divider />
+              </div>
+            </Drawer>
+          )}
           <main className={classes.content}>
             <Toolbar />
             {/* This HOC takes a list of components as props and renders each based on the selected menu item */}

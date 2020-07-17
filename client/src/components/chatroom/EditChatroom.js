@@ -1,13 +1,24 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { Formik, Form } from "formik";
 
+import CustomFormikField from "../../utils/formik/CustomFormikField";
+import {
+  editChatroomSchema,
+  deleteChatroomSchema,
+} from "../../utils/formik/chatroomSettingsSchema";
+import { deleteChatroom } from "../../actions/chatroom";
+import ProgressButton from "./../ProgressButton";
+import FullscreenDialog from "./../../utils/FullscreenDialog";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import Tooltip from "@material-ui/core/Tooltip";
 import TextField from "@material-ui/core/TextField";
-import ProgressButton from "./../ProgressButton";
-import FullscreenDialog from "./../../utils/FullscreenDialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import Divider from "@material-ui/core/Divider";
+import Typography from "@material-ui/core/Typography";
 
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -38,18 +49,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EditChatroom = ({ chatroomToEdit: chatroom }) => {
+const EditChatroom = ({ chatroomToEdit: chatroom, deleteChatroom }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const history = useHistory();
 
-  const submitFieldChange = (e, { ...fields }, type) => {
-    e.preventDefault();
+  const handleRedirect = () => {
+    history.push("/");
+    setOpen(false);
   };
 
-  const editChatroomTopics = [
-    "General",
-    // "Delete Chatroom"
-  ];
+  const editChatroomTopics = ["General", "Delete Chatroom"];
 
   {
     /* General - Change Chatroom name and other options */
@@ -59,7 +69,7 @@ const EditChatroom = ({ chatroomToEdit: chatroom }) => {
     /* Delete Chatroom - type chatroom name to delete, and check if value === chatroomname? */
   }
 
-  const editName = (
+  const renderEditName = (
     <>
       <DialogContentText id="editchatroom-dialog-description">
         General settings for this chatroom
@@ -101,31 +111,44 @@ const EditChatroom = ({ chatroomToEdit: chatroom }) => {
     </>
   );
 
-  const deleteChatroom = (
+  const renderDeleteChatroom = (
     <>
       <DialogContentText id="editchatroom-dialog-description">
-        Permanently delete this chatroom
+        Type the chatroom name to delete this chatroom. <br />
+        This action cannot be undone.
       </DialogContentText>
-      <form
-        // onSubmit={e => submitFieldChange(e, { email }, "data")}
-        id="deleteChatroom"
+      <Typography variant="h6">{chatroom.name}</Typography>
+      <Formik
+        initialValues={{
+          confirmChatroomName: "",
+        }}
+        validationSchema={() => deleteChatroomSchema(chatroom.name)}
+        validateOnBlur={false}
+        onSubmit={({ setSubmitting }) => {
+          deleteChatroom(chatroom._id, handleRedirect);
+          setSubmitting(false);
+        }}
       >
-        <TextField
-          margin="normal"
-          name="deleteChatroom"
-          type="text"
-          label="Delete Chatroom"
-          variant="outlined"
-          // error={error}
-
-          placeholder="Chatroom Name"
-          // helperText={error }
-          // value={email}
-          // onChange={(e) => {}}
-        />
-        <ProgressButton title="Confirm" formId="email" />
-        <button onClick={() => deleteChatroom(chatroom._id)} />
-      </form>
+        <Form>
+          <CustomFormikField
+            fullWidth
+            margin="dense"
+            label="Chatroom Name"
+            name="confirmChatroomName"
+            type="text"
+            placeholder="Chatroom Name"
+          />
+          <Divider style={{ marginTop: "1em" }} />
+          <DialogActions>
+            <ProgressButton
+              title="Delete"
+              type="submit"
+              color="primary"
+              loading=""
+            />
+          </DialogActions>
+        </Form>
+      </Formik>
     </>
   );
 
@@ -143,10 +166,7 @@ const EditChatroom = ({ chatroomToEdit: chatroom }) => {
       <FullscreenDialog
         dialogTitle="Edit Chatroom Settings"
         topicList={editChatroomTopics}
-        componentList={[
-          editName,
-          // deleteChatroom
-        ]}
+        componentList={[renderEditName, renderDeleteChatroom]}
         isOpen={open}
         handleClose={() => setOpen(false)}
         ariaDescriptionID="editchatroom-dialog-description"
@@ -155,4 +175,4 @@ const EditChatroom = ({ chatroomToEdit: chatroom }) => {
   );
 };
 
-export default connect(null)(EditChatroom);
+export default connect(null, { deleteChatroom })(EditChatroom);

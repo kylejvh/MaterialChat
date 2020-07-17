@@ -28,19 +28,20 @@ const AddChatroomDialog = ({
   closeDialog,
   isOpen,
 }) => {
-  const [newChatroom, setNewChatroom] = useState("");
+  const [newChatroomName, setNewChatroomName] = useState("");
   const classes = useStyles();
 
   const onSubmit = (e) => {
     e.preventDefault();
-    if (newChatroom === "") {
+    if (newChatroomName === "") {
       return;
     }
 
-    createChatroom(newChatroom);
-    setNewChatroom("");
+    createChatroom(newChatroomName);
+    setNewChatroomName("");
   };
 
+  //TODO! add formik and validation...
   return (
     <>
       <Fab
@@ -72,14 +73,14 @@ const AddChatroomDialog = ({
               id="name"
               label="Chatroom Name"
               variant="outlined"
-              value={newChatroom}
+              value={newChatroomName}
               autoFocus
               // error={error}
               // helperText={error ? "Chatroom name is taken." : ""}
               margin="dense"
               fullWidth
               onChange={(e) => {
-                setNewChatroom(e.target.value);
+                setNewChatroomName(e.target.value);
               }}
             />
           </DialogContent>

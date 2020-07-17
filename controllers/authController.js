@@ -7,19 +7,28 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 // Create JWT token with secret and options object
-const signToken = (id) => {
+const signToken = (id, isGuest = null) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: isGuest ? "0.5 hrs" : process.env.JWT_EXPIRES_IN,
   });
 };
 
 const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user._id); // Token working...
+  // Sign token for guest or fully registered account.
+  const token =
+    user.role === "guest" ? signToken(user._id, true) : signToken(user._id);
+
+  const cookieExpiration =
+    user.role === "guest"
+      ? new Date(Date.now() + 1800000)
+      : new Date(
+          Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+        );
+
+  console.log("Cookie will expire in", cookieExpiration);
 
   res.cookie("jwt", token, {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
+    expires: cookieExpiration,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production" ? true : false,
     sameSite: true,
@@ -57,6 +66,30 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 
   createSendToken(newUser, 201, req, res);
+});
+
+exports.signupGuest = catchAsync(async (req, res, next) => {
+  const date = new Date();
+  const dateID = `${
+    date.getMonth() + 1
+  }${date.getDate()}${date.getFullYear().toString().substring(2, 4)}`;
+  const randomInt =
+    Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(0001))) + 0001;
+
+  console.log(`Created username: Guest${randomInt}-${dateID}`);
+
+  // Create a temporary guest account that expires in 30 minutes.
+  const guestUser = await User.create({
+    username: `Guest${randomInt}-${dateID}`,
+    email: `Guest${dateID}-${randomInt}@temporaryaccount.net`,
+    role: "guest",
+    password: `temp${randomInt}${dateID}`,
+    passwordConfirm: `temp${randomInt}${dateID}`,
+  });
+
+  console.log("Account created without token", guestUser);
+
+  createSendToken(guestUser, 201, req, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {

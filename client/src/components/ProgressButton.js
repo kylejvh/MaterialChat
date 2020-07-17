@@ -40,7 +40,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProgressButton = ({ title, formId }) => {
+const ProgressButton = ({
+  title,
+  formId,
+  variant = "contained",
+  type = "submit",
+  onClick,
+}) => {
   const classes = useStyles();
 
   const [loading, setLoading] = React.useState(false);
@@ -72,12 +78,13 @@ const ProgressButton = ({ title, formId }) => {
     <>
       <Button
         form={formId}
-        type="submit"
-        variant="contained"
+        type={type}
+        variant={variant}
         color="primary"
         className={buttonClassname}
-        style={{ marginTop: ".5em" }}
+        style={{ margin: "1em .5em" }}
         disabled={loading}
+        onClick={onClick}
         // onClick={handleButtonClick}
       >
         {title}

@@ -6,6 +6,7 @@ import {
   MESSAGES_LOADED_ON_CHATROOM_JOIN,
   ADD_CHATROOM_DIALOG_OPENED,
   ADD_CHATROOM_DIALOG_CLOSED,
+  DELETE_CHATROOM,
 } from "./types";
 import { notify } from "./notify";
 
@@ -58,6 +59,10 @@ export const getChatrooms = () => async (dispatch) => {
 };
 
 export const createChatroom = (chatroom) => async (dispatch) => {
+  dispatch({
+    type: ADD_CHATROOM_DIALOG_CLOSED,
+  });
+
   try {
     const res = await axios({
       method: "POST",
@@ -74,44 +79,60 @@ export const createChatroom = (chatroom) => async (dispatch) => {
 
     dispatch(notify("info", `"${res.data.data.newDoc.name}" created`));
     dispatch(emitChatroom(res.data.data.newDoc));
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
     dispatch(
       notify(
         "error",
-        `Could not create chatroom. See console for error details`
+        `Could not create chatroom. ${error.response.data.message}`
       )
     );
+
+    dispatch({
+      type: ADD_CHATROOM_DIALOG_OPENED,
+    });
   }
 };
 
+export const joinChatroom = ({
+  newChatroom,
+  prevChatroom = null,
+  user,
+}) => async (dispatch) => {
+  console.log("ATTEMPTED TO JOIN", newChatroom);
+  console.log("PREV CHATROOM is =>", prevChatroom);
+  // return {
+  //   type: USER_JOINED_CHATROOM,
+  //   payload: chatroom,
+  // };
+
+  dispatch({
+    type: USER_JOINED_CHATROOM,
+    payload: newChatroom,
+  });
+
+  // Should strictly handle socket joining socket.io room, so that all sockets can be aware of new user.
+  dispatch(
+    emitEvent("CHATROOM_JOINED", {
+      newChatroomId: newChatroom.id,
+      ...(prevChatroom && { prevChatroomId: prevChatroom.id }),
+      user,
+    })
+  );
+
+  getChatroomData(newChatroom.id);
+};
 // Fetches Chatroom info and messages
-export const joinChatroom = (chatroom) => async (dispatch, getState) => {
-  const prevChatroom = getState().chatrooms.currentChatroom;
-  const user = {
-    id: getState().auth.currentUser._id,
-    username: getState().auth.currentUser.username,
-  };
+const getChatroomData = (id) => async (dispatch) => {
+  // const prevChatroom = getState().chatrooms.currentChatroom;
+  // const user = {
+  //   id: getState().auth.currentUser._id,
+  //   username: getState().auth.currentUser.username,
+  // };
 
   // Getting info of specific chatoom
   try {
-    const res = await axios.get(`/api/v1/chatrooms/${chatroom.id}`);
-
-    dispatch({
-      type: USER_JOINED_CHATROOM,
-      payload: res.data.data.chatroom,
-    });
-
-    // If user is leaving a chatroom to join a new one, append previous chatroom id to emitted event.
-    const emitResponse = prevChatroom
-      ? {
-          ...res.data.data.chatroom,
-          user,
-          prevChatroom: prevChatroom.id,
-        }
-      : { ...res.data.data.chatroom, user };
-
-    dispatch(emitEvent("SOCKET_JOINED_CHATROOM", emitResponse));
+    const res = await axios.get(`/api/v1/chatrooms/${id}`);
 
     dispatch({
       type: MESSAGES_LOADED_ON_CHATROOM_JOIN,
@@ -122,6 +143,27 @@ export const joinChatroom = (chatroom) => async (dispatch, getState) => {
     dispatch(
       notify("error", "Could not join chatroom. See console for error details")
     );
+  }
+};
+
+export const deleteChatroom = (id, callback = null) => async (dispatch) => {
+  try {
+    const res = await axios.delete(`/api/v1/chatrooms/${id}`);
+
+    console.log("RESPONSE FROM DELETE", res);
+
+    dispatch(emitEvent("CHATROOM_DELETED", id));
+
+    dispatch({
+      type: DELETE_CHATROOM,
+      payload: id,
+    });
+
+    callback && callback();
+    dispatch(notify("success", "Chatroom successfully deleted."));
+  } catch (err) {
+    console.log(err);
+    dispatch(notify("error", "Could not delete chatroom."));
   }
 };
 

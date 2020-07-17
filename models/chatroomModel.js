@@ -4,14 +4,18 @@ const chatroomSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "A chatroom name must be specified."],
+      required: [true, "A chatroom name must be specified"],
       unique: true,
       trim: true,
+      minlength: [2, "Chatroom names must be 2 characters or more"],
+      maxlength: [25, "Chatroom names must be 25 characters or less"],
     },
     slug: String,
     description: {
       type: String,
       trim: true,
+      minlength: [3, "Description must be 3 characters or more"],
+      maxlength: [50, "Description must be 50 characters or less"],
     },
     // Get timestamp of creation
     createdAt: {

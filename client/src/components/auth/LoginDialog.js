@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link as RouterLink, Redirect } from "react-router-dom";
+import { Link as RouterLink, Redirect, useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import { Formik, Form } from "formik";
 import { login, sendForgotPassword } from "../../actions/auth";
@@ -47,6 +47,8 @@ const LoginDialog = ({
   const classes = useStyles();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const history = useHistory();
 
   const [passwordVisibility, setPasswordVisibility] = useState(false);
 
@@ -141,7 +143,6 @@ const LoginDialog = ({
               />
               <DialogActions>
                 <Button
-                  style={{ marginRight: "auto" }}
                   color="primary"
                   variant="outlined"
                   onClick={async () => {
@@ -150,6 +151,14 @@ const LoginDialog = ({
                   }}
                 >
                   Forgot Password
+                </Button>
+                <Button
+                  style={{ marginRight: "auto" }}
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => history.push("/guest")}
+                >
+                  Guest Account
                 </Button>
                 <Button
                   component={RouterLink}

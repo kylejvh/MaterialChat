@@ -13,6 +13,7 @@ export const getUser = () => async (dispatch) => {
     const res = await axios.get("/api/v1/users/queryMe");
 
     if (res.status !== 204 && res.data) {
+      console.log(res.data.data.doc, "User Received");
       dispatch({
         type: LOGIN_SUCCEEDED,
         payload: res.data.data.doc,
@@ -20,7 +21,7 @@ export const getUser = () => async (dispatch) => {
     }
   } catch (error) {
     const errorResponse =
-      error.response.data.message || `An error occurred: ${error}`;
+      error?.response?.data?.message || `An error occurred: ${error}`;
     console.log(errorResponse);
     dispatch(notify("error", errorResponse));
   }
@@ -92,12 +93,16 @@ export const registerAccount = ({
   }
 };
 
-export const completeRegister = () => async (dispatch) => {
+export const completeRegister = (isGuest = null) => async (dispatch) => {
   dispatch({
     type: REGISTER_FINAL_STEP_SUCCEEEDED,
   });
 
-  dispatch(notify("success", "Register complete. Welcome!"));
+  const registerMessage = isGuest
+    ? "Temporary guest account created successfully."
+    : "Register complete. Welcome!";
+
+  dispatch(notify("success", registerMessage));
 };
 
 export const updateUserData = (data, callback = null) => async (dispatch) => {
@@ -119,6 +124,27 @@ export const updateUserData = (data, callback = null) => async (dispatch) => {
     } else if (data.type !== "chatroom" && res.data.status === "success") {
       dispatch(notify("success", "Data updated successfully"));
     }
+  } catch (error) {
+    console.log(error.response.data.message || `An error occurred: ${error}`);
+    dispatch(notify("error", error.response.data.message));
+  }
+};
+
+export const registerGuestAccount = () => async (dispatch) => {
+  try {
+    const res = await axios({
+      method: "POST",
+      url: "/api/v1/users/signupGuest",
+    });
+
+    dispatch(completeRegister(true));
+
+    dispatch({
+      type: REGISTER_INITIAL_STEP_SUCCEEEDED,
+      payload: res.data,
+    });
+
+    console.log("register as guest res:", res.data);
   } catch (error) {
     console.log(error.response.data.message || `An error occurred: ${error}`);
     dispatch(notify("error", error.response.data.message));

@@ -46,7 +46,18 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
 // });
 
 exports.updateChatroom = factory.updateOne(Chatroom);
-exports.deleteChatroom = factory.deleteOne(Chatroom);
+exports.deleteChatroom = catchAsync(async (req, res, next) => {
+  const chatroom = await Chatroom.findByIdAndDelete(req.params.id);
+  console.log("Chatroom, look for associated docs", chatroom);
+  if (!chatroom) {
+    return next(new AppError("No document found with that ID or name", 404));
+  }
+
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
+});
 
 exports.createChatroom = factory.createOne(Chatroom, {
   path: "creator",

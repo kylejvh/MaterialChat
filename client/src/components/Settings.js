@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { Formik, Form } from "formik";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { notify } from "../actions/notify";
 import { updateUserData, updatePassword } from "../actions/auth";
 import CustomFormikField from "./../utils/formik/CustomFormikField";
 import {
@@ -41,18 +42,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Settings = ({
-  updateUserData,
-  updatePassword,
-  currentEmail,
-  currentUsername,
-}) => {
+const Settings = ({ currentUser, updateUserData, updatePassword, notify }) => {
   const classes = useStyles();
   const theme = useTheme();
   const smallScreen = useMediaQuery(theme.breakpoints.up("sm"));
-
   const [open, setOpen] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+
+  useEffect(() => {
+    if (currentUser.role === "guest" && open) {
+      notify(
+        "info",
+        "Changes to guest accounts are temporary and will not persist beyond expiration."
+      );
+    }
+  }, [currentUser, notify, open]);
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -84,10 +88,10 @@ const Settings = ({
         Change your username and email.
       </DialogContentText>
       <Typography>
-        Current Username: <b>{currentUsername} </b>
+        Current Username: <b>{currentUser.username} </b>
       </Typography>
       <Typography>
-        Current Email: <b>{currentEmail}</b>
+        Current Email: <b>{currentUser.email}</b>
       </Typography>
 
       <Formik
@@ -161,6 +165,7 @@ const Settings = ({
           newPasswordConfirm: "",
         }}
         validationSchema={passwordSchema}
+        validateOnBlur={false}
         onSubmit={(values, { setSubmitting }) => {
           updatePassword(values);
           setSubmitting(false);
@@ -248,11 +253,11 @@ const Settings = ({
 };
 
 const mapStateToProps = ({ auth }) => ({
-  currentUsername: auth.currentUser.username,
-  currentEmail: auth.currentUser.email,
+  currentUser: auth.currentUser,
 });
 
 export default connect(mapStateToProps, {
   updateUserData,
   updatePassword,
+  notify,
 })(Settings);

@@ -6,18 +6,16 @@ import {
   ADD_CHATROOM_DIALOG_OPENED,
   ADD_CHATROOM_DIALOG_CLOSED,
   RECEIVED_CURRENT_CHATROOM_USERS,
+  DELETE_CHATROOM,
 } from "../actions/types";
 
 const initState = {
-  currentChatroom: localStorage.getItem("currentChatroom"),
+  currentChatroom: null,
   activeUsers: [],
   chatrooms: [],
   loading: true,
-  // usersInChatroom: [],
   addChatroomDialog: {
     isOpen: false,
-    //   error: false,
-    //   success: false
   },
 };
 
@@ -42,13 +40,7 @@ export default (state = initState, action) => {
         ...state,
         loading: false,
         chatrooms: [...state.chatrooms, action.payload],
-        addChatroomDialog: {
-          isOpen: false,
-        },
       };
-
-    // case "DELETE_CHATROOM":
-    //   return state.chatrooms.filter((chatroom) => chatroom === action.payload)
 
     case ADD_CHATROOM_DIALOG_OPENED:
       return {
@@ -66,8 +58,19 @@ export default (state = initState, action) => {
         },
       };
 
+    case DELETE_CHATROOM:
+      return {
+        ...state,
+        chatrooms: state.chatrooms.filter(
+          (chatroom) => chatroom.id !== action.payload
+        ),
+        currentChatroom: null,
+        activeUsers: [],
+      };
+
     case RECEIVED_CURRENT_CHATROOM_USERS:
-      if (state.activeUsers.some((i) => i.id === action.payload.id)) {
+      console.log("FROM USERLIST", action.payload);
+      if (state.activeUsers.some((i) => i.id === action.payload.user.id)) {
         return state;
       } else if (action.payload.remove) {
         return {
@@ -79,7 +82,7 @@ export default (state = initState, action) => {
       } else
         return {
           ...state,
-          activeUsers: [...state.activeUsers, action.payload],
+          activeUsers: [...state.activeUsers, action.payload.user],
         };
 
     default:

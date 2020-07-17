@@ -10,6 +10,7 @@ export const subscribeMessages = () => {
 };
 
 const emitMessage = (msg) => {
+  console.log("LOOKING FOR EMIT", msg);
   return {
     event: "CHAT_MESSAGE_SENT",
     emit: true,
@@ -32,19 +33,18 @@ export const getMessages = (id) => async (dispatch) => {
   }
 };
 
-export const sendMessage = (data) => async (dispatch, getState) => {
-  const chatroomID = getState().chatrooms.currentChatroom.id;
+export const sendMessage = (data) => async (dispatch) => {
+  // Emit socket message first, then post message to DB.
+  dispatch(emitMessage(data));
 
   try {
     const res = await axios({
       method: "POST",
-      url: `/api/v1/chatrooms/${chatroomID}/messages`,
+      url: `/api/v1/chatrooms/${data.sentInChatroom}/messages`,
       data: {
         message: data.message,
       },
     });
-
-    dispatch(emitMessage(res.data.data.newDoc));
 
     dispatch({
       type: CHAT_MESSAGE_SENT,

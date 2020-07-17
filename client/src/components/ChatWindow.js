@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
 import { subscribeMessages, sendMessage } from "../actions/message";
 import { subscribeTyping, emitTyping } from "../actions/notify";
 import { subscribeChatroomUsers } from "../actions/chatroom";
+import Loader from "./notify/Loader";
+
 import { makeStyles } from "@material-ui/core/styles";
+
 import { useMediaQuery } from "react-responsive";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
@@ -209,10 +213,15 @@ const ChatWindow = ({
   const onSubmit = (e) => {
     e.preventDefault();
     if (chatMessage) {
-      let data = {
+      const { photo, username, _id } = currentUser;
+      const data = {
         sender: {
-          username: currentUser.username,
+          photo,
+          username,
+          _id,
         },
+        sentInChatroom: currentChatroom.id,
+        msgId: uuidv4(),
         message: chatMessage,
         timestamp: Date.now(),
       };
@@ -268,29 +277,35 @@ const ChatWindow = ({
   // Need to either memoize or come up with a better method. Every time you type it's rerendering i think.
 
   const renderMessages = (messages, message, i) => {
-    console.log("INITIAL MESSAGES", messages);
+    const prevSender = messages[i - 1]?.sender.username;
+    console.log("PREVIOUS MESSAGE SENDER:", prevSender);
+
+    // console.log("INITIAL MESSAGES", messages);
     if (i === 0) {
+      console.log(message.id, "should print message id");
+      console.log(message, "if not, what is this?");
+
       return renderWithNewSender(message);
     }
 
     // Compare messages after intial and render new/successive conditionally
     switch (messages[i - 1]?.sender?._id) {
       case message?.sender?._id:
-        console.log("first case, equal", message);
-        console.log("first index", i);
+        // console.log("first case, equal", message);
+        // console.log("first index", i);
         return renderWithSameSender(message);
       case !message?.sender?._id:
-        console.log("second case, not equal", message);
-        console.log("second index", i);
+        // console.log("second case, not equal", message);
+        // console.log("second index", i);
 
         return renderWithNewSender(message);
 
       default:
-        console.log(
-          "default case, should match if first message(null)",
-          message
-        );
-        console.log("third index", i);
+        // console.log(
+        //   "default case, should match if first message(null)",
+        //   message
+        // );
+        // console.log("third index", i);
 
         return renderWithNewSender(message);
     }
@@ -313,15 +328,14 @@ const ChatWindow = ({
       <div className={classes.chatContainer}>
         <div className={classes.chatMessageWindow}>
           <List>
-            {currentChatroom &&
-              messages?.map((message, i) => (
-                <div className={classes.chatMessageWrapper} key={message.id}>
-                  {/* {console.log(message)} */}
-                  <ListItem alignItems="flex-start">
-                    {message && renderMessages(messages, message, i)}
-                  </ListItem>
-                </div>
-              ))}
+            {messages?.map((message, i) => (
+              <div className={classes.chatMessageWrapper} key={message.msgId}>
+                {/* {console.log(message)} */}
+                <ListItem alignItems="flex-start">
+                  {message && renderMessages(messages, message, i)}
+                </ListItem>
+              </div>
+            ))}
 
             <div
               style={{ float: "left", clear: "both", paddingBottom: "2em" }}
@@ -399,23 +413,23 @@ const ChatWindow = ({
           </SwipeableDrawer>
         </div>
       ) : (
-        <ExpansionPanel className={classes.userListPanel}>
+        <ExpansionPanel
+          className={classes.userListPanel}
+          expanded={activeUsers.length > 0 ? true : false}
+        >
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="currentuserpanel-content"
             id="currentuserpanel-header"
           >
-            <Typography className={classes.heading}>
-              {/* {currentChatroom} */}
-              Users:
-            </Typography>
+            <Typography className={classes.heading}>Users:</Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <List dense>
               {activeUsers.map((user) => (
                 <div key={user.id}>
                   <ListItem>
-                    <ListItemText primary={user.username} />
+                    <ListItemText primary={user.name} />
                   </ListItem>
                   <Divider component="li" />
                 </div>
@@ -426,9 +440,10 @@ const ChatWindow = ({
       )}
     </div>
   ) : (
-    <Typography variant="h5" component="h5">
-      Hello, {currentUser.username}. Join a chatroom to Chat!
-    </Typography>
+    <Loader />
+    // <Typography variant="h5" component="h5">
+    //   Hello, {currentUser.username}. Join a chatroom to Chat!
+    // </Typography>
   );
 };
 

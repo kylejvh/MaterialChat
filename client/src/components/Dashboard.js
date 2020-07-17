@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { useHistory, Route } from "react-router-dom";
+import { useHistory, Route, useRouteMatch } from "react-router-dom";
 import {
   getChatrooms,
   joinChatroom,
@@ -175,38 +175,68 @@ const Dashboard = ({
   loading,
   toggleTheme,
 }) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
+  let history = useHistory();
+
+  const chatroomURLMatch = useRouteMatch("/chatroom/:id");
+  const paramChatroomId = chatroomURLMatch?.params?.id;
+
+  const [open, setOpen] = React.useState(true);
+
   useEffect(() => {
     getChatrooms();
   }, [getChatrooms]);
 
-  let history = useHistory();
-  const classes = useStyles();
-  const theme = useTheme();
-  const isMobile = useMediaQuery({ query: "(max-width: 600px)" });
-  const [open, setOpen] = React.useState(true);
+  useEffect(() => {
+    // If navigating to chatroom via URL params, join & set chatroom state.
+    if (!currentChatroom && paramChatroomId) {
+      chatrooms.forEach((chatroom) => {
+        if (chatroom.id === paramChatroomId) {
+          console.log("!!!!!!! JOINED FROM PARAMS!!!!!");
+          joinChatroom({
+            newChatroom: chatroom,
+            user: { name: currentUser.username, id: currentUser._id },
+          });
+        }
+      });
+    }
+  }, [currentChatroom, chatrooms, paramChatroomId]);
 
-  const handleChatroomChange = (chatroom) => {
-    if (currentChatroom && chatroom.id === currentChatroom.id) {
+  const handleChatroomChange = (newChatroom) => {
+    // should dispatch to set state of currentChatroom, and the useEffect will trigger and fetch...
+    if (currentChatroom && newChatroom.id === currentChatroom.id) {
       return;
     }
 
-    updateUserData({ currentChatroom: chatroom.id, type: "chatroom" });
-    joinChatroom(chatroom);
+    console.log("HANDLECHATROOMCHANGE WAS RAN!!!!!!!!!!!!!!!");
+    //! needed?
+    // updateUserData({
+    //   currentChatroom:
+    //     newChatroom.id,
+    //   type: "chatroom",
+    // });
+    console.log("WHOIS", currentUser);
+    joinChatroom({
+      newChatroom,
+      ...(currentChatroom && {
+        prevChatroom: currentChatroom,
+      }),
+      user: {
+        name: currentUser.username,
+        id: currentUser._id,
+      },
+    });
+
+    history.push(`/chatroom/${newChatroom.id}`);
   };
 
   useEffect(() => {
     subscribeChatrooms();
-    if (currentChatroom) {
-      return history.push(`/chatroom/${currentChatroom._id}`);
-    }
-  }, [subscribeChatrooms, currentChatroom, history]);
+  }, [subscribeChatrooms]);
 
-  const headerTitle = currentChatroom
-    ? `Current Chatroom: ${currentChatroom.name}`
-    : "MaterialChat";
-  const mobileHeaderTitle = currentChatroom
-    ? currentChatroom.name
-    : "MaterialChat";
+  const headerTitle = currentChatroom ? currentChatroom.name : "MaterialChat";
 
   return loading && currentUser === null ? (
     <Loader />
@@ -230,7 +260,7 @@ const Dashboard = ({
             <MenuIcon />
           </IconButton>
           <Typography className={classes.navTitle} variant="h6" noWrap>
-            {isMobile ? mobileHeaderTitle : headerTitle}
+            {headerTitle}
           </Typography>
 
           <div className={classes.appBarButtons}>
@@ -304,7 +334,11 @@ const Dashboard = ({
           <Divider />
           {chatrooms.map((chatroom) => (
             <div key={chatroom._id}>
-              <ListItem button onClick={() => handleChatroomChange(chatroom)}>
+              <ListItem
+                button
+                selected={currentChatroom && chatroom.id === currentChatroom.id}
+                onClick={() => handleChatroomChange(chatroom)}
+              >
                 <ListItemText primary={chatroom.name} />
                 {chatroom.creator && chatroom.creator._id === currentUser._id && (
                   <ListItemSecondaryAction>
@@ -341,7 +375,7 @@ const mapStateToProps = ({ auth, chatrooms }) => ({
 
 export default connect(mapStateToProps, {
   getChatrooms,
-  updateUserData,
   joinChatroom,
+  updateUserData,
   subscribeChatrooms,
 })(Dashboard);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useHistory } from "react-router-dom";
 import { Formik, Form } from "formik";
 import { makeStyles } from "@material-ui/core/styles";
 import Link from "@material-ui/core/Link";
@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 const RegisterForm = ({ registerAccount, currentUser, handleNext }) => {
   const classes = useStyles();
+  const history = useHistory();
 
   const [passwordVisibility, setPasswordVisibility] = useState(false);
   const handleMouseDownPassword = (event) => {
@@ -123,6 +124,12 @@ const RegisterForm = ({ registerAccount, currentUser, handleNext }) => {
           />
 
           <ProgressButton title="Sign Up" color="primary" loading="" />
+          <ProgressButton
+            title="Use Guest Account"
+            type="button"
+            variant="outlined"
+            onClick={() => history.push("/guest")}
+          />
         </Form>
       </Formik>
     </>
