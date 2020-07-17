@@ -6,6 +6,10 @@
 
 ## **Production Build: <a href="https://kjvh-materialchat.herokuapp.com/login" target="_blank">Demo</a>**
 
+```diff
++ Please be patient, Heroku servers can take a minute to spin up from sleep.
+```
+
 ![Recordit GIF](http://g.recordit.co/ziudxn6SPn.gif)
 
 ---
