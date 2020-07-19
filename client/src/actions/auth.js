@@ -7,16 +7,28 @@ import {
   ACCOUNT_UPDATED,
 } from "./types";
 import { notify } from "./notify";
+import emitSocketEvent from "../socket-client/emitSocketEvent";
 
 export const getUser = () => async (dispatch) => {
   try {
+    //   emitSocketEvent({
+    //     event: "GET_USER",
+
+    //   }
+
+    //      return {
+    //   event: "SOCKET_ADDED_CHATROOM",
+    //   handle: "SOCKET_ADDED_CHATROOM",
+    // };
+    //   })
     const res = await axios.get("/api/v1/users/queryMe");
 
     if (res.status !== 204 && res.data) {
-      console.log(res.data.data.doc, "User Received");
+      const { doc: user } = res.data.data;
+
       dispatch({
         type: LOGIN_SUCCEEDED,
-        payload: res.data.data.doc,
+        payload: user,
       });
     }
   } catch (error) {

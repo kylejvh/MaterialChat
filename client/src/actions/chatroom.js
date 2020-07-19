@@ -9,6 +9,7 @@ import {
   DELETE_CHATROOM,
 } from "./types";
 import { notify } from "./notify";
+import emitSocketEvent from "../socket-client/emitSocketEvent";
 
 export const subscribeChatrooms = () => {
   return {
@@ -29,15 +30,6 @@ const emitChatroom = (chatroom) => {
     event: "SOCKET_ADDED_CHATROOM",
     emit: true,
     payload: chatroom,
-  };
-};
-
-// Use general Function for DRY
-const emitEvent = (event, payload) => {
-  return {
-    event,
-    emit: true,
-    payload,
   };
 };
 
@@ -113,7 +105,7 @@ export const joinChatroom = ({
 
   // Should strictly handle socket joining socket.io room, so that all sockets can be aware of new user.
   dispatch(
-    emitEvent("CHATROOM_JOINED", {
+    emitSocketEvent("CHATROOM_JOINED", {
       newChatroomId: newChatroom.id,
       ...(prevChatroom && { prevChatroomId: prevChatroom.id }),
       user,
@@ -152,7 +144,7 @@ export const deleteChatroom = (id, callback = null) => async (dispatch) => {
 
     console.log("RESPONSE FROM DELETE", res);
 
-    dispatch(emitEvent("CHATROOM_DELETED", id));
+    dispatch(emitSocketEvent("CHATROOM_DELETED", id));
 
     dispatch({
       type: DELETE_CHATROOM,

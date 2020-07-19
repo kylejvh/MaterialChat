@@ -11,7 +11,7 @@ process.on("uncaughtException", (err) => {
 dotenv.config({ path: "./config.env" });
 const app = require("./app");
 const server = require("http").Server(app);
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, { serveClient: false });
 
 // Set up mongoDB connection
 const DB = process.env.DATABASE.replace(

@@ -10,6 +10,7 @@ import Routes from "./clientroutes/Routes";
 const App = () => {
   useEffect(() => {
     // Check if user was previously authenticated with a token
+    setSocketIdonConnect();
     store.dispatch(getUser());
   }, []);
 

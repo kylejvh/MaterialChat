@@ -3,6 +3,7 @@ import {
   REGISTER_FINAL_STEP_SUCCEEEDED,
   LOGIN_SUCCEEDED,
   ACCOUNT_UPDATED,
+  SOCKET_CONNECTED,
 } from "../actions/types";
 
 const initState = {
@@ -36,6 +37,12 @@ export default (state = initState, action) => {
       return {
         ...state,
         isAuthenticated: true,
+      };
+
+    case SOCKET_CONNECTED:
+      return {
+        ...state,
+        clientSocketId: action.payload,
       };
 
     default:
