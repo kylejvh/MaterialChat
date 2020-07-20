@@ -65,6 +65,7 @@ exports.createChatroom = factory.createOne(Chatroom, {
 });
 
 exports.getAllChatrooms = catchAsync(async (req, res, next) => {
+  // Modify to search get all chatrooms of a namespace
   const chatrooms = await Chatroom.find();
 
   res.status(200).json({

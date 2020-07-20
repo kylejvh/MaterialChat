@@ -4,13 +4,17 @@ import { Provider } from "react-redux";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { defaultTheme, lightTheme } from "./utils/themes";
 import { getUser } from "./actions/auth";
+import { SOCKET_CONNECTED } from "./actions/types";
 import store from "./store";
 import Routes from "./clientroutes/Routes";
 
 const App = () => {
   useEffect(() => {
+    store.dispatch({
+      handle: SOCKET_CONNECTED,
+      event: "connect",
+    });
     // Check if user was previously authenticated with a token
-    setSocketIdonConnect();
     store.dispatch(getUser());
   }, []);
 

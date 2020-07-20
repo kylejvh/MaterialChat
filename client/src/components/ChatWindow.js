@@ -426,10 +426,10 @@ const ChatWindow = ({
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <List dense>
-              {activeUsers.map((user) => (
-                <div key={user.id}>
+              {activeUsers.map(({ userId, username }) => (
+                <div key={userId}>
                   <ListItem>
-                    <ListItemText primary={user.name} />
+                    <ListItemText primary={username} />
                   </ListItem>
                   <Divider component="li" />
                 </div>

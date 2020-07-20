@@ -9,7 +9,7 @@ import {
 import { notify } from "./notify";
 import emitSocketEvent from "../socket-client/emitSocketEvent";
 
-export const getUser = () => async (dispatch) => {
+export const getUser = () => async (dispatch, getState) => {
   try {
     //   emitSocketEvent({
     //     event: "GET_USER",
@@ -25,11 +25,23 @@ export const getUser = () => async (dispatch) => {
 
     if (res.status !== 204 && res.data) {
       const { doc: user } = res.data.data;
+      const { clientSocketId } = getState().auth;
 
       dispatch({
         type: LOGIN_SUCCEEDED,
         payload: user,
       });
+
+      if (clientSocketId) {
+        console.log("ARE WE EMITTING PROPERPLY?", clientSocketId);
+        dispatch(
+          emitSocketEvent("USER_LOGGED_IN", {
+            clientSocketId,
+            userId: user._id,
+            username: user.username,
+          })
+        );
+      }
     }
   } catch (error) {
     const errorResponse =

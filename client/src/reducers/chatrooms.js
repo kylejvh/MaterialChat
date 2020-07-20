@@ -70,20 +70,24 @@ export default (state = initState, action) => {
 
     case RECEIVED_CURRENT_CHATROOM_USERS:
       console.log("FROM USERLIST", action.payload);
-      if (state.activeUsers.some((i) => i.id === action.payload.user.id)) {
-        return state;
-      } else if (action.payload.remove) {
-        return {
-          ...state,
-          activeUsers: state.activeUsers.filter(
-            (i) => i.id !== action.payload.user.id
-          ),
-        };
-      } else
-        return {
-          ...state,
-          activeUsers: [...state.activeUsers, action.payload.user],
-        };
+      return {
+        ...state,
+        activeUsers: action.payload,
+      };
+    // if (state.activeUsers.some((i) => i.id === action.payload.user.id)) {
+    //   return state;
+    // } else if (action.payload.remove) {
+    //   return {
+    //     ...state,
+    //     activeUsers: state.activeUsers.filter(
+    //       (i) => i.id !== action.payload.user.id
+    //     ),
+    //   };
+    // } else
+    //   return {
+    //     ...state,
+    //     activeUsers: [...state.activeUsers, action.payload.user],
+    //   };
 
     default:
       return state;

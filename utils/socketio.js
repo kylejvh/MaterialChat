@@ -6,32 +6,12 @@
 // When a user leaves, also send a fully updated list.
 
 exports.socketConnected = (socket, io) => {
-  const socketIoLocals = new WeakMap();
-  const locals = { socketId: socket.id };
-  socketIoLocals.set(socket, locals);
-  console.log("LOCALS SET??", socketIoLocals.get(socket));
+  // Using array, improve when able
 
-  socket.on("SET_SOCKET", ({ username, userId }) => {
-    socket._user = { username, userId };
-
-    console.log("INSIDE HERE???");
-    console.log("Socket user set?", socket._user);
+  socket.on("USER_LOGGED_IN", (userData) => {
+    return (socketIoLocals = [...socketIoLocals, userData]);
   });
-
-  // io.use((socket, next) => {
-  //   // const locals = { username, userId };
-  //   // socketIOlocals.set(socket, locals);
-
-  //   console.log("SETTING USER INFO...");
-  //   // console.log("WeakmapTesting2", socketIOlocals.get(socket));
-  //   next();
-  //   // }
-  //   // socket.username = username;
-  //   // socket.userId = userId;
-  // });
-  // });
-  //!TODO: on connect, set up io.use so when user logs in or is authed, add username and Id to socket object...
-
+  console.log("LOCALS SET??", socketIoLocals);
   socket.on("CHAT_MESSAGE_SENT", (msg) => {
     console.log("RECEIVED ON SERVER SIDE!!!", msg);
     socket.to(msg.sentInChatroom).emit("CHAT_MESSAGE_RECEIVED", msg);
@@ -40,45 +20,54 @@ exports.socketConnected = (socket, io) => {
   socket.on(
     "CHATROOM_JOINED",
     ({ newChatroomId, prevChatroomId = null, user }) => {
+      // Hit DB for user lists
+
+      console.log("Current working array:", socketIoLocals);
       // If user is switching chatrooms, leave previous chatroom
-
-      // var clients = io.sockets.adapter.rooms[newChatroomId].sockets;
-
-      // console.log("connected clients", clients);
-
-      console.log("socket joined look for username", socket._user);
-      console.log("Does resetting ID work???", socket.id);
-
       console.log(
         `NEW CHATROOM ID: ${newChatroomId} PREV CHATROOM ID: ${prevChatroomId}`
       );
-      console.log(`USER OBJ PASSED TO SOCKETIO`, user);
 
       if (prevChatroomId) {
         console.log("----- PREVIOUS CHATROOM EXISTS -------", prevChatroomId);
         socket.leave(prevChatroomId);
 
-        io.to(prevChatroomId).emit("CHATROOM_USERLIST_UPDATED", {
-          user,
-          remove: true,
+        io.in(prevChatroomId).clients((error, clients) => {
+          console.log("prev chatroom clients", clients);
+          const previousChatroomUserList = socketIoLocals.filter((user) =>
+            clients.includes(user.clientSocketId)
+          );
+
+          io.to(prevChatroomId).emit(
+            "CHATROOM_USERLIST_UPDATED",
+            previousChatroomUserList
+          );
+          console.log("prevChatroom user list", previousChatroomUserList);
         });
       }
 
       // Put socket in new chatroom
       socket.join(newChatroomId);
 
-      //! Problem: If a new socket joins, they don't get a full list of users connected...
-      const usersInRoom = io.sockets.adapter.rooms[newChatroomId];
-      console.log("USERS should be in this room", usersInRoom);
-      // console.log("sockets in room?", io.sockets.adapter);
+      io.in(newChatroomId).clients((error, clients) => {
+        console.log("new chatroom clients", clients);
+        console.log("current locals inside newchatroom", socketIoLocals);
 
-      // Object.keys(usersInRoom).forEach(socket => )
+        const newChatroomUserList = socketIoLocals.filter((user) =>
+          clients.includes(user.clientSocketId)
+        );
+        console.log("New chatroom list", newChatroomUserList);
+        // Send cients in new chatroom a list of chatroom users...
+
+        io.to(newChatroomId).emit(
+          "CHATROOM_USERLIST_UPDATED",
+          newChatroomUserList
+        );
+      });
+
+      //! Problem: If a new socket joins, they don't get a full list of users connected...
 
       console.log("Rooms this socket is in>", Object.keys(socket.rooms));
-      // console.log("sockets in room?", io.sockets.adapter.rooms);
-
-      // Send cients in new chatroom a list of chatroom users...
-      // io.to(newChatroomId).emit("CHATROOM_USERLIST_UPDATED");
     }
   );
 
@@ -126,6 +115,4 @@ exports.socketConnected = (socket, io) => {
       );
     }
   });
-
-  exports.socketIoLocals = socketIoLocals;
 };

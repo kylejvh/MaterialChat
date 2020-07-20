@@ -48,12 +48,12 @@ export default function socketMiddleware() {
       return;
     }
 
-    if (event === "connect") {
-    }
-
     let handleEvent = handle;
     if (typeof handleEvent === "string") {
       handleEvent = (result) => {
+        if (event === "connect") {
+          result = socket.id;
+        }
         dispatch({ type: handle, payload: result, ...rest });
       };
     }

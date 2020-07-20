@@ -32,6 +32,8 @@ mongoose
 
 // Make socket.io available where needed.
 io.on("connection", function (socket) {
+  let socketIoLocals = [];
+
   socketConnected(socket, io);
 });
 
@@ -48,3 +50,5 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
+
+exports.socketIoLocals = socketIoLocals;

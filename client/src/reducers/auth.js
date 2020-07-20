@@ -40,6 +40,7 @@ export default (state = initState, action) => {
       };
 
     case SOCKET_CONNECTED:
+      console.log("FROM REDUCER, SOCKET CONNECTED:", action.payload);
       return {
         ...state,
         clientSocketId: action.payload,
