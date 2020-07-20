@@ -30,10 +30,9 @@ mongoose
     console.log("mongoDB connection successful");
   });
 
+let socketIoLocals = [];
 // Make socket.io available where needed.
 io.on("connection", function (socket) {
-  let socketIoLocals = [];
-
   socketConnected(socket, io);
 });
 

@@ -5,17 +5,19 @@
 
 // When a user leaves, also send a fully updated list.
 
+const onChatMessage = require("./socketio-server/onChatMessage");
+// let socketIoLocals = require("../server").socketIoLocals;
+
 exports.socketConnected = (socket, io) => {
   // Using array, improve when able
+  let socketIoLocals = [];
 
   socket.on("USER_LOGGED_IN", (userData) => {
-    return (socketIoLocals = [...socketIoLocals, userData]);
+    return socketIoLocals.push(userData);
   });
   console.log("LOCALS SET??", socketIoLocals);
-  socket.on("CHAT_MESSAGE_SENT", (msg) => {
-    console.log("RECEIVED ON SERVER SIDE!!!", msg);
-    socket.to(msg.sentInChatroom).emit("CHAT_MESSAGE_RECEIVED", msg);
-  });
+
+  onChatMessage(socket, io);
 
   socket.on(
     "CHATROOM_JOINED",

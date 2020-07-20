@@ -2,11 +2,30 @@ const ChatMessage = require("./../models/chatMessageModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
-const io = require("./../server").io;
 
-exports.createMessage = factory.createOne(ChatMessage, {
-  path: "sender",
-  select: "username",
+// exports.createMessage = factory.createOne(ChatMessage, {
+//   path: "sender",
+//   select: "username",
+// });
+
+exports.createMessage = catchAsync(async (msgData, popOptions) => {
+  console.log("FROM INSIDE CREATEMESSAGE", msgData);
+  let newMessageDoc = await ChatMessage.create();
+  if (popOptions)
+    newMessageDoc = await newMessageDoc.populate(popOptions).execPopulate();
+
+  const newMessage = await newMessageDoc;
+
+  if (!newMessage) {
+    return new AppError("No document received", 404);
+  }
+
+  // res.status(201).json({
+  //   status: "success",
+  //   data: {
+  //     newDoc,
+  //   },
+  // });
 });
 // exports.getAllMessages = factory.getAll(ChatMessage, true);
 exports.getMessage = factory.getOne(ChatMessage);

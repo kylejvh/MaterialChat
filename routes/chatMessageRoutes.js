@@ -8,10 +8,10 @@ router.use(authController.protect);
 router
   .route("/")
   .get(chatMessageController.getAllMessages)
-  .post(
-    chatMessageController.setChatMessageOriginIds,
-    chatMessageController.createMessage
-  );
+  .post
+  // chatMessageController.setChatMessageOriginIds,
+  // chatMessageController.createMessage
+  ();
 
 router
   .route("/:id")
