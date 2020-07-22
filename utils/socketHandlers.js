@@ -53,6 +53,8 @@ exports.onJoinChatroom = (socket, io) =>
     ({ newChatroomId, prevChatroomId = null, userId }) => {
       updateDBActiveChatroom(newChatroomId, userId);
 
+      //!!
+      // TODO: The active user list is STILL NOT WORKING IN PRODUCTION!!!
       // Remove socket from previous room, update DB, and update previous chatroom clients
       if (prevChatroomId) {
         socket.leave(prevChatroomId, (error) => {
