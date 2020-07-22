@@ -2,10 +2,7 @@ const {
   setDBActiveSocketId,
   updateDBActiveChatroom,
 } = require("../controllers/userController");
-const {
-  getChatroomUsersFromDB,
-  createChatroom,
-} = require("../controllers/chatroomController");
+const { getChatroomUsersFromDB } = require("../controllers/chatroomController");
 const { createMessage } = require("../controllers/chatMessageController");
 
 // Realtime events will be handled by socket.io, and then processed by DB, instead of by Express routes
@@ -131,6 +128,4 @@ exports.onUserLogout = (socket, io) =>
         });
       });
     }
-
-    socket.disconnect(true);
   });
