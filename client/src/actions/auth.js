@@ -109,12 +109,11 @@ export const registerAccount = ({
   }
 };
 
-export const completeRegister = (isGuest = null) => async (dispatch) => {
+export const completeRegister = ({ isGuest = null }) => async (dispatch) => {
   dispatch({
     type: REGISTER_FINAL_STEP_SUCCEEEDED,
   });
 
-  //TODO: THere is a problem here, this is showing when you register a full account.
   const registerMessage = isGuest
     ? "Temporary guest account created successfully."
     : "Register complete. Welcome!";
@@ -154,7 +153,7 @@ export const registerGuestAccount = () => async (dispatch) => {
       url: "/api/v1/users/signupGuest",
     });
 
-    dispatch(completeRegister(true));
+    dispatch(completeRegister({ isGuest: true }));
 
     dispatch({
       type: REGISTER_INITIAL_STEP_SUCCEEEDED,
