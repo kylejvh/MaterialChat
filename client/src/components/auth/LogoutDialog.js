@@ -9,7 +9,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-const LogoutDialog = ({ logout }) => {
+const LogoutDialog = ({ logout, currentChatroom, currentUser }) => {
   const [open, setOpen] = React.useState(false);
 
   const handleClose = (event, reason) => {
@@ -41,7 +41,11 @@ const LogoutDialog = ({ logout }) => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={logout} color="primary" autoFocus>
+          <Button
+            onClick={() => logout(currentChatroom?.id, currentUser?._id)}
+            color="primary"
+            autoFocus
+          >
             Logout
           </Button>
         </DialogActions>
@@ -50,4 +54,9 @@ const LogoutDialog = ({ logout }) => {
   );
 };
 
-export default connect(null, { logout })(LogoutDialog);
+const mapStateToProps = ({ chatrooms, auth }) => ({
+  currentChatroom: chatrooms.currentChatroom,
+  currentUser: auth.currentUser,
+});
+
+export default connect(mapStateToProps, { logout })(LogoutDialog);

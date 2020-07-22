@@ -1,4 +1,5 @@
 const Chatroom = require("./../models/chatroomModel");
+const Messages = require("./../models/chatMessageModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./handlerFactory");
@@ -20,12 +21,12 @@ exports.setChatroomCreatorIds = (req, res, next) => {
 };
 
 exports.getChatroom = catchAsync(async (req, res, next) => {
-  const chatroom = await Chatroom.findById(req.params.id)
-    .populate({
-      path: "messages",
-      select: "message",
-    })
-    .populate({ path: "activeUsers", select: "username" });
+  const chatroom = await Chatroom.findById(req.params.id).populate({
+    path: "messages",
+    select: "message",
+    sort: -1,
+    limit: 50,
+  });
 
   //! This is not doing anything
   if (!chatroom) {
@@ -46,11 +47,15 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
 // });
 
 exports.updateChatroom = factory.updateOne(Chatroom);
+exports.joinChatroom = factory.updateOne(Chatroom);
 exports.deleteChatroom = catchAsync(async (req, res, next) => {
   const chatroom = await Chatroom.findByIdAndDelete(req.params.id);
-  console.log("Chatroom, look for associated docs", chatroom);
+  await Messages.deleteMany({
+    sentInChatroom: req.params.id,
+  });
+
   if (!chatroom) {
-    return next(new AppError("No document found with that ID or name", 404));
+    return next(new AppError("No chatroom found", 404));
   }
 
   res.status(204).json({
@@ -65,6 +70,7 @@ exports.createChatroom = factory.createOne(Chatroom, {
 });
 
 exports.getAllChatrooms = catchAsync(async (req, res, next) => {
+  // Modify to search get all chatrooms of a namespace
   const chatrooms = await Chatroom.find();
 
   res.status(200).json({
@@ -75,3 +81,32 @@ exports.getAllChatrooms = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getChatroomUsersFromDB = async (chatroomId) => {
+  const { activeUsers } = await Chatroom.findById(chatroomId).populate({
+    path: "activeUsers",
+    select: "username activeSocketId -currentChatroom",
+  });
+
+  if (!activeUsers) {
+    return new AppError("No chatroom found with the specified ID", 404);
+  }
+
+  return activeUsers;
+};
+
+// exports.createChatroom = async (chatroomName) => {
+//   let query = await Chatroom.create(chatroomName);
+//   query = await query
+//     .populate({
+//       path: "creator",
+//       select: "username",
+//     })
+//     .execPopulate();
+
+//   const newChatroom = await query;
+
+//   if (!newChatroom) {
+//     return new AppError("No chatroom could be created", 404);
+//   }
+// };

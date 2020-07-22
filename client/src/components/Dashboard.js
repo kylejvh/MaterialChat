@@ -191,13 +191,13 @@ const Dashboard = ({
 
   useEffect(() => {
     // If navigating to chatroom via URL params, join & set chatroom state.
-    if (!currentChatroom && paramChatroomId) {
+
+    if (paramChatroomId && paramChatroomId !== currentChatroom?.id) {
       chatrooms.forEach((chatroom) => {
         if (chatroom.id === paramChatroomId) {
-          console.log("!!!!!!! JOINED FROM PARAMS!!!!!");
           joinChatroom({
             newChatroom: chatroom,
-            user: { name: currentUser.username, id: currentUser._id },
+            userId: currentUser._id,
           });
         }
       });
@@ -205,28 +205,22 @@ const Dashboard = ({
   }, [currentChatroom, chatrooms, paramChatroomId]);
 
   const handleChatroomChange = (newChatroom) => {
-    // should dispatch to set state of currentChatroom, and the useEffect will trigger and fetch...
     if (currentChatroom && newChatroom.id === currentChatroom.id) {
       return;
     }
 
-    console.log("HANDLECHATROOMCHANGE WAS RAN!!!!!!!!!!!!!!!");
-    //! needed?
+    //TODO: Room updateUserData handling of updating chatroom, this is done with sockets now
     // updateUserData({
     //   currentChatroom:
     //     newChatroom.id,
     //   type: "chatroom",
     // });
-    console.log("WHOIS", currentUser);
     joinChatroom({
       newChatroom,
       ...(currentChatroom && {
-        prevChatroom: currentChatroom,
+        prevChatroomId: currentChatroom.id,
       }),
-      user: {
-        name: currentUser.username,
-        id: currentUser._id,
-      },
+      userId: currentUser._id,
     });
 
     history.push(`/chatroom/${newChatroom.id}`);

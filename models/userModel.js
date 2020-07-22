@@ -73,6 +73,9 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "Chatroom",
   },
+  activeSocketId: {
+    type: String,
+  },
   createdChatrooms: {
     type: mongoose.Schema.ObjectId,
     ref: "Chatroom",
@@ -82,9 +85,6 @@ const userSchema = new mongoose.Schema({
 userSchema.pre("save", async function (next) {
   // Only run this function if password was modified
   if (!this.isModified("password")) return next();
-
-  //! IT does...
-  console.log("does this run on account create?", this.password);
 
   // Hash password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);

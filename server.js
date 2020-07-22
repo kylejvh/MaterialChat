@@ -11,7 +11,7 @@ process.on("uncaughtException", (err) => {
 dotenv.config({ path: "./config.env" });
 const app = require("./app");
 const server = require("http").Server(app);
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, { serveClient: false });
 
 // Set up mongoDB connection
 const DB = process.env.DATABASE.replace(
@@ -31,7 +31,7 @@ mongoose
   });
 
 // Make socket.io available where needed.
-io.on("connection", function (socket) {
+io.on("connection", (socket) => {
   socketConnected(socket, io);
 });
 

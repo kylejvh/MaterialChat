@@ -3,12 +3,14 @@ import {
   GET_CHATROOMS,
   ADD_CHATROOM_SUCCEEDED,
   USER_JOINED_CHATROOM,
+  MESSAGES_LOADING,
   MESSAGES_LOADED_ON_CHATROOM_JOIN,
   ADD_CHATROOM_DIALOG_OPENED,
   ADD_CHATROOM_DIALOG_CLOSED,
   DELETE_CHATROOM,
 } from "./types";
 import { notify } from "./notify";
+import { emitSocketEvent } from "../socket-client/socketFunctions";
 
 export const subscribeChatrooms = () => {
   return {
@@ -21,23 +23,6 @@ export const subscribeChatroomUsers = () => {
   return {
     event: "CHATROOM_USERLIST_UPDATED",
     handle: "RECEIVED_CURRENT_CHATROOM_USERS",
-  };
-};
-
-const emitChatroom = (chatroom) => {
-  return {
-    event: "SOCKET_ADDED_CHATROOM",
-    emit: true,
-    payload: chatroom,
-  };
-};
-
-// Use general Function for DRY
-const emitEvent = (event, payload) => {
-  return {
-    event,
-    emit: true,
-    payload,
   };
 };
 
@@ -58,7 +43,8 @@ export const getChatrooms = () => async (dispatch) => {
   }
 };
 
-export const createChatroom = (chatroom) => async (dispatch) => {
+//TODO: Should I change this one???
+export const createChatroom = (chatroomName) => async (dispatch) => {
   dispatch({
     type: ADD_CHATROOM_DIALOG_CLOSED,
   });
@@ -68,7 +54,7 @@ export const createChatroom = (chatroom) => async (dispatch) => {
       method: "POST",
       url: "/api/v1/chatrooms",
       data: {
-        name: chatroom,
+        name: chatroomName,
       },
     });
 
@@ -78,7 +64,7 @@ export const createChatroom = (chatroom) => async (dispatch) => {
     });
 
     dispatch(notify("info", `"${res.data.data.newDoc.name}" created`));
-    dispatch(emitChatroom(res.data.data.newDoc));
+    dispatch(emitSocketEvent("SOCKET_ADDED_CHATROOM", res.data.data.newDoc));
   } catch (error) {
     console.log(error);
     dispatch(
@@ -96,11 +82,9 @@ export const createChatroom = (chatroom) => async (dispatch) => {
 
 export const joinChatroom = ({
   newChatroom,
-  prevChatroom = null,
-  user,
+  prevChatroomId = null,
+  userId,
 }) => async (dispatch) => {
-  console.log("ATTEMPTED TO JOIN", newChatroom);
-  console.log("PREV CHATROOM is =>", prevChatroom);
   // return {
   //   type: USER_JOINED_CHATROOM,
   //   payload: chatroom,
@@ -111,26 +95,20 @@ export const joinChatroom = ({
     payload: newChatroom,
   });
 
-  // Should strictly handle socket joining socket.io room, so that all sockets can be aware of new user.
   dispatch(
-    emitEvent("CHATROOM_JOINED", {
+    emitSocketEvent("CHATROOM_JOINED", {
       newChatroomId: newChatroom.id,
-      ...(prevChatroom && { prevChatroomId: prevChatroom.id }),
-      user,
+      ...(prevChatroomId && { prevChatroomId }),
+      userId,
     })
   );
 
-  getChatroomData(newChatroom.id);
+  dispatch(getChatroomData(newChatroom.id));
 };
-// Fetches Chatroom info and messages
-const getChatroomData = (id) => async (dispatch) => {
-  // const prevChatroom = getState().chatrooms.currentChatroom;
-  // const user = {
-  //   id: getState().auth.currentUser._id,
-  //   username: getState().auth.currentUser.username,
-  // };
 
-  // Getting info of specific chatoom
+// Fetches Chatroom info and recent chat history
+const getChatroomData = (id) => async (dispatch) => {
+  dispatch({ type: MESSAGES_LOADING });
   try {
     const res = await axios.get(`/api/v1/chatrooms/${id}`);
 
@@ -152,7 +130,7 @@ export const deleteChatroom = (id, callback = null) => async (dispatch) => {
 
     console.log("RESPONSE FROM DELETE", res);
 
-    dispatch(emitEvent("CHATROOM_DELETED", id));
+    dispatch(emitSocketEvent("CHATROOM_DELETED", id));
 
     dispatch({
       type: DELETE_CHATROOM,

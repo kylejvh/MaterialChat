@@ -1,20 +1,12 @@
 import axios from "axios";
-import { GET_MESSAGES, CHAT_MESSAGE_SENT } from "./types";
+import { emitSocketEvent } from "../socket-client/socketFunctions";
+import { GET_MESSAGES } from "./types";
 import { notify } from "./notify";
 
 export const subscribeMessages = () => {
   return {
     event: "CHAT_MESSAGE_RECEIVED",
     handle: "CHAT_MESSAGE_RECEIVED",
-  };
-};
-
-const emitMessage = (msg) => {
-  console.log("LOOKING FOR EMIT", msg);
-  return {
-    event: "CHAT_MESSAGE_SENT",
-    emit: true,
-    payload: msg,
   };
 };
 
@@ -33,23 +25,26 @@ export const getMessages = (id) => async (dispatch) => {
   }
 };
 
-export const sendMessage = (data) => async (dispatch) => {
-  // Emit socket message first, then post message to DB.
-  dispatch(emitMessage(data));
-
+export const sendMessage = (msgData) => async (dispatch) => {
   try {
-    const res = await axios({
-      method: "POST",
-      url: `/api/v1/chatrooms/${data.sentInChatroom}/messages`,
-      data: {
-        message: data.message,
-      },
-    });
+    // const res = await axios({
+    //   method: "POST",
+    //   url: `/api/v1/chatrooms/${data.sentInChatroom}/messages`,
+    //   data: {
+    //     message: data.message,
+    //   },
+    // });
 
-    dispatch({
-      type: CHAT_MESSAGE_SENT,
-      payload: data,
-    });
+    // const emitMessage = (msg) => {
+    //   console.log("LOOKING FOR EMIT", msg);
+    //   return {
+    //     event: "CHAT_MESSAGE_SENT",
+    //     emit: true,
+    //     payload: msg,
+    //   };
+    // };
+
+    dispatch(emitSocketEvent("CHAT_MESSAGE_SENT", msgData));
   } catch (err) {
     console.log(err);
     dispatch(

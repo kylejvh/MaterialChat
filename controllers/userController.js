@@ -6,6 +6,7 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const filterObj = require("./../utils/filterObj");
+const io = require("../server");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -108,7 +109,55 @@ exports.getMe = (req, res, next) => {
   next();
 };
 
-exports.getUser = factory.getOne(User);
+exports.getUser = catchAsync(async (req, res, next) => {
+  let socketIOLocals;
+  let query = User.findById(req.params.id);
+
+  const doc = await query;
+  // io.on("connection", (socket) => {
+  //   console.log("Someone contacted this endpoint", doc);
+  //   console.log("Also, heres a socket", socket);
+  // });
+
+  //! ADD doc data to weakmap here...
+
+  if (!doc) {
+    return next(new AppError("No document with specified ID", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      doc,
+    },
+  });
+});
+
+exports.setDBActiveSocketId = catchAsync(async (userId, socketId) => {
+  console.log("UPDATING DB SOCKET", userId, socketId);
+
+  await User.findByIdAndUpdate(
+    userId,
+    { activeSocketId: socketId },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+});
+
+exports.updateDBActiveChatroom = catchAsync(
+  async (currentChatroomId, userId) => {
+    await User.findByIdAndUpdate(
+      userId,
+      { currentChatroom: currentChatroomId },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  }
+);
 
 //! Admin CRUD methods - reserved for future use.
 // exports.createUser = (req, res) => {

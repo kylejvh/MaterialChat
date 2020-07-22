@@ -87,8 +87,6 @@ exports.signupGuest = catchAsync(async (req, res, next) => {
     passwordConfirm: `temp${randomInt}${dateID}`,
   });
 
-  console.log("Account created without token", guestUser);
-
   createSendToken(guestUser, 201, req, res);
 });
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
 import { subscribeMessages, sendMessage } from "../actions/message";
 import { subscribeTyping, emitTyping } from "../actions/notify";
 import { subscribeChatroomUsers } from "../actions/chatroom";
+import { removeSocketListener } from "../socket-client/socketFunctions";
 import Loader from "./notify/Loader";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -134,6 +134,7 @@ const ChatWindow = ({
   currentChatroom = null,
   currentUser,
   messages,
+  loading,
   subscribeMessages,
   sendMessage,
   theme,
@@ -142,6 +143,7 @@ const ChatWindow = ({
   subscribeChatroomUsers,
   activeUsers,
   emitTyping,
+  removeSocketListener,
 }) => {
   const [chatMessage, setChatMessage] = useState("");
   const [showUserInfo, setShowUserInfo] = useState(false);
@@ -153,6 +155,12 @@ const ChatWindow = ({
       subscribeChatroomUsers();
       subscribeTyping();
     }
+
+    return () => {
+      removeSocketListener("CHAT_MESSAGE_RECEIVED");
+      removeSocketListener("CHATROOM_USERLIST_UPDATED");
+      removeSocketListener("TYPING");
+    };
   }, [
     currentChatroom,
     subscribeMessages,
@@ -213,19 +221,11 @@ const ChatWindow = ({
   const onSubmit = (e) => {
     e.preventDefault();
     if (chatMessage) {
-      const { photo, username, _id } = currentUser;
-      const data = {
-        sender: {
-          photo,
-          username,
-          _id,
-        },
-        sentInChatroom: currentChatroom.id,
-        msgId: uuidv4(),
+      sendMessage({
+        sender: currentUser._id,
+        sentChatroomId: currentChatroom.id,
         message: chatMessage,
-        timestamp: Date.now(),
-      };
-      sendMessage(data);
+      });
     }
     setChatMessage("");
   };
@@ -242,8 +242,8 @@ const ChatWindow = ({
           }
           // className={classes.userAvatar}
         >
-          {currentUser.photo === "default.jpg" &&
-            `${currentUser.username.charAt(0)}`}
+          {message.sender.photo === "default.jpg" &&
+            `${message.sender.username.charAt(0)}`}
         </Avatar>
       </ListItemAvatar>
       <div
@@ -276,37 +276,19 @@ const ChatWindow = ({
 
   // Need to either memoize or come up with a better method. Every time you type it's rerendering i think.
 
+  //! Not currently working, render order broken
   const renderMessages = (messages, message, i) => {
     const prevSender = messages[i - 1]?.sender.username;
-    console.log("PREVIOUS MESSAGE SENDER:", prevSender);
-
-    // console.log("INITIAL MESSAGES", messages);
     if (i === 0) {
-      console.log(message.id, "should print message id");
-      console.log(message, "if not, what is this?");
-
       return renderWithNewSender(message);
     }
-
     // Compare messages after intial and render new/successive conditionally
     switch (messages[i - 1]?.sender?._id) {
       case message?.sender?._id:
-        // console.log("first case, equal", message);
-        // console.log("first index", i);
         return renderWithSameSender(message);
       case !message?.sender?._id:
-        // console.log("second case, not equal", message);
-        // console.log("second index", i);
-
         return renderWithNewSender(message);
-
       default:
-        // console.log(
-        //   "default case, should match if first message(null)",
-        //   message
-        // );
-        // console.log("third index", i);
-
         return renderWithNewSender(message);
     }
   };
@@ -323,14 +305,13 @@ const ChatWindow = ({
   // If there was a last message (message[i-1]) and the last message was sent by the current message's sender, rendersameSender
   // If
 
-  return currentChatroom ? (
+  return currentChatroom && !loading ? (
     <div className={classes.root}>
       <div className={classes.chatContainer}>
         <div className={classes.chatMessageWindow}>
           <List>
             {messages?.map((message, i) => (
-              <div className={classes.chatMessageWrapper} key={message.msgId}>
-                {/* {console.log(message)} */}
+              <div className={classes.chatMessageWrapper} key={message._id}>
                 <ListItem alignItems="flex-start">
                   {message && renderMessages(messages, message, i)}
                 </ListItem>
@@ -394,20 +375,18 @@ const ChatWindow = ({
                 dense
                 subheader={
                   <ListSubheader component="div" id="nested-list-subheader">
-                    {/* {currentChatroom}  */}
                     Users:
                   </ListSubheader>
                 }
               >
-                {/* {usersInChatroom.map((user, i) => (
-                  <div key={i}>
+                {activeUsers.map(({ _id: userId, username }) => (
+                  <div key={userId}>
                     <ListItem>
-                      {user === username && <PermIdentityIcon />}
-                      <ListItemText primary={user} />
+                      <ListItemText primary={username} />
                     </ListItem>
                     <Divider component="li" />
                   </div>
-                ))} */}
+                ))}
               </List>
             </div>
           </SwipeableDrawer>
@@ -415,7 +394,7 @@ const ChatWindow = ({
       ) : (
         <ExpansionPanel
           className={classes.userListPanel}
-          expanded={activeUsers.length > 0 ? true : false}
+          defaultExpanded={true}
         >
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon />}
@@ -426,10 +405,10 @@ const ChatWindow = ({
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <List dense>
-              {activeUsers.map((user) => (
-                <div key={user.id}>
+              {activeUsers.map(({ _id: userId, username }) => (
+                <div key={userId}>
                   <ListItem>
-                    <ListItemText primary={user.name} />
+                    <ListItemText primary={username} />
                   </ListItem>
                   <Divider component="li" />
                 </div>
@@ -449,6 +428,7 @@ const ChatWindow = ({
 
 const mapStateToProps = (state) => ({
   messages: state.message.messages,
+  loading: state.message.loading,
   currentUser: state.auth.currentUser,
   currentChatroom: state.chatrooms.currentChatroom,
   activeUsers: state.chatrooms.activeUsers,
@@ -461,4 +441,5 @@ export default connect(mapStateToProps, {
   subscribeTyping,
   subscribeChatroomUsers,
   emitTyping,
+  removeSocketListener,
 })(ChatWindow);
