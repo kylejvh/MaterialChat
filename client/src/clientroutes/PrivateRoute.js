@@ -11,9 +11,7 @@ const PrivateRoute = ({
     {...rest}
     render={(props) =>
       isAuthenticated ? (
-        <Component {...props}>
-          {console.log(props, "from priv route")}
-        </Component>
+        <Component {...props} />
       ) : (
         <Redirect
           to={{

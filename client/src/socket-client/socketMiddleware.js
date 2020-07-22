@@ -22,7 +22,6 @@ export default function socketMiddleware() {
     }
 
     if (leave) {
-      console.log("REMOVING LISTENER FOR", event);
       socket.removeListener(event);
       return;
     }

@@ -41,9 +41,6 @@ const parser = multer({
 exports.cloudinaryPhotoUpload = parser.single("photo");
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.file, "req file");
-  console.log(req.body.photo, "req body");
-
   // 1. Create error if user POSTs password data, this is handled by authcontroller
   if (req.body.newPassword || req.body.newPasswordConfirm) {
     return next(
@@ -110,16 +107,9 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  let socketIOLocals;
   let query = User.findById(req.params.id);
 
   const doc = await query;
-  // io.on("connection", (socket) => {
-  //   console.log("Someone contacted this endpoint", doc);
-  //   console.log("Also, heres a socket", socket);
-  // });
-
-  //! ADD doc data to weakmap here...
 
   if (!doc) {
     return next(new AppError("No document with specified ID", 404));
@@ -134,8 +124,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.setDBActiveSocketId = catchAsync(async (userId, socketId) => {
-  console.log("UPDATING DB SOCKET", userId, socketId);
-
   await User.findByIdAndUpdate(
     userId,
     { activeSocketId: socketId },

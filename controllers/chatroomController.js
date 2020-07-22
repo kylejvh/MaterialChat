@@ -28,9 +28,7 @@ exports.getChatroom = catchAsync(async (req, res, next) => {
     limit: 50,
   });
 
-  //! This is not doing anything
   if (!chatroom) {
-    console.log("was i hit?");
     return next(new AppError("No chatroom found with the specified ID", 404));
   }
 

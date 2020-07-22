@@ -41,7 +41,6 @@ const AddChatroomDialog = ({
     setNewChatroomName("");
   };
 
-  //TODO! add formik and validation...
   return (
     <>
       <Fab

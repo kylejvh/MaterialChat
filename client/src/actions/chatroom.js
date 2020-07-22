@@ -43,7 +43,6 @@ export const getChatrooms = () => async (dispatch) => {
   }
 };
 
-//TODO: Should I change this one???
 export const createChatroom = (chatroomName) => async (dispatch) => {
   dispatch({
     type: ADD_CHATROOM_DIALOG_CLOSED,
@@ -126,10 +125,7 @@ const getChatroomData = (id) => async (dispatch) => {
 
 export const deleteChatroom = (id, callback = null) => async (dispatch) => {
   try {
-    const res = await axios.delete(`/api/v1/chatrooms/${id}`);
-
-    console.log("RESPONSE FROM DELETE", res);
-
+    await axios.delete(`/api/v1/chatrooms/${id}`);
     dispatch(emitSocketEvent("CHATROOM_DELETED", id));
 
     dispatch({

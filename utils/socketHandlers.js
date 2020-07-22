@@ -20,12 +20,6 @@ exports.onChatMessage = (socket, io) =>
   socket.on(
     "CHAT_MESSAGE_SENT",
     async ({ sender, message, sentChatroomId }) => {
-      //TODO: Run code in sentOriginIDs,
-      // Pass Data: {
-      // message.data
-      // }
-
-      console.log("SERVER SEES THIS SENT MESSAGE:", `${sender}: ${message}`);
       const newDBMessage = await createMessage({
         sender,
         message,
@@ -108,24 +102,11 @@ exports.onUserTyping = (socket, io) =>
 
 exports.onSocketDisconnect = (socket, io) =>
   socket.on("disconnect", (reason) => {
-    console.log(`${socket.id} disconnected, reason: ${reason}`);
+    console.log(reason);
 
-    // Rooms are left automatically on disconnect
-    //TODO: use a setTImeout, check if user is trying to reconnect, and if not, after some time, find user by the socketId and remove activeSocket and all other ops
-    // setDBActiveSocketId();
-    //? For future use, handle disconnect of multiple rooms.
-    // To get a sockets rooms - Object.keys(socket.rooms)
-    //   const connectedRoomList = Object.keys(socket.rooms);
-    //   if (connectedRoomList.length > 0) {
-    //     connectedRoomList.forEach((room) => {
-    //       // update clients in each room with a new user list
-    //       //      io.to(roomid).emit(
-    //       //     "currentChatroomUsers",
-    //       //     previousChatroomUsers
-    //       //   );
-    //       socket.leave(room)
-    //     })
-    // }
+    if (reason === "server namespace disconnect") {
+      return;
+    }
   });
 
 // Remove socket from any rooms it's in, updates DB, and updates the user lists.

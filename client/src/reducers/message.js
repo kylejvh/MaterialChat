@@ -26,7 +26,6 @@ export default (state = initState, action) => {
       };
 
     case CHAT_MESSAGE_RECEIVED:
-      console.log("CLIENT MESSAGE RECEIVED:", action.payload);
       return {
         ...state,
         messages: [...state.messages, action.payload],

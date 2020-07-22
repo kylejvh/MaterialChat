@@ -209,12 +209,6 @@ const Dashboard = ({
       return;
     }
 
-    //TODO: Room updateUserData handling of updating chatroom, this is done with sockets now
-    // updateUserData({
-    //   currentChatroom:
-    //     newChatroom.id,
-    //   type: "chatroom",
-    // });
     joinChatroom({
       newChatroom,
       ...(currentChatroom && {

@@ -25,8 +25,6 @@ const createSendToken = (user, statusCode, req, res) => {
           Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
         );
 
-  console.log("Cookie will expire in", cookieExpiration);
-
   res.cookie("jwt", token, {
     expires: cookieExpiration,
     httpOnly: true,
@@ -57,7 +55,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   // Only send welcome emails to new users in production
   if (process.env.NODE_ENV === "production") {
-    console.log("Sending email from nodemailer...");
     // Optional url not included, reserved for future use case.
     await new Email(
       newUser
@@ -75,8 +72,6 @@ exports.signupGuest = catchAsync(async (req, res, next) => {
   }${date.getDate()}${date.getFullYear().toString().substring(2, 4)}`;
   const randomInt =
     Math.floor(Math.random() * (Math.floor(9999) - Math.ceil(0001))) + 0001;
-
-  console.log(`Created username: Guest${randomInt}-${dateID}`);
 
   // Create a temporary guest account that expires in 30 minutes.
   const guestUser = await User.create({

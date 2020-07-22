@@ -27,23 +27,6 @@ export const getMessages = (id) => async (dispatch) => {
 
 export const sendMessage = (msgData) => async (dispatch) => {
   try {
-    // const res = await axios({
-    //   method: "POST",
-    //   url: `/api/v1/chatrooms/${data.sentInChatroom}/messages`,
-    //   data: {
-    //     message: data.message,
-    //   },
-    // });
-
-    // const emitMessage = (msg) => {
-    //   console.log("LOOKING FOR EMIT", msg);
-    //   return {
-    //     event: "CHAT_MESSAGE_SENT",
-    //     emit: true,
-    //     payload: msg,
-    //   };
-    // };
-
     dispatch(emitSocketEvent("CHAT_MESSAGE_SENT", msgData));
   } catch (err) {
     console.log(err);
