@@ -83,15 +83,16 @@ exports.getAllChatrooms = catchAsync(async (req, res, next) => {
 });
 
 exports.getChatroomUsersFromDB = async (chatroomId) => {
-  const { activeUsers } = await Chatroom.findById(chatroomId).populate({
+  const query = await Chatroom.findById(chatroomId).populate({
     path: "activeUsers",
     select: "username activeSocketId -currentChatroom",
   });
 
-  if (!activeUsers) {
+  if (!query) {
     return new AppError("No chatroom found with the specified ID", 404);
   }
 
+  const { activeUsers } = query;
   return activeUsers;
 };
 

@@ -152,6 +152,4 @@ exports.onUserLogout = (socket, io) =>
         });
       });
     }
-
-    socket.disconnect(true);
   });
