@@ -1,6 +1,6 @@
 import axios from "axios";
-import { GET_MESSAGES, CHAT_MESSAGE_SENT } from "./types";
-import emitSocketEvent from "../socket-client/emitSocketEvent";
+import { emitSocketEvent } from "../socket-client/socketFunctions";
+import { GET_MESSAGES } from "./types";
 import { notify } from "./notify";
 
 export const subscribeMessages = () => {
@@ -45,13 +45,6 @@ export const sendMessage = (msgData) => async (dispatch) => {
     // };
 
     dispatch(emitSocketEvent("CHAT_MESSAGE_SENT", msgData));
-
-    // dispatch(emitMessage(data));
-
-    dispatch({
-      type: CHAT_MESSAGE_SENT,
-      payload: msgData,
-    });
   } catch (err) {
     console.log(err);
     dispatch(

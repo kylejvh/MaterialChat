@@ -30,9 +30,8 @@ mongoose
     console.log("mongoDB connection successful");
   });
 
-let socketIoLocals = [];
 // Make socket.io available where needed.
-io.on("connection", function (socket) {
+io.on("connection", (socket) => {
   socketConnected(socket, io);
 });
 
@@ -49,5 +48,3 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
-
-exports.socketIoLocals = socketIoLocals;

@@ -7,41 +7,21 @@ import {
   ACCOUNT_UPDATED,
 } from "./types";
 import { notify } from "./notify";
-import emitSocketEvent from "../socket-client/emitSocketEvent";
+import { emitSocketEvent } from "../socket-client/socketFunctions";
 
-export const getUser = () => async (dispatch, getState) => {
+export const getUser = () => async (dispatch) => {
   try {
-    //   emitSocketEvent({
-    //     event: "GET_USER",
-
-    //   }
-
-    //      return {
-    //   event: "SOCKET_ADDED_CHATROOM",
-    //   handle: "SOCKET_ADDED_CHATROOM",
-    // };
-    //   })
     const res = await axios.get("/api/v1/users/queryMe");
 
     if (res.status !== 204 && res.data) {
       const { doc: user } = res.data.data;
-      const { clientSocketId } = getState().auth;
+
+      dispatch(emitSocketEvent("USER_LOGGED_IN", user._id));
 
       dispatch({
         type: LOGIN_SUCCEEDED,
         payload: user,
       });
-
-      if (clientSocketId) {
-        console.log("ARE WE EMITTING PROPERPLY?", clientSocketId);
-        dispatch(
-          emitSocketEvent("USER_LOGGED_IN", {
-            clientSocketId,
-            userId: user._id,
-            username: user.username,
-          })
-        );
-      }
     }
   } catch (error) {
     const errorResponse =
@@ -62,6 +42,8 @@ export const login = (values) => async (dispatch) => {
       },
     });
 
+    dispatch(emitSocketEvent("USER_LOGGED_IN", res.data.data.user._id));
+
     dispatch({
       type: LOGIN_SUCCEEDED,
       payload: res.data.data.user,
@@ -72,11 +54,19 @@ export const login = (values) => async (dispatch) => {
   }
 };
 
-export const logout = () => async (dispatch) => {
+export const logout = (chatroomId = null, userId) => async (dispatch) => {
   try {
     const res = await axios.get("/api/v1/users/logout");
     if (res.data.status === "success") {
       dispatch({ type: LOGOUT_SUCCEEDED });
+
+      dispatch(
+        emitSocketEvent("LOGOUT", {
+          ...(chatroomId && { chatroomId }),
+          userId,
+        })
+      );
+
       dispatch(notify("success", "Logged out successfully"));
     }
   } catch (error) {
@@ -110,6 +100,8 @@ export const registerAccount = ({
       payload: res.data,
     });
 
+    dispatch(emitSocketEvent("USER_LOGGED_IN", res.data.data.user._id));
+
     dispatch(notify("success", "Account created successfully."));
   } catch (error) {
     console.log(error.response.data.message || `An error occurred: ${error}`);
@@ -122,6 +114,7 @@ export const completeRegister = (isGuest = null) => async (dispatch) => {
     type: REGISTER_FINAL_STEP_SUCCEEEDED,
   });
 
+  //TODO: THere is a problem here, this is showing when you register a full account.
   const registerMessage = isGuest
     ? "Temporary guest account created successfully."
     : "Register complete. Welcome!";

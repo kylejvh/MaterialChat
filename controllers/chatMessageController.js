@@ -8,11 +8,14 @@ const factory = require("./handlerFactory");
 //   select: "username",
 // });
 
-exports.createMessage = catchAsync(async (msgData, popOptions) => {
-  console.log("FROM INSIDE CREATEMESSAGE", msgData);
-  let newMessageDoc = await ChatMessage.create();
-  if (popOptions)
-    newMessageDoc = await newMessageDoc.populate(popOptions).execPopulate();
+exports.createMessage = async (msgData) => {
+  let newMessageDoc = await ChatMessage.create(msgData);
+  newMessageDoc = await newMessageDoc
+    .populate({
+      path: "sender",
+      select: "username photo",
+    })
+    .execPopulate();
 
   const newMessage = await newMessageDoc;
 
@@ -20,13 +23,8 @@ exports.createMessage = catchAsync(async (msgData, popOptions) => {
     return new AppError("No document received", 404);
   }
 
-  // res.status(201).json({
-  //   status: "success",
-  //   data: {
-  //     newDoc,
-  //   },
-  // });
-});
+  return newMessage;
+};
 // exports.getAllMessages = factory.getAll(ChatMessage, true);
 exports.getMessage = factory.getOne(ChatMessage);
 exports.updateMessage = factory.updateOne(ChatMessage);

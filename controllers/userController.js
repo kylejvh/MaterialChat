@@ -133,6 +133,32 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.setDBActiveSocketId = catchAsync(async (userId, socketId) => {
+  console.log("UPDATING DB SOCKET", userId, socketId);
+
+  await User.findByIdAndUpdate(
+    userId,
+    { activeSocketId: socketId },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+});
+
+exports.updateDBActiveChatroom = catchAsync(
+  async (currentChatroomId, userId) => {
+    await User.findByIdAndUpdate(
+      userId,
+      { currentChatroom: currentChatroomId },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  }
+);
+
 //! Admin CRUD methods - reserved for future use.
 // exports.createUser = (req, res) => {
 //   res.status(500).json({

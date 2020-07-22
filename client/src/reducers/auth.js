@@ -3,7 +3,6 @@ import {
   REGISTER_FINAL_STEP_SUCCEEEDED,
   LOGIN_SUCCEEDED,
   ACCOUNT_UPDATED,
-  SOCKET_CONNECTED,
 } from "../actions/types";
 
 const initState = {
@@ -37,13 +36,6 @@ export default (state = initState, action) => {
       return {
         ...state,
         isAuthenticated: true,
-      };
-
-    case SOCKET_CONNECTED:
-      console.log("FROM REDUCER, SOCKET CONNECTED:", action.payload);
-      return {
-        ...state,
-        clientSocketId: action.payload,
       };
 
     default:
