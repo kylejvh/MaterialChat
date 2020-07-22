@@ -160,6 +160,8 @@ export const registerGuestAccount = () => async (dispatch) => {
       payload: res.data,
     });
 
+    dispatch(emitSocketEvent("USER_LOGGED_IN", res.data.data.user._id));
+
     console.log("register as guest res:", res.data);
   } catch (error) {
     console.log(error.response.data.message || `An error occurred: ${error}`);

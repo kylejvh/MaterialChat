@@ -1,6 +1,5 @@
 import {
   GET_CHATROOMS,
-  ADD_CHATROOM_SUCCEEDED,
   USER_JOINED_CHATROOM,
   SOCKET_ADDED_CHATROOM,
   ADD_CHATROOM_DIALOG_OPENED,
@@ -35,7 +34,6 @@ export default (state = initState, action) => {
       };
 
     case SOCKET_ADDED_CHATROOM:
-    case ADD_CHATROOM_SUCCEEDED:
       return {
         ...state,
         loading: false,

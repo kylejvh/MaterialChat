@@ -6,6 +6,7 @@ import {
   joinChatroom,
   subscribeChatrooms,
 } from "../actions/chatroom";
+import { removeSocketListener } from "../socket-client/socketFunctions";
 import { updateUserData } from "../actions/auth";
 import clsx from "clsx";
 import { makeStyles, withStyles, useTheme } from "@material-ui/core/styles";
@@ -168,6 +169,7 @@ const Dashboard = ({
   currentUser,
   chatrooms,
   subscribeChatrooms,
+  removeSocketListener,
   currentChatroom,
   getChatrooms,
   updateUserData,
@@ -228,6 +230,10 @@ const Dashboard = ({
 
   useEffect(() => {
     subscribeChatrooms();
+
+    return () => {
+      removeSocketListener("SOCKET_ADDED_CHATROOM");
+    };
   }, [subscribeChatrooms]);
 
   const headerTitle = currentChatroom ? currentChatroom.name : "MaterialChat";
@@ -372,4 +378,5 @@ export default connect(mapStateToProps, {
   joinChatroom,
   updateUserData,
   subscribeChatrooms,
+  removeSocketListener,
 })(Dashboard);

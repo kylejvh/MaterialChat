@@ -1,7 +1,6 @@
 import axios from "axios";
 import {
   GET_CHATROOMS,
-  ADD_CHATROOM_SUCCEEDED,
   USER_JOINED_CHATROOM,
   MESSAGES_LOADING,
   MESSAGES_LOADED_ON_CHATROOM_JOIN,
@@ -44,6 +43,7 @@ export const getChatrooms = () => async (dispatch) => {
 };
 
 //TODO: Should I change this one???
+//TODO: Changed this to emit new chatroom to all users, should probably just make fully integrated into socket.io...
 export const createChatroom = (chatroomName) => async (dispatch) => {
   dispatch({
     type: ADD_CHATROOM_DIALOG_CLOSED,
@@ -56,11 +56,6 @@ export const createChatroom = (chatroomName) => async (dispatch) => {
       data: {
         name: chatroomName,
       },
-    });
-
-    dispatch({
-      type: ADD_CHATROOM_SUCCEEDED,
-      payload: res.data.data.newDoc,
     });
 
     dispatch(notify("info", `"${res.data.data.newDoc.name}" created`));
